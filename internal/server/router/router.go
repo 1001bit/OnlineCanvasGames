@@ -5,8 +5,9 @@ import (
 
 	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/api"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/page"
-	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/socket"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/sse"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/storage"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/ws"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/middleware"
 
 	"github.com/go-chi/chi/v5"
@@ -24,16 +25,26 @@ func NewRouter() (http.Handler, error) {
 	router.Handle("/image/*", http.StripPrefix("/image", http.HandlerFunc(storage.HandleImage)))
 
 	// Websockets
-	gamesWS, err := socket.NewGamesWS()
-	if err != nil {
-		return nil, err
-	}
+	gamesWS := ws.NewGamesWS()
 	go gamesWS.Run()
-	// Websockets Secure
+	// WS Secure
 	router.Route("/ws", func(rs chi.Router) {
 		rs.Use(middleware.AuthJSON)
 
-		rs.HandleFunc("/gameplay/{id}", gamesWS.ServeWS)
+		rs.HandleFunc("/game/{id}/{roomid}", gamesWS.HandleWS)
+	})
+
+	// Server-Sent Events
+	gamesSSE, err := sse.NewGamesSSE()
+	if err != nil {
+		return nil, err
+	}
+	go gamesSSE.Run()
+	// SSE Secure
+	router.Route("/sse", func(rs chi.Router) {
+		rs.Use(middleware.AuthJSON)
+
+		rs.HandleFunc("/game/{id}", gamesSSE.HandleEvent)
 	})
 
 	// API
@@ -52,11 +63,11 @@ func NewRouter() (http.Handler, error) {
 		r.Get("/", page.HandleHome)
 		r.Get("/auth", page.HandleAuth)
 		r.Get("/profile/{id}", page.HandleProfile)
-		r.Get("/game/{id}", page.HandleGame)
 		// Secure
 		r.Group(func(rs chi.Router) {
 			rs.Use(middleware.AuthHTML)
-			rs.Get("/game/{id}/play", page.HandleGameplay)
+
+			rs.Get("/game/{id}/hub", page.HandleGamehub)
 		})
 
 		r.Get("/*", page.HandleNotFound)

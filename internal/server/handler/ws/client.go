@@ -1,4 +1,4 @@
-package socket
+package ws
 
 import (
 	"log"
@@ -17,26 +17,29 @@ const (
 // Client
 type Client struct {
 	conn *websocket.Conn
-	ws   *GamesWS
-	hub  *GameHub
+	room *GameRoom
 
-	write chan []byte
+	writeChan chan string
 }
 
-func NewClient(conn *websocket.Conn, ws *GamesWS, hub *GameHub) *Client {
+func NewClient(conn *websocket.Conn, room *GameRoom) *Client {
 	return &Client{
 		conn: conn,
-		ws:   ws,
-		hub:  hub,
+		room: room,
 
-		write: make(chan []byte),
+		writeChan: make(chan string),
 	}
+}
+
+func (c *Client) close() {
+	c.conn.WriteMessage(websocket.CloseMessage, []byte("closed!"))
+	c.conn.Close()
 }
 
 func (c *Client) readPump() {
 	defer func() {
-		c.ws.disconnect <- c
-		c.conn.Close()
+		c.room.disconnectChan <- c
+		c.close()
 	}()
 
 	// On Pong
@@ -55,7 +58,7 @@ func (c *Client) readPump() {
 			}
 			break
 		}
-		c.ws.messageChan <- message
+		c.room.messageChan <- string(message)
 	}
 }
 
@@ -63,7 +66,7 @@ func (c *Client) writePump() {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		ticker.Stop()
-		c.conn.Close()
+		c.close()
 	}()
 
 	for {
@@ -74,11 +77,10 @@ func (c *Client) writePump() {
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				return
 			}
-		case message, ok := <-c.write:
+		case message, ok := <-c.writeChan:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			// if hub closed c.write chan
 			if !ok {
-				c.conn.WriteMessage(websocket.CloseMessage, []byte("closed!"))
 				return
 			}
 
@@ -86,17 +88,8 @@ func (c *Client) writePump() {
 			if err != nil {
 				return
 			}
-			w.Write(message)
+			w.Write([]byte(message))
 			log.Println("<Client Write>:", string(message))
-
-			n := len(c.write)
-			for i := 0; i < n; i++ {
-				w.Write(<-c.write)
-			}
-
-			if err := w.Close(); err != nil {
-				return
-			}
 		}
 	}
 }

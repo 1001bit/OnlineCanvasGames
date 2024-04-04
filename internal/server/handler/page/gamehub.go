@@ -8,7 +8,7 @@ import (
 	gamemodel "github.com/1001bit/OnlineCanvasGames/internal/model/game"
 )
 
-func HandleGameplay(w http.ResponseWriter, r *http.Request) {
+func HandleGamehub(w http.ResponseWriter, r *http.Request) {
 	data := GameData{
 		Game: &gamemodel.Game{},
 	}
@@ -32,5 +32,5 @@ func HandleGameplay(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	serveTemplate("gameplay.html", data, w, r)
+	serveTemplate("gamehub.html", data, w, r)
 }

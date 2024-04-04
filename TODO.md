@@ -23,11 +23,8 @@
     - [X] Backend
 
 - [ ] Gameplay page
-    - [ ] Frontend
-    - [ ] Backend
-        - [X] Multiple game hubs
-        - [ ] Web page for gamehub rooms with sse
-        - [ ] Web page with websocket
+    - [ ] Rooms in hub page
+    - [ ] Rooms connection
 
 - [ ] Some kind of game engine
 

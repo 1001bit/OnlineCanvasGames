@@ -11,14 +11,19 @@
     {{ template "header" .Header }}
     <main>
         
-    <div id="game">
+    <div id="game" data-game-id="{{ .Data.Game.ID }}">
         <div class="img-holder">
             <img src="/image/gamethumbnail/{{ .Data.Game.ID }}">
         </div>
         <h1>{{ .Data.Game.Title }}</h1>
-        <a href="/game/{{ .Data.Game.ID }}/play"><button class="style-button physical big-font">Play</button></a>
+        <button class="style-button physical big-font">Play in a random room</button>
+    </div>
+    <div id="rooms">
+        <h1>Todo Rooms!</h1>
     </div>
     
     </main>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+	<script src="/static/game/script.js"></script>
 </body>
 </html>
