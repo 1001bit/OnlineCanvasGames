@@ -25,9 +25,9 @@
 - [ ] Gameplay page
     - [ ] Frontend
     - [ ] Backend
-    - [ ] Websocket
         - [X] Multiple game hubs
-        - [ ] Multiple rooms for hub
+        - [ ] Web page for gamehub rooms with sse
+        - [ ] Web page with websocket
 
 - [ ] Some kind of game engine
 
