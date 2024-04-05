@@ -5,13 +5,8 @@
 }
 
 .card {
-    display: flex;
-    flex-direction: column;
     border-radius: 8px;
-    font-size: 16px;
     background: var(--second-dark-color);
-    word-wrap: break-word;
-    align-items: center;
     padding: 8px;
     box-shadow: 0px 4px 8px black;
     width: 150px;

@@ -5,15 +5,21 @@ body {
     flex-direction: column;
 }
 
-#game {
+main {
+    max-width: 600px;
+}
+
+.panel {
     margin-top: 20px;
     background: var(--second-color);
     padding: 24px;
     border-radius: 8px;
     box-shadow: 0px 8px 16px black;
     text-align: center;
-    max-width: 600px;
+    width:auto;
 }
+
+/* GAME */
 
 #game .img-holder {
     max-width: 600px;
@@ -23,5 +29,32 @@ body {
 }
 
 #game .style-button {
+    width: 100%;
+}
+
+/* UNDER GAME */
+
+#create {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+#rooms {
+    display: grid;
+    grid-gap: 28px;
+    justify-content: space-between;
+    grid-template-columns: repeat(auto-fit, minmax(140px, auto));
+}
+
+.room {
+    border-radius: 8px;
+    background: var(--second-dark-color);
+    padding: 8px;
+    box-shadow: 0px 4px 8px black;
+    width: 140px;
+    height: fit-content;
+}
+
+.room .style-button {
     width: 100%;
 }

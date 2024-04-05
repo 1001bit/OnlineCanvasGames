@@ -22,8 +22,8 @@
     - [X] Frontend
     - [X] Backend
 
-- [ ] Gameplay page
-    - [ ] Rooms in hub page
+- [ ] Game
+    - [X] Rooms in hub page
     - [ ] Rooms connection
 
 - [ ] Some kind of game engine

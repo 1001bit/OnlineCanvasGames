@@ -11,15 +11,37 @@
     {{ template "header" .Header }}
     <main>
         
-    <div id="game" data-game-id="{{ .Data.Game.ID }}">
+    <div id="game" class="panel" data-game-id="{{ .Data.Game.ID }}">
         <div class="img-holder">
             <img src="/image/gamethumbnail/{{ .Data.Game.ID }}">
         </div>
         <h1>{{ .Data.Game.Title }}</h1>
         <button class="style-button physical big-font">Play in a random room</button>
     </div>
-    <div id="rooms">
-        <h1>Todo Rooms!</h1>
+    <div id="under-game" class="panel">
+        <button class="style-button physical big-font" id="create">Create and join a room</button>
+        <div id="rooms">
+            <div class="room">
+                <h3>bobie</h3>
+                <button class="style-button physical small">0/10</button>
+            </div>
+            <div class="room">
+                <h3>bobie</h3>
+                <button class="style-button physical small">0/10</button>
+            </div>
+            <div class="room">
+                <h3>bobie</h3>
+                <button class="style-button physical small">0/10</button>
+            </div>
+            <div class="room">
+                <h3>bobie</h3>
+                <button class="style-button physical small">0/10</button>
+            </div>
+            <div class="room">
+                <h3>bobie</h3>
+                <button class="style-button physical small">0/10</button>
+            </div>
+        </div>
     </div>
     
     </main>
