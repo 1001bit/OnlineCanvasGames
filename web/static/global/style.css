@@ -11,7 +11,7 @@
     --button-shadow-color: #0c0a02;
 
     /* values */
-    --header-height: 35px;
+    --header-height: 32px;
 }
 
 body {
@@ -36,21 +36,20 @@ header {
     width: 100%;
     gap: 20px;
 
-    padding: 8px 12px;
+    padding-block: 8px;
     background: var(--second-dark-color);
     box-shadow: 0 0 5px black;
-    min-height: fit-content;
     max-height: var(--header-height);
     display: flex;
     z-index: 999;
 }
 
-header + main {
-    margin-top: calc(var(--header-height) + 35px);
+header button {
+    margin-inline: 12px;
 }
 
-header button:last-child {
-    margin-right: 24px;
+header + main {
+    margin-top: calc(var(--header-height) + 24px);
 }
 
 .separator {
@@ -86,8 +85,6 @@ p {
     word-wrap: break-word;
     cursor: pointer;
     font-size: 20px;
-    align-items: center;
-    align-content: center;
     background: var(--prim-color);
 }
 
@@ -134,7 +131,6 @@ p {
 
 .img-holder {
     border-radius: 8px;
-    width: 100%;
     background: var(--thr-elem-color);
     overflow: hidden;
     display: flex;

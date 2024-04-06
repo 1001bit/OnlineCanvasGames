@@ -1,8 +1,6 @@
 body {
     display: flex;
     justify-content: center;
-    align-items: center;
-    flex-direction: column;
 }
 
 main {
@@ -36,7 +34,7 @@ main {
     border: 1px solid var(--second-color);
     border-radius: 8px;
     background: var(--second-color);
-    color: white;
+    color: var(--text-color);
     font-size: 16px;
 }
 
@@ -46,8 +44,4 @@ main {
   
 #auth-form button {
     width: calc(50% - 3px);
-}
-
-h1, #info {
-    color: rgb(233, 233, 233);
 }
