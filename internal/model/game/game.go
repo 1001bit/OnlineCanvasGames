@@ -33,7 +33,7 @@ func GetAll() ([]Game, error) {
 }
 
 func GetByID(id int) (*Game, error) {
-	var game = &Game{
+	game := &Game{
 		ID: id,
 	}
 

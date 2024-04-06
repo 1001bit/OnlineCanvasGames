@@ -8,13 +8,15 @@ import (
 	gamemodel "github.com/1001bit/OnlineCanvasGames/internal/model/game"
 )
 
-type GameHubData struct {
-	Game *gamemodel.Game
+type GameRoomData struct {
+	Game   *gamemodel.Game
+	RoomID int
 }
 
-func HandleGameHub(w http.ResponseWriter, r *http.Request) {
-	data := GameHubData{}
+func HandleGameRoom(w http.ResponseWriter, r *http.Request) {
+	data := GameRoomData{}
 
+	// GameID
 	gameID, err := strconv.Atoi(r.PathValue("gameid"))
 	if err != nil {
 		HandleNotFound(w, r)
@@ -33,5 +35,12 @@ func HandleGameHub(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	serveTemplate("gamehub.html", data, w, r)
+	// RoomID
+	data.RoomID, err = strconv.Atoi(r.PathValue("roomid"))
+	if err != nil {
+		HandleNotFound(w, r)
+		return
+	}
+
+	serveTemplate("gameroom.html", data, w, r)
 }

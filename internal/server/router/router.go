@@ -67,7 +67,8 @@ func NewRouter() (http.Handler, error) {
 		r.Group(func(rs chi.Router) {
 			rs.Use(middleware.AuthHTML)
 
-			rs.Get("/game/{id}/hub", page.HandleGamehub)
+			rs.Get("/game/{gameid}/hub", page.HandleGameHub)
+			rs.Get("/game/{gameid}/room/{roomid}", page.HandleGameRoom)
 		})
 
 		r.Get("/*", page.HandleNotFound)
