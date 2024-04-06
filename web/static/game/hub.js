@@ -1,9 +1,9 @@
-const game = $("#game")
+const main = $("main")
 let gameID = 0
 let eventSource
 
 function connectToSSE(){
-    eventSource = new EventSource(`http://${document.location.host}/sse/game/${gameID}`)
+    eventSource = new EventSource(`http://${document.location.host}/sse/game/${gameID}/hub`)
 
     eventSource.onmessage = (msg) => {
         console.log(msg)
@@ -14,7 +14,7 @@ function connectToSSE(){
     }
 }
 
-game.ready(() => {
-    gameID = game.data("game-id")
+main.ready(() => {
+    gameID = main.data("game-id")
     connectToSSE()
 })

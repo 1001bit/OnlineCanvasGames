@@ -18,6 +18,8 @@ func NewGameRoom() *GameRoom {
 }
 
 func (room *GameRoom) Run() {
+	log.Println("<GameRoom Run>")
+
 	for {
 		select {
 		case client := <-room.connectChan:

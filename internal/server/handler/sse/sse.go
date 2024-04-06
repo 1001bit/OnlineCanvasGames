@@ -53,6 +53,8 @@ func (sse *GamesSSE) HandleEvent(w http.ResponseWriter, r *http.Request) {
 }
 
 func (sse *GamesSSE) Run() {
+	log.Println("<GameSSE Run>")
+
 	for {
 		select {
 		case client := <-sse.connect:

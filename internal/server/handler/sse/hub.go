@@ -15,6 +15,8 @@ func NewGameHub(sse *GamesSSE) *GameHub {
 }
 
 func (hub *GameHub) Run() {
+	log.Println("<GameHub Run>")
+
 	for {
 		select {
 		case client := <-hub.connect:

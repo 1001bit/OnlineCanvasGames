@@ -31,7 +31,7 @@ func NewRouter() (http.Handler, error) {
 	router.Route("/ws", func(rs chi.Router) {
 		rs.Use(middleware.AuthJSON)
 
-		rs.HandleFunc("/game/{id}/{roomid}", gamesWS.HandleWS)
+		rs.HandleFunc("/game/{id}/room/{roomid}", gamesWS.HandleWS)
 	})
 
 	// Server-Sent Events
@@ -44,7 +44,7 @@ func NewRouter() (http.Handler, error) {
 	router.Route("/sse", func(rs chi.Router) {
 		rs.Use(middleware.AuthJSON)
 
-		rs.HandleFunc("/game/{id}", gamesSSE.HandleEvent)
+		rs.HandleFunc("/game/{id}/hub", gamesSSE.HandleEvent)
 	})
 
 	// API

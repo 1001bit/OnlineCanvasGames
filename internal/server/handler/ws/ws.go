@@ -49,6 +49,8 @@ func (ws *GamesWS) HandleWS(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ws *GamesWS) Run() {
+	log.Println("<GameWS Run>")
+
 	for {
 		select {
 		case client := <-ws.connectChan:
