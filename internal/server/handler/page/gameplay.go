@@ -13,7 +13,7 @@ type GameRoomData struct {
 	RoomID int
 }
 
-func HandleGameRoom(w http.ResponseWriter, r *http.Request) {
+func HandleGamePlay(w http.ResponseWriter, r *http.Request) {
 	data := GameRoomData{}
 
 	// GameID
@@ -36,11 +36,17 @@ func HandleGameRoom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// RoomID
-	data.RoomID, err = strconv.Atoi(r.PathValue("roomid"))
-	if err != nil {
-		HandleNotFound(w, r)
-		return
+	switch r.URL.Query().Get("room") {
+	case "":
+		// TODO: redirect to random room
+		data.RoomID = 0
+	default:
+		data.RoomID, err = strconv.Atoi(r.URL.Query().Get("room"))
+		if err != nil {
+			// TODO: Room not found
+			return
+		}
 	}
 
-	serveTemplate("gameroom.html", data, w, r)
+	serveTemplate("gameplay.html", data, w, r)
 }

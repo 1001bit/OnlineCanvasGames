@@ -44,7 +44,7 @@ func NewRouter() (http.Handler, error) {
 	router.Route("/sse", func(rs chi.Router) {
 		rs.Use(middleware.AuthJSON)
 
-		rs.HandleFunc("/game/{id}/hub", gamesSSE.HandleEvent)
+		rs.HandleFunc("/game/{id}/hub", gamesSSE.HandleSSE)
 	})
 
 	// API
@@ -68,7 +68,7 @@ func NewRouter() (http.Handler, error) {
 			rs.Use(middleware.AuthHTML)
 
 			rs.Get("/game/{gameid}/hub", page.HandleGameHub)
-			rs.Get("/game/{gameid}/room/{roomid}", page.HandleGameRoom)
+			rs.Get("/game/{gameid}/play", page.HandleGamePlay)
 		})
 
 		r.Get("/*", page.HandleNotFound)

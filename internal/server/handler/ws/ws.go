@@ -19,6 +19,9 @@ type GamesWS struct {
 	WSLayer
 	rooms   map[int]*GameRoom
 	clients map[*Client]bool
+
+	createRoomChan   chan *GameRoom
+	removeRoomIDChan chan int
 }
 
 func NewGamesWS() *GamesWS {
@@ -53,6 +56,7 @@ func (ws *GamesWS) Run() {
 
 	for {
 		select {
+		// Client
 		case client := <-ws.connectChan:
 			ws.clients[client] = true
 			log.Println("<GameWS Connect>")
@@ -61,6 +65,18 @@ func (ws *GamesWS) Run() {
 			delete(ws.clients, client)
 			log.Println("<GameWS Disconnect>")
 
+		// Room
+		case room := <-ws.createRoomChan:
+			// TODO: Random room ID
+			room.id = 0
+			ws.rooms[room.id] = room
+			log.Println("<GameWS Create Room>")
+
+		case roomID := <-ws.removeRoomIDChan:
+			delete(ws.rooms, roomID)
+			log.Println("<GameWS Create Room>")
+
+		// Message
 		case message := <-ws.messageChan:
 			ws.handleMessage(message)
 		}

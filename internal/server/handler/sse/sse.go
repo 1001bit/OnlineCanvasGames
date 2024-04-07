@@ -32,7 +32,7 @@ func NewGamesSSE() (*GamesSSE, error) {
 	return sse, nil
 }
 
-func (sse *GamesSSE) HandleEvent(w http.ResponseWriter, r *http.Request) {
+func (sse *GamesSSE) HandleSSE(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")

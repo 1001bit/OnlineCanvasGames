@@ -19,6 +19,9 @@ type Client struct {
 	conn *websocket.Conn
 	room *GameRoom
 
+	Username string
+	UserID   int
+
 	writeChan chan string
 }
 
