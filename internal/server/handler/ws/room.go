@@ -64,6 +64,10 @@ func (room *GameRoom) handleMessage(message string) {
 }
 
 func (room *GameRoom) pickRandomClient() *Client {
+	if len(room.clients) == 0 {
+		return nil
+	}
+
 	k := rand.Intn(len(room.clients))
 	for client := range room.clients {
 		if k == 0 {

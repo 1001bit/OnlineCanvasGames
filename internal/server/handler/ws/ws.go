@@ -2,7 +2,9 @@ package ws
 
 import (
 	"log"
+	"math/rand"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -67,8 +69,7 @@ func (ws *GamesWS) Run() {
 
 		// Room
 		case room := <-ws.createRoomChan:
-			// TODO: Random room ID
-			room.id = 0
+			room.id = int(time.Now().Unix())
 			ws.rooms[room.id] = room
 			log.Println("<GameWS Create Room>")
 
@@ -85,4 +86,19 @@ func (ws *GamesWS) Run() {
 
 func (ws *GamesWS) handleMessage(message string) {
 	log.Println("<GameWS Message>:", message)
+}
+
+func (ws *GamesWS) PickRandomRoomID() int {
+	if len(ws.clients) == 0 {
+		return -1
+	}
+
+	k := rand.Intn(len(ws.clients))
+	for roomID := range ws.rooms {
+		if k == 0 {
+			return roomID
+		}
+		k--
+	}
+	return -1
 }
