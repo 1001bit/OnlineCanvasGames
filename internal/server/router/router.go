@@ -68,9 +68,7 @@ func NewRouter() (http.Handler, error) {
 			rs.Use(middleware.AuthHTML)
 
 			rs.Get("/game/{gameid}/hub", page.HandleGameHub)
-			rs.Get("/game/{gameid}/play", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				page.HandleGamePlay(gamesWS, w, r)
-			}))
+			rs.Get("/game/{gameid}/play", page.HandleGamePlay)
 		})
 
 		r.Get("/*", page.HandleNotFound)

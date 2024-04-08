@@ -25,6 +25,7 @@
 - [ ] Game
     - [X] Rooms in hub page
     - [ ] Rooms connection
+        - [ ] New room creation and random room connect
 
 - [ ] Some kind of game engine
 
