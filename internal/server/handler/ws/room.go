@@ -18,14 +18,18 @@ type GameRoom struct {
 func NewGameRoom() *GameRoom {
 	return &GameRoom{
 		WSLayer: MakeWSLayer(),
+
+		ws:      nil,
 		clients: make(map[*Client]bool),
-		id:      0,
-		owner:   nil,
+
+		id:    0,
+		owner: nil,
 	}
 }
 
 func (room *GameRoom) Run() {
 	log.Println("<GameRoom Run>")
+
 	defer func() {
 		room.ws.removeRoomIDChan <- room.id
 	}()
@@ -37,9 +41,10 @@ func (room *GameRoom) Run() {
 			if room.owner == nil {
 				room.owner = client
 			}
+			client.room = room
 
 			room.ws.connectChan <- client
-			log.Println("<GameRoom Connect>")
+			log.Println("<GameRoom Client Connect>")
 
 		case client := <-room.disconnectChan:
 			delete(room.clients, client)
@@ -51,15 +56,15 @@ func (room *GameRoom) Run() {
 			}
 
 			room.ws.disconnectChan <- client
-			log.Println("<GameRoom Disconnect>")
+			log.Println("<GameRoom Client Disconnect>")
 
-		case message := <-room.messageChan:
-			room.handleMessage(message)
+		case message := <-room.clientMessageChan:
+			room.handleClientMessage(message)
 		}
 	}
 }
 
-func (room *GameRoom) handleMessage(message string) {
+func (room *GameRoom) handleClientMessage(message ClientMessage) {
 	log.Println("<GameRoom Message>:", message)
 }
 

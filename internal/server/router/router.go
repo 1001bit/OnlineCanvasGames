@@ -27,6 +27,7 @@ func NewRouter() (http.Handler, error) {
 	// Websockets
 	gamesWS := ws.NewGamesWS()
 	go gamesWS.Run()
+
 	// WS Secure
 	router.Route("/ws", func(rs chi.Router) {
 		rs.Use(middleware.AuthJSON)
@@ -40,6 +41,11 @@ func NewRouter() (http.Handler, error) {
 		return nil, err
 	}
 	go gamesSSE.Run()
+	err = gamesSSE.InitHubs()
+	if err != nil {
+		return nil, err
+	}
+
 	// SSE Secure
 	router.Route("/sse", func(rs chi.Router) {
 		rs.Use(middleware.AuthJSON)

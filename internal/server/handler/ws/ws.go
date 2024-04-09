@@ -19,6 +19,7 @@ var upgrader = websocket.Upgrader{
 
 type GamesWS struct {
 	WSLayer
+
 	rooms   map[int]*GameRoom
 	clients map[*Client]bool
 
@@ -28,12 +29,14 @@ type GamesWS struct {
 
 func NewGamesWS() *GamesWS {
 	ws := &GamesWS{
+		WSLayer: MakeWSLayer(),
+
 		rooms:   make(map[int]*GameRoom),
 		clients: make(map[*Client]bool),
 
-		WSLayer: MakeWSLayer(),
+		createRoomChan:   make(chan *GameRoom),
+		removeRoomIDChan: make(chan int),
 	}
-	ws.rooms[0] = &GameRoom{}
 
 	return ws
 }
@@ -45,9 +48,11 @@ func (ws *GamesWS) HandleWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	room := ws.rooms[0]
-	client := NewClient(conn, room)
-	client.room.connectChan <- client
+	client := NewClient(conn)
+
+	// TODO: Remove this when request-based room connection will be made
+	randomRoom := ws.rooms[ws.pickRandomRoomID()]
+	randomRoom.connectChan <- client
 
 	go client.readPump()
 	go client.writePump()
@@ -61,36 +66,40 @@ func (ws *GamesWS) Run() {
 		// Client
 		case client := <-ws.connectChan:
 			ws.clients[client] = true
-			log.Println("<GameWS Connect>")
+			log.Println("<GameWS Client Connect>")
 
 		case client := <-ws.disconnectChan:
 			delete(ws.clients, client)
-			log.Println("<GameWS Disconnect>")
+			log.Println("<GameWS Client Disconnect>")
 
 		// Room
 		case room := <-ws.createRoomChan:
+			// TODO: Replace to room creation interface
 			room.id = int(time.Now().Unix())
+
+			room.ws = ws
 			ws.rooms[room.id] = room
-			log.Println("<GameWS Create Room>")
+			go room.Run()
+			log.Println("<GameWS Room Create>")
 
 		case roomID := <-ws.removeRoomIDChan:
 			delete(ws.rooms, roomID)
-			log.Println("<GameWS Create Room>")
+			log.Println("<GameWS Room Remove>")
 
-		// Message
-		case message := <-ws.messageChan:
-			ws.handleMessage(message)
+		// Message from client
+		case message := <-ws.clientMessageChan:
+			ws.handleClientMessage(message)
 		}
 	}
 }
 
-func (ws *GamesWS) handleMessage(message string) {
+func (ws *GamesWS) handleClientMessage(message ClientMessage) {
 	log.Println("<GameWS Message>:", message)
 }
 
-func (ws *GamesWS) PickRandomRoomID() int {
+func (ws *GamesWS) pickRandomRoomID() int {
 	if len(ws.clients) == 0 {
-		return -1
+		return 0
 	}
 
 	k := rand.Intn(len(ws.clients))
@@ -100,5 +109,5 @@ func (ws *GamesWS) PickRandomRoomID() int {
 		}
 		k--
 	}
-	return -1
+	return 0
 }

@@ -4,13 +4,19 @@ import "log"
 
 type GameHub struct {
 	SSELayer
+
 	sse *GamesSSE
+
+	id int
 }
 
-func NewGameHub(sse *GamesSSE) *GameHub {
+func NewGameHub() *GameHub {
 	return &GameHub{
 		SSELayer: MakeSSELayer(),
-		sse:      sse,
+
+		sse: nil,
+
+		id: 0,
 	}
 }
 
@@ -22,14 +28,15 @@ func (hub *GameHub) Run() {
 		case client := <-hub.connect:
 			hub.clients[client] = true
 			hub.sse.connect <- client
-			log.Println("<GameHub Connect>")
+			client.hub = hub
+			log.Println("<GameHub Client Connect>")
 
 		case client := <-hub.disconnect:
 			delete(hub.clients, client)
 			hub.sse.disconnect <- client
-			log.Println("<GameHub Disonnect>")
+			log.Println("<GameHub Client Disonnect>")
 
-		case message := <-hub.messageChan:
+		case message := <-hub.serverMessageChan:
 			hub.handleMessage(message)
 		}
 	}

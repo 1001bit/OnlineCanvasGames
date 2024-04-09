@@ -14,10 +14,10 @@ type Client struct {
 	writeChan chan string
 }
 
-func NewClient(writer http.ResponseWriter, hub *GameHub) *Client {
+func NewClient(writer http.ResponseWriter) *Client {
 	return &Client{
 		writer: writer,
-		hub:    hub,
+		hub:    nil,
 
 		writeChan: make(chan string),
 	}

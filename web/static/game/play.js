@@ -9,16 +9,21 @@ function connectToWS(){
     websocket = new WebSocket(`ws://${document.location.host}/ws/game/${gameID}/room/${roomID}`)
 
     websocket.onopen = function(e) {
-        console.log("connected to websocket")
-    }
-
-    websocket.onmessage = (msg) => {
-        console.log(msg)
+        console.log("ws connection open")
     }
 
     websocket.onclose = (event) => {
-        console.log("closed event connection")
+        console.log("ws connection close")
     }
+
+    websocket.onmessage = (event) => {
+        handleMessage(event.data)
+    }
+}
+
+function handleMessage(message){
+    msg = JSON.parse(message)
+    console.log("server said:", msg)
 }
 
 main.ready(() => {

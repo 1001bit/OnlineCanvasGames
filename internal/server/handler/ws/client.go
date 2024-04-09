@@ -19,22 +19,19 @@ type Client struct {
 	conn *websocket.Conn
 	room *GameRoom
 
-	Username string
-	UserID   int
-
 	writeChan chan string
 }
 
-func NewClient(conn *websocket.Conn, room *GameRoom) *Client {
+func NewClient(conn *websocket.Conn) *Client {
 	return &Client{
 		conn: conn,
-		room: room,
+		room: nil,
 
 		writeChan: make(chan string),
 	}
 }
 
-func (c *Client) close() {
+func (c *Client) closeConn() {
 	c.conn.WriteMessage(websocket.CloseMessage, []byte("closed!"))
 	c.conn.Close()
 }
@@ -42,7 +39,7 @@ func (c *Client) close() {
 func (c *Client) readPump() {
 	defer func() {
 		c.room.disconnectChan <- c
-		c.close()
+		c.closeConn()
 	}()
 
 	// On Pong
@@ -61,7 +58,10 @@ func (c *Client) readPump() {
 			}
 			break
 		}
-		c.room.messageChan <- string(message)
+		c.room.clientMessageChan <- ClientMessage{
+			client: c,
+			text:   string(message),
+		}
 	}
 }
 
@@ -69,7 +69,7 @@ func (c *Client) writePump() {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		ticker.Stop()
-		c.close()
+		c.closeConn()
 	}()
 
 	for {
