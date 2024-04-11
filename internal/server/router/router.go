@@ -32,7 +32,7 @@ func NewRouter() (http.Handler, error) {
 	router.Route("/ws", func(rs chi.Router) {
 		rs.Use(middleware.AuthJSON)
 
-		rs.HandleFunc("/game/{id}/room/{roomid}", gamesWS.HandleWS)
+		rs.HandleFunc("/room/{roomid}", gamesWS.HandleWS)
 	})
 
 	// Server-Sent Events
@@ -50,7 +50,7 @@ func NewRouter() (http.Handler, error) {
 	router.Route("/sse", func(rs chi.Router) {
 		rs.Use(middleware.AuthJSON)
 
-		rs.HandleFunc("/game/{id}/hub", gamesSSE.HandleSSE)
+		rs.HandleFunc("/hub/{gameid}", gamesSSE.HandleSSE)
 	})
 
 	// API
@@ -73,8 +73,8 @@ func NewRouter() (http.Handler, error) {
 		r.Group(func(rs chi.Router) {
 			rs.Use(middleware.AuthHTML)
 
-			rs.Get("/game/{gameid}/hub", page.HandleGameHub)
-			rs.Get("/game/{gameid}/play", page.HandleGamePlay)
+			rs.Get("/games/hub/{gameid}", page.HandleGameHub)
+			rs.Get("/games/room/{roomid}", page.HandleGameRoom)
 		})
 
 		r.Get("/*", page.HandleNotFound)

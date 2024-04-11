@@ -25,13 +25,9 @@
 - [ ] Game
     - [X] Rooms in hub page
     - [ ] Rooms connection
-        - [ ] Random room returner api
         - [ ] New room creater api/ws
         - [ ] Dynamic rooms list on hub page
         - [ ] Room connect
-
-- [ ] Some kind of game engine
+        - [ ] Random room returner api
 
 - [ ] Simple game
-
-- [ ] Multiplayer for game

@@ -1,27 +1,29 @@
 package ws
 
 import (
+	"errors"
 	"log"
 	"math/rand"
 	"net/http"
-	"time"
+	"strconv"
 
 	"github.com/gorilla/websocket"
 )
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
+var (
+	upgrader = websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
+	}
+
+	ErrNoRooms = errors.New("no room exists")
+)
 
 type GamesWS struct {
-	WSLayer
-
-	rooms   map[int]*GameRoom
-	clients map[*Client]bool
+	rooms map[int]*GameRoom
 
 	createRoomChan   chan *GameRoom
 	removeRoomIDChan chan int
@@ -29,10 +31,7 @@ type GamesWS struct {
 
 func NewGamesWS() *GamesWS {
 	ws := &GamesWS{
-		WSLayer: MakeWSLayer(),
-
-		rooms:   make(map[int]*GameRoom),
-		clients: make(map[*Client]bool),
+		rooms: make(map[int]*GameRoom),
 
 		createRoomChan:   make(chan *GameRoom),
 		removeRoomIDChan: make(chan int),
@@ -48,11 +47,19 @@ func (ws *GamesWS) HandleWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client := NewClient(conn)
+	// TODO: Incorrect roomID error handling
+	roomID, err := strconv.Atoi(r.PathValue("roomid"))
+	if err != nil {
+		return
+	}
 
-	// TODO: Remove this when request-based room connection will be made
-	randomRoom := ws.rooms[ws.pickRandomRoomID()]
-	randomRoom.connectChan <- client
+	room, ok := ws.rooms[roomID]
+	if !ok {
+		return
+	}
+
+	client := NewClient(conn)
+	room.connectChan <- client
 
 	go client.readPump()
 	go client.writePump()
@@ -63,51 +70,34 @@ func (ws *GamesWS) Run() {
 
 	for {
 		select {
-		// Client
-		case client := <-ws.connectChan:
-			ws.clients[client] = true
-			log.Println("<GameWS Client Connect>")
-
-		case client := <-ws.disconnectChan:
-			delete(ws.clients, client)
-			log.Println("<GameWS Client Disconnect>")
-
-		// Room
 		case room := <-ws.createRoomChan:
-			// TODO: Replace to room creation interface
-			room.id = int(time.Now().Unix())
-
-			room.ws = ws
 			ws.rooms[room.id] = room
+			room.ws = ws
+
 			go room.Run()
+
 			log.Println("<GameWS Room Create>")
 
 		case roomID := <-ws.removeRoomIDChan:
 			delete(ws.rooms, roomID)
-			log.Println("<GameWS Room Remove>")
 
-		// Message from client
-		case message := <-ws.clientMessageChan:
-			ws.handleClientMessage(message)
+			log.Println("<GameWS Room Remove>")
 		}
 	}
 }
 
-func (ws *GamesWS) handleClientMessage(message ClientMessage) {
-	log.Println("<GameWS Message>:", message)
-}
-
-func (ws *GamesWS) pickRandomRoomID() int {
-	if len(ws.clients) == 0 {
-		return 0
+func (ws *GamesWS) pickRandomRoomID() (int, error) {
+	if len(ws.rooms) == 0 {
+		return 0, ErrNoRooms
 	}
 
-	k := rand.Intn(len(ws.clients))
+	k := rand.Intn(len(ws.rooms))
 	for roomID := range ws.rooms {
 		if k == 0 {
-			return roomID
+			return roomID, nil
 		}
 		k--
 	}
-	return 0
+
+	return 0, ErrNoRooms
 }

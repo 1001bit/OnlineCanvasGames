@@ -1,9 +1,5 @@
-const main = $("main")
-let gameID = 0
-let eventSource
-
-function connectToSSE(){
-    eventSource = new EventSource(`http://${document.location.host}/sse/game/${gameID}/hub`)
+function connectToSSE(gameID){
+    let eventSource = new EventSource(`http://${document.location.host}/sse/hub/${gameID}`)
 
     eventSource.onopen = (event) => {
         console.log("sse conenction open")
@@ -22,7 +18,7 @@ function handleMessage(msg){
     console.log("server said:", msg)
 }
 
-main.ready(() => {
-    gameID = main.data("game-id")
-    connectToSSE()
+$("main").ready(() => {
+    const gameID = $("main").data("game-id")
+    connectToSSE(gameID)
 })

@@ -9,7 +9,8 @@ import (
 // Client
 type Client struct {
 	writer http.ResponseWriter
-	hub    *GameHub
+
+	hub *GameHub
 
 	writeChan chan string
 }
@@ -17,7 +18,8 @@ type Client struct {
 func NewClient(writer http.ResponseWriter) *Client {
 	return &Client{
 		writer: writer,
-		hub:    nil,
+
+		hub: nil,
 
 		writeChan: make(chan string),
 	}
@@ -25,7 +27,7 @@ func NewClient(writer http.ResponseWriter) *Client {
 
 func (c *Client) writePump(done <-chan struct{}) {
 	defer func() {
-		c.hub.disconnect <- c
+		c.hub.disconnectChan <- c
 	}()
 
 	for {
@@ -38,6 +40,7 @@ func (c *Client) writePump(done <-chan struct{}) {
 
 			c.write(message)
 			log.Println("<Client Write>:", string(message))
+
 		case <-done:
 			return
 		}

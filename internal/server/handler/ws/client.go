@@ -17,6 +17,7 @@ const (
 // Client
 type Client struct {
 	conn *websocket.Conn
+
 	room *GameRoom
 
 	writeChan chan string
@@ -25,6 +26,7 @@ type Client struct {
 func NewClient(conn *websocket.Conn) *Client {
 	return &Client{
 		conn: conn,
+
 		room: nil,
 
 		writeChan: make(chan string),
@@ -58,6 +60,7 @@ func (c *Client) readPump() {
 			}
 			break
 		}
+
 		c.room.clientMessageChan <- ClientMessage{
 			client: c,
 			text:   string(message),

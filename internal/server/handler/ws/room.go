@@ -5,11 +5,19 @@ import (
 	"math/rand"
 )
 
-type GameRoom struct {
-	WSLayer
+type ClientMessage struct {
+	client *Client
+	text   string
+}
 
-	ws      *GamesWS
-	clients map[*Client]bool
+type GameRoom struct {
+	clients        map[*Client]bool
+	connectChan    chan *Client
+	disconnectChan chan *Client
+
+	clientMessageChan chan ClientMessage
+
+	ws *GamesWS
 
 	id    int
 	owner *Client
@@ -17,10 +25,13 @@ type GameRoom struct {
 
 func NewGameRoom() *GameRoom {
 	return &GameRoom{
-		WSLayer: MakeWSLayer(),
+		clients:        make(map[*Client]bool),
+		connectChan:    make(chan *Client),
+		disconnectChan: make(chan *Client),
 
-		ws:      nil,
-		clients: make(map[*Client]bool),
+		clientMessageChan: make(chan ClientMessage),
+
+		ws: nil,
 
 		id:    0,
 		owner: nil,
@@ -38,16 +49,19 @@ func (room *GameRoom) Run() {
 		select {
 		case client := <-room.connectChan:
 			room.clients[client] = true
+			client.room = room
+
+			// change owner if no owner yet
 			if room.owner == nil {
 				room.owner = client
 			}
-			client.room = room
 
-			room.ws.connectChan <- client
 			log.Println("<GameRoom Client Connect>")
 
 		case client := <-room.disconnectChan:
 			delete(room.clients, client)
+
+			// change owner or stop room if no clients left
 			if room.owner == client {
 				room.owner = room.pickRandomClient()
 				if room.owner == nil {
@@ -55,7 +69,6 @@ func (room *GameRoom) Run() {
 				}
 			}
 
-			room.ws.disconnectChan <- client
 			log.Println("<GameRoom Client Disconnect>")
 
 		case message := <-room.clientMessageChan:

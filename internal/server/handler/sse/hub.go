@@ -3,7 +3,11 @@ package sse
 import "log"
 
 type GameHub struct {
-	SSELayer
+	clients        map[*Client]bool
+	connectChan    chan *Client
+	disconnectChan chan *Client
+
+	serverMessageChan chan string
 
 	sse *GamesSSE
 
@@ -12,7 +16,11 @@ type GameHub struct {
 
 func NewGameHub() *GameHub {
 	return &GameHub{
-		SSELayer: MakeSSELayer(),
+		clients:        make(map[*Client]bool),
+		connectChan:    make(chan *Client),
+		disconnectChan: make(chan *Client),
+
+		serverMessageChan: make(chan string),
 
 		sse: nil,
 
@@ -23,25 +31,29 @@ func NewGameHub() *GameHub {
 func (hub *GameHub) Run() {
 	log.Println("<GameHub Run>")
 
+	defer func() {
+		hub.sse.removeHubIDChan <- hub.id
+	}()
+
 	for {
 		select {
-		case client := <-hub.connect:
+		case client := <-hub.connectChan:
 			hub.clients[client] = true
-			hub.sse.connect <- client
 			client.hub = hub
+
 			log.Println("<GameHub Client Connect>")
 
-		case client := <-hub.disconnect:
+		case client := <-hub.disconnectChan:
 			delete(hub.clients, client)
-			hub.sse.disconnect <- client
-			log.Println("<GameHub Client Disonnect>")
+
+			log.Println("<GameHub Client Disconnect>")
 
 		case message := <-hub.serverMessageChan:
-			hub.handleMessage(message)
+			hub.handleServerMessage(message)
 		}
 	}
 }
 
-func (hub *GameHub) handleMessage(message string) {
-	log.Println("<GameHub Message>:", message)
+func (hub *GameHub) handleServerMessage(message string) {
+	log.Println("<GameHub Server Message>:", message)
 }
