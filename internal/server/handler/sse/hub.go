@@ -33,6 +33,7 @@ func (hub *GameHub) Run() {
 
 	defer func() {
 		hub.sse.removeHubIDChan <- hub.id
+		log.Println("<GameHub Run End>")
 	}()
 
 	for {

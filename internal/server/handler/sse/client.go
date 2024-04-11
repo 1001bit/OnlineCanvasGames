@@ -26,8 +26,11 @@ func NewClient(writer http.ResponseWriter) *Client {
 }
 
 func (c *Client) writePump(done <-chan struct{}) {
+	log.Println("<SSE Client WritePump>")
+
 	defer func() {
 		c.hub.disconnectChan <- c
+		log.Println("<SSE Client WritePump End>")
 	}()
 
 	for {

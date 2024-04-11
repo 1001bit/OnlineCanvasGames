@@ -45,6 +45,7 @@ func (room *GameRoom) Run() {
 
 	defer func() {
 		room.ws.removeRoomIDChan <- room.id
+		log.Println("<GameRoom Run End>")
 	}()
 
 	for {

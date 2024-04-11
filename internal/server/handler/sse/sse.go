@@ -68,6 +68,7 @@ func (sse *GamesSSE) InitHubs() error {
 
 func (sse *GamesSSE) Run() {
 	log.Println("<GameSSE Run>")
+	defer log.Println("<GameSSE Run End>")
 
 	for {
 		select {

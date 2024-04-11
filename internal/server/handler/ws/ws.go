@@ -67,6 +67,7 @@ func (ws *GamesWS) HandleWS(w http.ResponseWriter, r *http.Request) {
 
 func (ws *GamesWS) Run() {
 	log.Println("<GameWS Run>")
+	defer log.Println("<GameWS Run End>")
 
 	for {
 		select {

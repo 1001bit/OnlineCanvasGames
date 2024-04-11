@@ -69,10 +69,13 @@ func (c *Client) readPump() {
 }
 
 func (c *Client) writePump() {
+	log.Println("WS Client WritePump")
+
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		ticker.Stop()
 		c.closeConn()
+		log.Println("WS Client WritePump End")
 	}()
 
 	for {
