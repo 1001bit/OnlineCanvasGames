@@ -61,7 +61,7 @@ func (c *Client) readPump() {
 			break
 		}
 
-		c.room.clientMessageChan <- ClientMessage{
+		c.room.readChan <- ClientMessage{
 			client: c,
 			text:   string(message),
 		}
@@ -85,16 +85,14 @@ func (c *Client) writePump() {
 			}
 		case message, ok := <-c.writeChan:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
-			// if hub closed c.write chan
+
+			// if hub closed c.writeChan
 			if !ok {
 				return
 			}
 
-			w, err := c.conn.NextWriter(websocket.TextMessage)
-			if err != nil {
-				return
-			}
-			w.Write([]byte(message))
+			c.conn.WriteMessage(websocket.TextMessage, []byte(message))
+
 			log.Println("<Client Write>:", string(message))
 		}
 	}

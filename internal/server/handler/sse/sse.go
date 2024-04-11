@@ -72,15 +72,21 @@ func (sse *GamesSSE) Run() {
 	for {
 		select {
 		case hub := <-sse.createHubChan:
-			sse.hubs[hub.id] = hub
-			go hub.Run()
-
+			sse.createHub(hub)
 			log.Println("<GameSSE Hub Create>")
 
 		case hubID := <-sse.removeHubIDChan:
-			delete(sse.hubs, hubID)
-
+			sse.removeHubByID(hubID)
 			log.Println("<GameSSE Hub Remove>")
 		}
 	}
+}
+
+func (sse *GamesSSE) createHub(hub *GameHub) {
+	sse.hubs[hub.id] = hub
+	go hub.Run()
+}
+
+func (sse *GamesSSE) removeHubByID(id int) {
+	delete(sse.hubs, id)
 }

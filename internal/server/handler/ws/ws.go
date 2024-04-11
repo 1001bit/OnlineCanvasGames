@@ -71,19 +71,25 @@ func (ws *GamesWS) Run() {
 	for {
 		select {
 		case room := <-ws.createRoomChan:
-			ws.rooms[room.id] = room
-			room.ws = ws
-
-			go room.Run()
-
+			ws.createRoom(room)
 			log.Println("<GameWS Room Create>")
 
 		case roomID := <-ws.removeRoomIDChan:
-			delete(ws.rooms, roomID)
-
+			ws.removeRoomByID(roomID)
 			log.Println("<GameWS Room Remove>")
 		}
 	}
+}
+
+func (ws *GamesWS) createRoom(room *GameRoom) {
+	ws.rooms[room.id] = room
+	room.ws = ws
+
+	go room.Run()
+}
+
+func (ws *GamesWS) removeRoomByID(id int) {
+	delete(ws.rooms, id)
 }
 
 func (ws *GamesWS) pickRandomRoomID() (int, error) {

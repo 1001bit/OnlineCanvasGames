@@ -7,7 +7,7 @@ type GameHub struct {
 	connectChan    chan *Client
 	disconnectChan chan *Client
 
-	serverMessageChan chan string
+	globalWriteChan chan string
 
 	sse *GamesSSE
 
@@ -20,7 +20,7 @@ func NewGameHub() *GameHub {
 		connectChan:    make(chan *Client),
 		disconnectChan: make(chan *Client),
 
-		serverMessageChan: make(chan string),
+		globalWriteChan: make(chan string),
 
 		sse: nil,
 
@@ -38,22 +38,40 @@ func (hub *GameHub) Run() {
 	for {
 		select {
 		case client := <-hub.connectChan:
-			hub.clients[client] = true
-			client.hub = hub
-
+			hub.connectClient(client)
 			log.Println("<GameHub Client Connect>")
 
 		case client := <-hub.disconnectChan:
-			delete(hub.clients, client)
-
+			hub.disconnectClient(client)
 			log.Println("<GameHub Client Disconnect>")
 
-		case message := <-hub.serverMessageChan:
-			hub.handleServerMessage(message)
+		case message := <-hub.globalWriteChan:
+			hub.handleGlobalWriteMessage(message)
+			log.Println("<GameHub Global Write Message>:", message)
 		}
 	}
 }
 
-func (hub *GameHub) handleServerMessage(message string) {
-	log.Println("<GameHub Server Message>:", message)
+func (hub *GameHub) connectClient(client *Client) {
+	hub.clients[client] = true
+	client.hub = hub
+}
+
+func (hub *GameHub) disconnectClient(client *Client) {
+	if _, ok := hub.clients[client]; !ok {
+		return
+	}
+
+	delete(hub.clients, client)
+	close(client.writeChan)
+}
+
+func (hub *GameHub) handleGlobalWriteMessage(message string) {
+	for client := range hub.clients {
+		select {
+		case client.writeChan <- message:
+		default:
+			hub.disconnectChan <- client
+		}
+	}
 }

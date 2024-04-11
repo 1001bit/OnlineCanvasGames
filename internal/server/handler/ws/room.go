@@ -15,7 +15,8 @@ type GameRoom struct {
 	connectChan    chan *Client
 	disconnectChan chan *Client
 
-	clientMessageChan chan ClientMessage
+	readChan        chan ClientMessage
+	globalWriteChan chan string
 
 	ws *GamesWS
 
@@ -29,7 +30,8 @@ func NewGameRoom() *GameRoom {
 		connectChan:    make(chan *Client),
 		disconnectChan: make(chan *Client),
 
-		clientMessageChan: make(chan ClientMessage),
+		readChan:        make(chan ClientMessage),
+		globalWriteChan: make(chan string),
 
 		ws: nil,
 
@@ -48,37 +50,63 @@ func (room *GameRoom) Run() {
 	for {
 		select {
 		case client := <-room.connectChan:
-			room.clients[client] = true
-			client.room = room
-
-			// change owner if no owner yet
-			if room.owner == nil {
-				room.owner = client
-			}
-
+			room.connectClient(client)
 			log.Println("<GameRoom Client Connect>")
 
 		case client := <-room.disconnectChan:
-			delete(room.clients, client)
-
-			// change owner or stop room if no clients left
-			if room.owner == client {
-				room.owner = room.pickRandomClient()
-				if room.owner == nil {
-					return
-				}
+			room.disconnectClient(client)
+			if room.owner == nil {
+				return
 			}
-
 			log.Println("<GameRoom Client Disconnect>")
 
-		case message := <-room.clientMessageChan:
-			room.handleClientMessage(message)
+		case message := <-room.readChan:
+			room.handleReadMessage(message)
+			log.Println("<GameRoom Read Message>:", message)
+
+		case message := <-room.globalWriteChan:
+			room.handleGlobalWriteMessage(message)
+			log.Println("<GameRoom Global Write Message>:", message)
 		}
 	}
 }
 
-func (room *GameRoom) handleClientMessage(message ClientMessage) {
-	log.Println("<GameRoom Message>:", message)
+func (room *GameRoom) connectClient(client *Client) {
+	room.clients[client] = true
+	client.room = room
+
+	// change owner if no owner yet
+	if room.owner == nil {
+		room.owner = client
+	}
+}
+
+func (room *GameRoom) disconnectClient(client *Client) {
+	if _, ok := room.clients[client]; !ok {
+		return
+	}
+
+	delete(room.clients, client)
+	close(client.writeChan)
+
+	// change owner
+	if room.owner == client {
+		room.owner = room.pickRandomClient()
+	}
+}
+
+func (room *GameRoom) handleReadMessage(message ClientMessage) {
+	_ = message
+}
+
+func (room *GameRoom) handleGlobalWriteMessage(message string) {
+	for client := range room.clients {
+		select {
+		case client.writeChan <- message:
+		default:
+			room.disconnectChan <- client
+		}
+	}
 }
 
 func (room *GameRoom) pickRandomClient() *Client {
