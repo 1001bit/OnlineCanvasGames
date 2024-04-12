@@ -22,3 +22,15 @@ $("main").ready(() => {
     const gameID = $("main").data("game-id")
     connectToSSE(gameID)
 })
+
+$("#create").click(() => {
+    fetch("/api/room", {
+        method: "POST",
+    })
+    .then (response => {
+        if(response.status != 200){
+            return
+        }
+        response.json().then(data => window.location.replace(`/games/room/${data.roomid}`))
+    })
+})

@@ -59,6 +59,9 @@ func NewRouter() (http.Handler, error) {
 
 		// Post
 		r.Post("/user", api.HandleUserPost)
+		r.Post("/room", func(w http.ResponseWriter, r *http.Request) {
+			api.HandleRoomPost(w, r, gamesWS)
+		})
 	})
 
 	// HTML Pages

@@ -23,18 +23,17 @@ var (
 )
 
 type GamesWS struct {
-	rooms map[int]*GameRoom
-
-	createRoomChan   chan *GameRoom
-	removeRoomIDChan chan int
+	rooms                map[int]*GameRoom
+	connectRoomChan      chan *GameRoom
+	disconnectRoomIDChan chan int
 }
 
 func NewGamesWS() *GamesWS {
 	ws := &GamesWS{
 		rooms: make(map[int]*GameRoom),
 
-		createRoomChan:   make(chan *GameRoom),
-		removeRoomIDChan: make(chan int),
+		connectRoomChan:      make(chan *GameRoom),
+		disconnectRoomIDChan: make(chan int),
 	}
 
 	return ws
@@ -47,6 +46,7 @@ func (ws *GamesWS) HandleWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// TODO: Restrict access for users that are already connected
 	// TODO: Incorrect roomID error handling
 	roomID, err := strconv.Atoi(r.PathValue("roomid"))
 	if err != nil {
@@ -59,7 +59,7 @@ func (ws *GamesWS) HandleWS(w http.ResponseWriter, r *http.Request) {
 	}
 
 	client := NewClient(conn)
-	room.connectChan <- client
+	room.connectClientChan <- client
 
 	go client.readPump()
 	go client.writePump()
@@ -71,25 +71,32 @@ func (ws *GamesWS) Run() {
 
 	for {
 		select {
-		case room := <-ws.createRoomChan:
-			ws.createRoom(room)
-			log.Println("<GameWS Room Create>")
+		case room := <-ws.connectRoomChan:
+			ws.connectRoom(room)
+			log.Println("<GameWS Room Connect>")
 
-		case roomID := <-ws.removeRoomIDChan:
-			ws.removeRoomByID(roomID)
-			log.Println("<GameWS Room Remove>")
+		case roomID := <-ws.disconnectRoomIDChan:
+			ws.disconnectRoomByID(roomID)
+			log.Println("<GameWS Room Disconnect>")
 		}
 	}
 }
 
-func (ws *GamesWS) createRoom(room *GameRoom) {
+// TODO: Put context here
+func (ws *GamesWS) ConnectNewRoom() *GameRoom {
+	newRoom := NewGameRoom()
+	ws.connectRoomChan <- newRoom
+	return newRoom
+}
+
+func (ws *GamesWS) connectRoom(room *GameRoom) {
 	ws.rooms[room.id] = room
 	room.ws = ws
 
 	go room.Run()
 }
 
-func (ws *GamesWS) removeRoomByID(id int) {
+func (ws *GamesWS) disconnectRoomByID(id int) {
 	delete(ws.rooms, id)
 }
 

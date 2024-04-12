@@ -3,6 +3,7 @@ package ws
 import (
 	"log"
 	"math/rand"
+	"time"
 )
 
 type ClientMessage struct {
@@ -11,9 +12,9 @@ type ClientMessage struct {
 }
 
 type GameRoom struct {
-	clients        map[*Client]bool
-	connectChan    chan *Client
-	disconnectChan chan *Client
+	clients              map[*Client]bool
+	connectClientChan    chan *Client
+	disconnectClientChan chan *Client
 
 	readChan        chan ClientMessage
 	globalWriteChan chan string
@@ -26,16 +27,16 @@ type GameRoom struct {
 
 func NewGameRoom() *GameRoom {
 	return &GameRoom{
-		clients:        make(map[*Client]bool),
-		connectChan:    make(chan *Client),
-		disconnectChan: make(chan *Client),
+		clients:              make(map[*Client]bool),
+		connectClientChan:    make(chan *Client),
+		disconnectClientChan: make(chan *Client),
 
 		readChan:        make(chan ClientMessage),
 		globalWriteChan: make(chan string),
 
 		ws: nil,
 
-		id:    0,
+		id:    int(time.Now().UnixMicro()),
 		owner: nil,
 	}
 }
@@ -44,17 +45,17 @@ func (room *GameRoom) Run() {
 	log.Println("<GameRoom Run>")
 
 	defer func() {
-		room.ws.removeRoomIDChan <- room.id
+		room.ws.disconnectRoomIDChan <- room.id
 		log.Println("<GameRoom Run End>")
 	}()
 
 	for {
 		select {
-		case client := <-room.connectChan:
+		case client := <-room.connectClientChan:
 			room.connectClient(client)
 			log.Println("<GameRoom Client Connect>")
 
-		case client := <-room.disconnectChan:
+		case client := <-room.disconnectClientChan:
 			room.disconnectClient(client)
 			if room.owner == nil {
 				return
@@ -70,6 +71,10 @@ func (room *GameRoom) Run() {
 			log.Println("<GameRoom Global Write Message>:", message)
 		}
 	}
+}
+
+func (room *GameRoom) GetID() int {
+	return room.id
 }
 
 func (room *GameRoom) connectClient(client *Client) {
@@ -105,7 +110,7 @@ func (room *GameRoom) handleGlobalWriteMessage(message string) {
 		select {
 		case client.writeChan <- message:
 		default:
-			room.disconnectChan <- client
+			room.disconnectClientChan <- client
 		}
 	}
 }

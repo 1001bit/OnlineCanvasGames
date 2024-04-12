@@ -21,7 +21,7 @@ function handleMessage(message){
     console.log("server said:", msg)
 }
 
-main.ready(() => {
+$("main").ready(() => {
     const roomID = $("main").data("room-id")
 
     connectToWS(roomID)

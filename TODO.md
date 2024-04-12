@@ -26,8 +26,10 @@
     - [X] Rooms in hub page
     - [ ] Rooms connection
         - [ ] New room creater api/ws
+            - [X] Base
+            - [ ] Security
         - [ ] Dynamic rooms list on hub page
-        - [ ] Room connect
+        - [ ] Room connect from hub
         - [ ] Random room returner api
 
 - [ ] Simple game

@@ -29,7 +29,7 @@ func (c *Client) writePump(done <-chan struct{}) {
 	log.Println("<SSE Client WritePump>")
 
 	defer func() {
-		c.hub.disconnectChan <- c
+		c.hub.disconnectClientChan <- c
 		log.Println("<SSE Client WritePump End>")
 	}()
 

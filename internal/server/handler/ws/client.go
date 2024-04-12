@@ -40,7 +40,7 @@ func (c *Client) closeConn() {
 
 func (c *Client) readPump() {
 	defer func() {
-		c.room.disconnectChan <- c
+		c.room.disconnectClientChan <- c
 		c.closeConn()
 	}()
 
@@ -69,13 +69,13 @@ func (c *Client) readPump() {
 }
 
 func (c *Client) writePump() {
-	log.Println("WS Client WritePump")
+	log.Println("<WS Client WritePump>")
 
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		ticker.Stop()
 		c.closeConn()
-		log.Println("WS Client WritePump End")
+		log.Println("<WS Client WritePump End>")
 	}()
 
 	for {

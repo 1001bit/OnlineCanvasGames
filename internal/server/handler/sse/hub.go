@@ -3,9 +3,9 @@ package sse
 import "log"
 
 type GameHub struct {
-	clients        map[*Client]bool
-	connectChan    chan *Client
-	disconnectChan chan *Client
+	clients              map[*Client]bool
+	connectClientChan    chan *Client
+	disconnectClientChan chan *Client
 
 	globalWriteChan chan string
 
@@ -16,9 +16,9 @@ type GameHub struct {
 
 func NewGameHub() *GameHub {
 	return &GameHub{
-		clients:        make(map[*Client]bool),
-		connectChan:    make(chan *Client),
-		disconnectChan: make(chan *Client),
+		clients:              make(map[*Client]bool),
+		connectClientChan:    make(chan *Client),
+		disconnectClientChan: make(chan *Client),
 
 		globalWriteChan: make(chan string),
 
@@ -32,17 +32,17 @@ func (hub *GameHub) Run() {
 	log.Println("<GameHub Run>")
 
 	defer func() {
-		hub.sse.removeHubIDChan <- hub.id
+		hub.sse.connectHubIDChan <- hub.id
 		log.Println("<GameHub Run End>")
 	}()
 
 	for {
 		select {
-		case client := <-hub.connectChan:
+		case client := <-hub.connectClientChan:
 			hub.connectClient(client)
 			log.Println("<GameHub Client Connect>")
 
-		case client := <-hub.disconnectChan:
+		case client := <-hub.disconnectClientChan:
 			hub.disconnectClient(client)
 			log.Println("<GameHub Client Disconnect>")
 
@@ -72,7 +72,7 @@ func (hub *GameHub) handleGlobalWriteMessage(message string) {
 		select {
 		case client.writeChan <- message:
 		default:
-			hub.disconnectChan <- client
+			hub.disconnectClientChan <- client
 		}
 	}
 }
