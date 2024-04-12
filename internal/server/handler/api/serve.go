@@ -6,21 +6,22 @@ import (
 	"net/http"
 )
 
-func ServeJSON(data any, status int, w http.ResponseWriter) {
+func ServeJSON(w http.ResponseWriter, data any, status int) {
 	w.WriteHeader(status)
 	b, err := json.Marshal(data)
 	if err != nil {
 		log.Println("err on response:", err)
+		ServeJSONMessage(w, "something went wrong", http.StatusInternalServerError)
 		return
 	}
 	w.Write(b)
 }
 
-func ServeJSONMessage(message string, status int, w http.ResponseWriter) {
+func ServeJSONMessage(w http.ResponseWriter, message string, status int) {
 	data := struct {
 		Message string `json:"message"`
 	}{
 		Message: message,
 	}
-	ServeJSON(data, status, w)
+	ServeJSON(w, data, status)
 }

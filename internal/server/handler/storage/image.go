@@ -16,7 +16,7 @@ var imageFormats = [...]string{"png", "jpg", "jpeg"}
 func HandleImage(w http.ResponseWriter, r *http.Request) {
 	path := filepath.Clean(r.URL.Path)
 	if strings.Contains(path, "..") {
-		api.ServeJSONMessage("invalid path", http.StatusBadRequest, w)
+		api.ServeJSONMessage(w, "invalid path", http.StatusBadRequest)
 		return
 	}
 

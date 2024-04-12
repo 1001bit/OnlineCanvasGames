@@ -22,25 +22,25 @@ func HandleUserPost(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		ServeJSONMessage("Something went wrong. Please, try again", http.StatusBadRequest, w)
+		ServeJSONMessage(w, "Something went wrong. Please, try again", http.StatusBadRequest)
 		return
 	}
 
 	// disallow empty fields
 	if request.Password == "" || request.Username == "" {
-		ServeJSONMessage("Password or username field is empty", http.StatusBadRequest, w)
+		ServeJSONMessage(w, "Password or username field is empty", http.StatusBadRequest)
 		return
 	}
 
 	// disallow username with special characters
 	if request.Username != regexp.MustCompile(`[^a-zA-Z0-9 ]+`).ReplaceAllString(request.Username, "") {
-		ServeJSONMessage("Username must not contain special characters", http.StatusBadRequest, w)
+		ServeJSONMessage(w, "Username must not contain special characters", http.StatusBadRequest)
 		return
 	}
 
 	// disallow short password
 	if len(request.Password) < 8 {
-		ServeJSONMessage("Password should be at least 8 characters long", http.StatusBadRequest, w)
+		ServeJSONMessage(w, "Password should be at least 8 characters long", http.StatusBadRequest)
 		return
 	}
 
@@ -56,11 +56,11 @@ func HandleUserPost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch err {
 		case usermodel.ErrNoSuchUser:
-			ServeJSONMessage("Incorrect username or password", http.StatusUnauthorized, w)
+			ServeJSONMessage(w, "Incorrect username or password", http.StatusUnauthorized)
 		case usermodel.ErrUserExists:
-			ServeJSONMessage(fmt.Sprintf("%s already exists", request.Username), http.StatusUnauthorized, w)
+			ServeJSONMessage(w, fmt.Sprintf("%s already exists", request.Username), http.StatusUnauthorized)
 		default:
-			ServeJSONMessage("Something went wrong", http.StatusInternalServerError, w)
+			ServeJSONMessage(w, "Something went wrong", http.StatusInternalServerError)
 			log.Println("login/register err:", err)
 		}
 		return
@@ -69,7 +69,7 @@ func HandleUserPost(w http.ResponseWriter, r *http.Request) {
 	// set token cookie
 	token, err := auth.CreateJWT(user.ID, user.Name)
 	if err != nil {
-		ServeJSONMessage("Something went wrong", http.StatusInternalServerError, w)
+		ServeJSONMessage(w, "Something went wrong", http.StatusInternalServerError)
 		log.Println("jwt creation err:", err)
 		return
 	}
@@ -86,5 +86,5 @@ func HandleUserPost(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, &cookie)
 
-	ServeJSONMessage("Success!", http.StatusOK, w)
+	ServeJSONMessage(w, "Success!", http.StatusOK)
 }

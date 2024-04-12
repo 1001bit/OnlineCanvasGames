@@ -8,19 +8,12 @@ import (
 	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/page"
 )
 
-type MessageJSON struct {
-	message string
-}
-
 // plain text for unauthorized
 func AuthJSON(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_, err := auth.JWTClaimsByCookie(r)
 		if err != nil {
-			message := MessageJSON{
-				message: "unauthorized",
-			}
-			api.ServeJSON(message, http.StatusUnauthorized, w)
+			api.ServeJSONMessage(w, "unauthorized", http.StatusUnauthorized)
 			return
 		}
 
