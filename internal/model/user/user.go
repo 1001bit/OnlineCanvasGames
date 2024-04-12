@@ -8,20 +8,25 @@ import (
 	"github.com/1001bit/OnlineCanvasGames/internal/database"
 )
 
-type User struct {
-	ID   int
-	Name string
-	Date string
-}
-
 var (
 	ErrNoUserExists = errors.New("user with such name doesn't exist")
 	ErrNoSuchUser   = errors.New("incorrect username or password")
 	ErrUserExists   = errors.New("user with such name already exists")
 )
 
+type User struct {
+	ID   int
+	Name string
+	Date string
+}
+
+func NewUser() *User {
+	return &User{}
+}
+
 func GetByID(userID int) (*User, error) {
-	user := &User{ID: userID}
+	user := NewUser()
+	user.ID = userID
 
 	err := database.DB.QueryRow("SELECT name, date FROM users WHERE id = $1", userID).Scan(&user.Name, &user.Date)
 	if err != nil {
@@ -32,7 +37,7 @@ func GetByID(userID int) (*User, error) {
 }
 
 func GetByNameAndPassword(username, password string) (*User, error) {
-	user := &User{}
+	user := NewUser()
 	var hash string
 
 	err := database.DB.QueryRow("SELECT id, name, date, hash FROM users WHERE LOWER(name) = LOWER($1)", username).Scan(&user.ID, &user.Name, &user.Date, &hash)
