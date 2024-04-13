@@ -9,6 +9,7 @@ function connectToWS(roomID){
 
     websocket.onclose = (event) => {
         console.log("ws connection close")
+        $("#message").text(event.reason)
     }
 
     websocket.onmessage = (event) => {

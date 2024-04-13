@@ -31,14 +31,15 @@ func (sse *GamesSSE) HandleSSE(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Connection", "keep-alive")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	// TODO: Incorrect hubID error handling
 	gameID, err := strconv.Atoi(r.PathValue("gameid"))
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	hub, ok := sse.hubs[gameID]
 	if !ok {
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 

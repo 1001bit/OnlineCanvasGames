@@ -41,7 +41,7 @@ func (c *Client) writePump(done <-chan struct{}) {
 				return
 			}
 
-			c.write(message)
+			c.writeMessage(message)
 			log.Println("<Client Write>:", string(message))
 
 		case <-done:
@@ -50,7 +50,7 @@ func (c *Client) writePump(done <-chan struct{}) {
 	}
 }
 
-func (c *Client) write(message string) {
+func (c *Client) writeMessage(message string) {
 	fmt.Fprintf(c.writer, "data: %s\n\n", message)
 	c.writer.(http.Flusher).Flush()
 }

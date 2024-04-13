@@ -33,8 +33,7 @@ func NewClient(conn *websocket.Conn, userID int) *Client {
 
 // close websocket connection
 func (c *Client) closeConn() {
-	c.conn.WriteMessage(websocket.CloseMessage, []byte("closed!"))
-	c.conn.Close()
+	closeConnWithMessage(c.conn, "closed websocket connection")
 }
 
 // constantly read messages from connection

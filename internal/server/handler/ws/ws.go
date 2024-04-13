@@ -51,30 +51,31 @@ func NewGamesWS() *GamesWS {
 // upgrade connection from http to ws and connect client to requested room
 func (ws *GamesWS) HandleWS(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
-	// TODO: server error handling
 	if err != nil {
-		log.Println("error upgrading connection:", err)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	// TODO: Incorrect roomID error handling
 	roomID, err := strconv.Atoi(r.PathValue("roomid"))
 	if err != nil {
+		closeConnWithMessage(conn, "wrong room id!")
 		return
 	}
 
 	room, ok := ws.rooms[roomID]
 	if !ok {
+		closeConnWithMessage(conn, "wrong room id!")
 		return
 	}
 
 	claims, err := auth.JWTClaimsByRequest(r)
-	// TODO: Incorrect token error handling
 	if err != nil {
+		closeConnWithMessage(conn, "unauthorized!")
 		return
 	}
 	userIDstr, ok := claims["userID"]
 	if !ok {
+		closeConnWithMessage(conn, "unauthorized!")
 		return
 	}
 	userID := int(userIDstr.(float64)) // for some reason, it's stored in float64
@@ -171,4 +172,10 @@ func (ws *GamesWS) pickRandomRoomID() (int, error) {
 	}
 
 	return 0, ErrNoRooms
+}
+
+func closeConnWithMessage(conn *websocket.Conn, text string) {
+	text = "  " + text
+	conn.WriteMessage(websocket.CloseMessage, []byte(text))
+	conn.Close()
 }
