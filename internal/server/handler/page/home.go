@@ -17,7 +17,7 @@ type HomeData struct {
 func HandleHome(w http.ResponseWriter, r *http.Request) {
 	data := HomeData{}
 
-	claims, err := auth.JWTClaimsByCookie(r)
+	claims, err := auth.JWTClaimsByRequest(r)
 	if err == nil {
 		data.Username = fmt.Sprint(claims["username"])
 	}

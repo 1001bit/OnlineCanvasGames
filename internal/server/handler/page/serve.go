@@ -25,7 +25,7 @@ func serveTemplate(file string, data any, w http.ResponseWriter, r *http.Request
 		Data: data,
 	}
 
-	claims, err := auth.JWTClaimsByCookie(r)
+	claims, err := auth.JWTClaimsByRequest(r)
 	if err == nil {
 		tmplData.Header.UserID = fmt.Sprint(claims["userID"])
 		tmplData.Header.Username = fmt.Sprint(claims["username"])

@@ -38,7 +38,7 @@ func CreateJWT(userID int, username string) (string, error) {
 	return tokenStr, nil
 }
 
-func JWTClaimsByCookie(r *http.Request) (jwt.MapClaims, error) {
+func JWTClaimsByRequest(r *http.Request) (jwt.MapClaims, error) {
 	// get token from cookie
 	cookie, err := r.Cookie("jwt")
 	if err != nil {
