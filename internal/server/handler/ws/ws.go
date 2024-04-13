@@ -6,7 +6,9 @@ import (
 	"math/rand"
 	"net/http"
 	"strconv"
+	"time"
 
+	"github.com/1001bit/OnlineCanvasGames/internal/auth"
 	"github.com/gorilla/websocket"
 )
 
@@ -23,30 +25,38 @@ var (
 )
 
 type GamesWS struct {
-	rooms                map[int]*GameRoom
-	connectRoomChan      chan *GameRoom
-	disconnectRoomIDChan chan int
+	rooms              map[int]*GameRoom
+	connectRoomChan    chan *GameRoom
+	disconnectRoomChan chan *GameRoom
+
+	clients              map[int]*Client
+	connectClientChan    chan *Client
+	disconnectClientChan chan *Client
 }
 
 func NewGamesWS() *GamesWS {
 	ws := &GamesWS{
-		rooms: make(map[int]*GameRoom),
+		rooms:              make(map[int]*GameRoom),
+		connectRoomChan:    make(chan *GameRoom),
+		disconnectRoomChan: make(chan *GameRoom),
 
-		connectRoomChan:      make(chan *GameRoom),
-		disconnectRoomIDChan: make(chan int),
+		clients:              make(map[int]*Client),
+		connectClientChan:    make(chan *Client),
+		disconnectClientChan: make(chan *Client),
 	}
 
 	return ws
 }
 
+// upgrade connection from http to ws and connect client to requested room
 func (ws *GamesWS) HandleWS(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
+	// TODO: server error handling
 	if err != nil {
 		log.Println("error upgrading connection:", err)
 		return
 	}
 
-	// TODO: Restrict access for users that are already connected
 	// TODO: Incorrect roomID error handling
 	roomID, err := strconv.Atoi(r.PathValue("roomid"))
 	if err != nil {
@@ -58,7 +68,18 @@ func (ws *GamesWS) HandleWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client := NewClient(conn)
+	claims, err := auth.JWTClaimsByRequest(r)
+	// TODO: Incorrect token error handling
+	if err != nil {
+		return
+	}
+	userIDstr, ok := claims["userID"]
+	if !ok {
+		return
+	}
+	userID := int(userIDstr.(float64)) // for some reason, it's stored in float64
+	client := NewClient(conn, userID)
+
 	room.connectClientChan <- client
 
 	go client.readPump()
@@ -73,33 +94,69 @@ func (ws *GamesWS) Run() {
 		select {
 		case room := <-ws.connectRoomChan:
 			ws.connectRoom(room)
-			log.Println("<GameWS Room Connect>")
+			log.Println("<GameWS +Room>:", len(ws.rooms))
 
-		case roomID := <-ws.disconnectRoomIDChan:
-			ws.disconnectRoomByID(roomID)
-			log.Println("<GameWS Room Disconnect>")
+		case room := <-ws.disconnectRoomChan:
+			ws.disconnectRoom(room)
+			log.Println("<GameWS -Room>:", len(ws.rooms))
+
+		case client := <-ws.connectClientChan:
+			ws.connectClient(client)
+			log.Println("<GameWS +Client>:", len(ws.clients))
+
+		case client := <-ws.disconnectClientChan:
+			ws.disconnectClient(client)
+			log.Println("<GameWS -Client>:", len(ws.clients))
 		}
 	}
 }
 
 // TODO: Put context here
+// Create new room, connect it to ws, return it
 func (ws *GamesWS) ConnectNewRoom() *GameRoom {
 	newRoom := NewGameRoom()
+
 	ws.connectRoomChan <- newRoom
+	// wait until room is fully connected and initialized
+	newRoom.waitUntilConnectedToWS()
+
 	return newRoom
 }
 
+// connect a room to ws
 func (ws *GamesWS) connectRoom(room *GameRoom) {
+	room.id = int(time.Now().UnixMicro())
 	ws.rooms[room.id] = room
 	room.ws = ws
+
+	room.confirmConnectToWS()
 
 	go room.Run()
 }
 
-func (ws *GamesWS) disconnectRoomByID(id int) {
-	delete(ws.rooms, id)
+// disconnect a room from ws by it's id
+func (ws *GamesWS) disconnectRoom(room *GameRoom) {
+	delete(ws.rooms, room.id)
 }
 
+// if client with such id is already connected, disconnect them. Add new client to list
+func (ws *GamesWS) connectClient(client *Client) {
+	if oldClient, ok := ws.clients[client.userID]; ok {
+		oldClient.room.disconnectClientChan <- oldClient
+	}
+
+	ws.clients[client.userID] = client
+}
+
+// if client with requested id is requested to disconnect and the same client exists - delete
+func (ws *GamesWS) disconnectClient(client *Client) {
+	if oldClient, ok := ws.clients[client.userID]; ok && oldClient == client {
+		delete(ws.clients, client.userID)
+	}
+}
+
+// TODO: Make it thread safe
+// pick a random room and return it's id
 func (ws *GamesWS) pickRandomRoomID() (int, error) {
 	if len(ws.rooms) == 0 {
 		return 0, ErrNoRooms

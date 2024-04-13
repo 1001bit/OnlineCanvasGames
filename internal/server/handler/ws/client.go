@@ -16,32 +16,35 @@ const (
 
 // Client
 type Client struct {
-	conn *websocket.Conn
-
-	room *GameRoom
-
+	conn      *websocket.Conn
+	room      *GameRoom
+	userID    int
 	writeChan chan string
 }
 
-func NewClient(conn *websocket.Conn) *Client {
+func NewClient(conn *websocket.Conn, userID int) *Client {
 	return &Client{
-		conn: conn,
-
-		room: nil,
-
+		conn:      conn,
+		room:      nil,
+		userID:    userID,
 		writeChan: make(chan string),
 	}
 }
 
+// close websocket connection
 func (c *Client) closeConn() {
 	c.conn.WriteMessage(websocket.CloseMessage, []byte("closed!"))
 	c.conn.Close()
 }
 
+// constantly read messages from connection
 func (c *Client) readPump() {
+	log.Println("<WS Client ReadPump>")
+
 	defer func() {
 		c.room.disconnectClientChan <- c
 		c.closeConn()
+		log.Println("<WS Client ReadPump End>")
 	}()
 
 	// On Pong
@@ -52,7 +55,7 @@ func (c *Client) readPump() {
 	})
 
 	for {
-		// Get message from client and send it to hub
+		// Get message from client
 		_, message, err := c.conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
@@ -61,6 +64,7 @@ func (c *Client) readPump() {
 			break
 		}
 
+		// send the message to hub
 		c.room.readChan <- ClientMessage{
 			client: c,
 			text:   string(message),
@@ -68,6 +72,7 @@ func (c *Client) readPump() {
 	}
 }
 
+// constantly check messages in writeChan and send them to connection
 func (c *Client) writePump() {
 	log.Println("<WS Client WritePump>")
 
@@ -82,10 +87,11 @@ func (c *Client) writePump() {
 		select {
 		case <-ticker.C:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
-			// Ping
+			// Ping on ticker clear
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				return
 			}
+
 		case message, ok := <-c.writeChan:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 
@@ -94,6 +100,7 @@ func (c *Client) writePump() {
 				return
 			}
 
+			// write message from writeChan to connection
 			c.conn.WriteMessage(websocket.TextMessage, []byte(message))
 
 			log.Println("<Client Write>:", string(message))

@@ -9,17 +9,17 @@ import (
 )
 
 type GamesSSE struct {
-	hubs             map[int]*GameHub
-	connectHubChan   chan *GameHub
-	connectHubIDChan chan int
+	hubs              map[int]*GameHub
+	connectHubChan    chan *GameHub
+	disconnectHubChan chan *GameHub
 }
 
 func NewGamesSSE() (*GamesSSE, error) {
 	sse := &GamesSSE{
 		hubs: make(map[int]*GameHub),
 
-		connectHubChan:   make(chan *GameHub),
-		connectHubIDChan: make(chan int),
+		connectHubChan:    make(chan *GameHub),
+		disconnectHubChan: make(chan *GameHub),
 	}
 
 	return sse, nil
@@ -56,7 +56,7 @@ func (sse *GamesSSE) InitHubs() error {
 
 	for _, game := range games {
 		hub := NewGameHub()
-		hub.id = game.ID
+		hub.gameID = game.ID
 		go func() {
 			sse.connectHubChan <- hub
 		}()
@@ -73,20 +73,20 @@ func (sse *GamesSSE) Run() {
 		select {
 		case hub := <-sse.connectHubChan:
 			sse.connectHub(hub)
-			log.Println("<GameSSE Hub Connect>")
+			log.Println("<GameSSE +Hub>:", len(sse.hubs))
 
-		case hubID := <-sse.connectHubIDChan:
-			sse.disconnectHubByID(hubID)
-			log.Println("<GameSSE Hub Disconnect>")
+		case hub := <-sse.disconnectHubChan:
+			sse.disconnectHub(hub)
+			log.Println("<GameSSE -Hub>:", len(sse.hubs))
 		}
 	}
 }
 
 func (sse *GamesSSE) connectHub(hub *GameHub) {
-	sse.hubs[hub.id] = hub
+	sse.hubs[hub.gameID] = hub
 	go hub.Run()
 }
 
-func (sse *GamesSSE) disconnectHubByID(id int) {
-	delete(sse.hubs, id)
+func (sse *GamesSSE) disconnectHub(hub *GameHub) {
+	delete(sse.hubs, hub.gameID)
 }

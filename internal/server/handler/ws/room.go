@@ -3,7 +3,6 @@ package ws
 import (
 	"log"
 	"math/rand"
-	"time"
 )
 
 type ClientMessage struct {
@@ -16,10 +15,15 @@ type GameRoom struct {
 	connectClientChan    chan *Client
 	disconnectClientChan chan *Client
 
-	readChan        chan ClientMessage
+	// channel of client's read messages
+	readChan chan ClientMessage
+	// channel of messages that must be send to every client
 	globalWriteChan chan string
 
 	ws *GamesWS
+
+	// channel that is closed when GameRoom is connectedToWS to ws
+	connectedToWS chan struct{}
 
 	id    int
 	owner *Client
@@ -36,7 +40,9 @@ func NewGameRoom() *GameRoom {
 
 		ws: nil,
 
-		id:    int(time.Now().UnixMicro()),
+		connectedToWS: make(chan struct{}),
+
+		id:    0,
 		owner: nil,
 	}
 }
@@ -45,7 +51,7 @@ func (room *GameRoom) Run() {
 	log.Println("<GameRoom Run>")
 
 	defer func() {
-		room.ws.disconnectRoomIDChan <- room.id
+		room.ws.disconnectRoomChan <- room
 		log.Println("<GameRoom Run End>")
 	}()
 
@@ -53,14 +59,14 @@ func (room *GameRoom) Run() {
 		select {
 		case client := <-room.connectClientChan:
 			room.connectClient(client)
-			log.Println("<GameRoom Client Connect>")
+			log.Println("<GameRoom +Client>:", len(room.clients))
 
 		case client := <-room.disconnectClientChan:
 			room.disconnectClient(client)
 			if room.owner == nil {
 				return
 			}
-			log.Println("<GameRoom Client Disconnect>")
+			log.Println("<GameRoom -Client>:", len(room.clients))
 
 		case message := <-room.readChan:
 			room.handleReadMessage(message)
@@ -77,6 +83,17 @@ func (room *GameRoom) GetID() int {
 	return room.id
 }
 
+// stops the goroutine until connectedToWS is closed
+func (room *GameRoom) waitUntilConnectedToWS() {
+	<-room.connectedToWS
+}
+
+// closes connected chan
+func (room *GameRoom) confirmConnectToWS() {
+	close(room.connectedToWS)
+}
+
+// connects a client to the room
 func (room *GameRoom) connectClient(client *Client) {
 	room.clients[client] = true
 	client.room = room
@@ -85,8 +102,12 @@ func (room *GameRoom) connectClient(client *Client) {
 	if room.owner == nil {
 		room.owner = client
 	}
+
+	// add client to ws list
+	room.ws.connectClientChan <- client
 }
 
+// disconnects a client from the room
 func (room *GameRoom) disconnectClient(client *Client) {
 	if _, ok := room.clients[client]; !ok {
 		return
@@ -99,22 +120,31 @@ func (room *GameRoom) disconnectClient(client *Client) {
 	if room.owner == client {
 		room.owner = room.pickRandomClient()
 	}
+
+	// remove client from ws list
+	room.ws.disconnectClientChan <- client
 }
 
+// handles messages that are read from a client
 func (room *GameRoom) handleReadMessage(message ClientMessage) {
 	_ = message
 }
 
+// writes a message to every client
 func (room *GameRoom) handleGlobalWriteMessage(message string) {
 	for client := range room.clients {
 		select {
+		// write message to client's writeChan
 		case client.writeChan <- message:
+		// disconnect client if cannot write the message
 		default:
 			room.disconnectClientChan <- client
 		}
 	}
 }
 
+// TODO: Make it thread safe
+// returns random client of the room
 func (room *GameRoom) pickRandomClient() *Client {
 	if len(room.clients) == 0 {
 		return nil

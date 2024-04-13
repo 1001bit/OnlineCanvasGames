@@ -24,10 +24,10 @@
 
 - [ ] Game
     - [X] Rooms in hub page
-    - [ ] Rooms connection
-        - [ ] New room creater api/ws
+    - [ ] Hub
+        - [X] New room creater api/ws
             - [X] Base
-            - [ ] Security
+            - [X] Security
         - [ ] Dynamic rooms list on hub page
         - [ ] Room connect from hub
         - [ ] Random room returner api

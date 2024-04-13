@@ -11,7 +11,7 @@ type GameHub struct {
 
 	sse *GamesSSE
 
-	id int
+	gameID int
 }
 
 func NewGameHub() *GameHub {
@@ -24,7 +24,7 @@ func NewGameHub() *GameHub {
 
 		sse: nil,
 
-		id: 0,
+		gameID: 0,
 	}
 }
 
@@ -32,7 +32,7 @@ func (hub *GameHub) Run() {
 	log.Println("<GameHub Run>")
 
 	defer func() {
-		hub.sse.connectHubIDChan <- hub.id
+		hub.sse.disconnectHubChan <- hub
 		log.Println("<GameHub Run End>")
 	}()
 
@@ -40,11 +40,11 @@ func (hub *GameHub) Run() {
 		select {
 		case client := <-hub.connectClientChan:
 			hub.connectClient(client)
-			log.Println("<GameHub Client Connect>")
+			log.Println("<GameHub +Client>:", len(hub.clients))
 
 		case client := <-hub.disconnectClientChan:
 			hub.disconnectClient(client)
-			log.Println("<GameHub Client Disconnect>")
+			log.Println("<GameHub -Client>:", len(hub.clients))
 
 		case message := <-hub.globalWriteChan:
 			hub.handleGlobalWriteMessage(message)
