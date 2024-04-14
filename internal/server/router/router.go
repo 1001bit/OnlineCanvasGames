@@ -5,9 +5,8 @@ import (
 
 	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/api"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/page"
-	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/sse"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/realtime"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/storage"
-	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/ws"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/middleware"
 
 	"github.com/go-chi/chi/v5"
@@ -24,33 +23,21 @@ func NewRouter() (http.Handler, error) {
 	router.Get("/favicon.ico", storage.HandleStatic)
 	router.Handle("/image/*", http.StripPrefix("/image", http.HandlerFunc(storage.HandleImage)))
 
-	// Websockets
-	gamesWS := ws.NewGamesWS()
-	go gamesWS.Run()
+	// Realtime
+	rt := realtime.NewRealtime()
+	go rt.Run()
 
-	// WS Secure
-	router.Route("/ws", func(rs chi.Router) {
-		rs.Use(middleware.AuthJSON)
-
-		rs.HandleFunc("/room/{roomid}", gamesWS.HandleWS)
-	})
-
-	// Server-Sent Events
-	gamesSSE, err := sse.NewGamesSSE()
-	if err != nil {
-		return nil, err
-	}
-	go gamesSSE.Run()
-	err = gamesSSE.InitHubs()
+	err := rt.InitGames()
 	if err != nil {
 		return nil, err
 	}
 
-	// SSE Secure
-	router.Route("/sse", func(rs chi.Router) {
+	// RT Secure
+	router.Route("/rt", func(rs chi.Router) {
 		rs.Use(middleware.AuthJSON)
 
-		rs.HandleFunc("/hub/{gameid}", gamesSSE.HandleSSE)
+		rs.Get("/sse/game/{gameid}", rt.HandleGameSSE)
+		rs.Get("/ws/game/{gameid}/room/{roomid}", rt.HandleRoomWS)
 	})
 
 	// API
@@ -60,7 +47,7 @@ func NewRouter() (http.Handler, error) {
 		// Post
 		r.Post("/user", api.HandleUserPost)
 		r.Post("/room", func(w http.ResponseWriter, r *http.Request) {
-			api.HandleRoomPost(w, r, gamesWS)
+			api.HandleRoomPost(w, r, rt)
 		})
 	})
 
@@ -76,8 +63,8 @@ func NewRouter() (http.Handler, error) {
 		r.Group(func(rs chi.Router) {
 			rs.Use(middleware.AuthHTML)
 
-			rs.Get("/games/hub/{gameid}", page.HandleGameHub)
-			rs.Get("/games/room/{roomid}", page.HandleGameRoom)
+			rs.Get("/game/{gameid}", page.HandleGame)
+			rs.Get("/game/{gameid}/room/{roomid}", page.HandleGameRoom)
 		})
 
 		r.Get("/*", page.HandleNotFound)

@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/static/global/global.css">
     <link rel="stylesheet" href="/static/game/room.css">
-    <title>TODO: Game Title</title>
+    <title>{{ .Data.Game.Title }}</title>
 </head>
 <body>
     {{ template "header" .Header }}
-    <main data-room-id="{{ .Data.RoomID }}">
+    <main data-room-id="{{ .Data.RoomID }}" data-game-id="{{ .Data.Game.ID }}">
     
         <p id="message"></p>
 

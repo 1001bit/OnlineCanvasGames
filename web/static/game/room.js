@@ -1,7 +1,7 @@
 const urlParams = new URLSearchParams(window.location.search)
 
-function connectToWS(roomID){
-    const websocket = new WebSocket(`ws://${document.location.host}/ws/room/${roomID}`)
+function connectToWS(roomID, gameID){
+    const websocket = new WebSocket(`ws://${document.location.host}/rt/ws/game/${gameID}/room/${roomID}`)
 
     websocket.onopen = function(e) {
         console.log("ws connection open")
@@ -23,7 +23,8 @@ function handleMessage(message){
 }
 
 $("main").ready(() => {
+    const gameID = $("main").data("game-id")
     const roomID = $("main").data("room-id")
 
-    connectToWS(roomID)
+    connectToWS(roomID, gameID)
 })

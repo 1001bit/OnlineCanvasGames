@@ -9,12 +9,12 @@ import (
 	gamemodel "github.com/1001bit/OnlineCanvasGames/internal/model/game"
 )
 
-type GameHubData struct {
+type GameData struct {
 	Game *gamemodel.Game
 }
 
-func HandleGameHub(w http.ResponseWriter, r *http.Request) {
-	data := GameHubData{}
+func HandleGame(w http.ResponseWriter, r *http.Request) {
+	data := GameData{}
 
 	gameID, err := strconv.Atoi(r.PathValue("gameid"))
 	if err != nil {
@@ -36,5 +36,5 @@ func HandleGameHub(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	serveTemplate("gamehub.html", data, w, r)
+	serveTemplate("game.html", data, w, r)
 }
