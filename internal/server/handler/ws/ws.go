@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"context"
 	"errors"
 	"log"
 	"math/rand"
@@ -21,7 +22,8 @@ var (
 		},
 	}
 
-	ErrNoRooms = errors.New("no room exists")
+	ErrNoRooms    = errors.New("no room exists")
+	ErrCreateRoom = errors.New("couldn't create a room")
 )
 
 type GamesWS struct {
@@ -112,16 +114,25 @@ func (ws *GamesWS) Run() {
 	}
 }
 
-// TODO: Put context here
 // Create new room, connect it to ws, return it
-func (ws *GamesWS) ConnectNewRoom() *GameRoom {
+func (ws *GamesWS) ConnectNewRoom(ctx context.Context) (*GameRoom, error) {
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+
 	newRoom := NewGameRoom()
 
-	ws.connectRoomChan <- newRoom
-	// wait until room is fully connected and initialized
-	newRoom.waitUntilConnectedToWS()
+	select {
+	case ws.connectRoomChan <- newRoom:
+	case <-ctx.Done():
+		return nil, ErrCreateRoom
+	}
 
-	return newRoom
+	select {
+	case <-newRoom.connectedToWS:
+		return newRoom, nil
+	case <-ctx.Done():
+		return nil, ErrCreateRoom
+	}
 }
 
 // connect a room to ws
@@ -130,7 +141,7 @@ func (ws *GamesWS) connectRoom(room *GameRoom) {
 	ws.rooms[room.id] = room
 	room.ws = ws
 
-	room.confirmConnectToWS()
+	close(room.connectedToWS)
 
 	go room.Run()
 }

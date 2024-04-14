@@ -12,7 +12,12 @@ type RoomPostResponse struct {
 
 func HandleRoomPost(w http.ResponseWriter, r *http.Request, ws *ws.GamesWS) {
 	resp := RoomPostResponse{}
-	room := ws.ConnectNewRoom()
+
+	room, err := ws.ConnectNewRoom(r.Context())
+	if err != nil {
+		ServeJSONMessage(w, "Could not create a room!", http.StatusInternalServerError)
+		return
+	}
 	resp.RoomID = room.GetID()
 
 	ServeJSON(w, resp, http.StatusOK)

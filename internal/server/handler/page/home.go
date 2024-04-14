@@ -23,7 +23,8 @@ func HandleHome(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// games count
-	data.Games, err = gamemodel.GetAll()
+	data.Games, err = gamemodel.GetAll(r.Context())
+	// not returning since it's not 100% necessary to load the games
 	if err != nil {
 		data.Games = nil
 		log.Println("error getting games:", err)

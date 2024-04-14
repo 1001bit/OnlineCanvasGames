@@ -83,16 +83,6 @@ func (room *GameRoom) GetID() int {
 	return room.id
 }
 
-// stops the goroutine until connectedToWS is closed
-func (room *GameRoom) waitUntilConnectedToWS() {
-	<-room.connectedToWS
-}
-
-// closes connected chan
-func (room *GameRoom) confirmConnectToWS() {
-	close(room.connectedToWS)
-}
-
 // connects a client to the room
 func (room *GameRoom) connectClient(client *Client) {
 	room.clients[client] = true

@@ -1,8 +1,13 @@
 package gamemodel
 
 import (
+	"context"
+	"time"
+
 	"github.com/1001bit/OnlineCanvasGames/internal/database"
 )
+
+const maxQueryTime = 5 * time.Second
 
 type Game struct {
 	ID    int
@@ -13,8 +18,11 @@ func NewGame() *Game {
 	return &Game{}
 }
 
-func GetAll() ([]Game, error) {
-	rows, err := database.DB.Query("SELECT id, title FROM games")
+func GetAll(ctx context.Context) ([]Game, error) {
+	ctx, cancel := context.WithTimeout(ctx, maxQueryTime)
+	defer cancel()
+
+	rows, err := database.DB.QueryContext(ctx, "SELECT id, title FROM games")
 	if err != nil {
 		return nil, err
 	}
@@ -36,11 +44,14 @@ func GetAll() ([]Game, error) {
 	return games, nil
 }
 
-func GetByID(id int) (*Game, error) {
+func GetByID(ctx context.Context, id int) (*Game, error) {
+	ctx, cancel := context.WithTimeout(ctx, maxQueryTime)
+	defer cancel()
+
 	game := NewGame()
 	game.ID = id
 
-	err := database.DB.QueryRow("SELECT title FROM games WHERE id = $1", id).Scan(&game.Title)
+	err := database.DB.QueryRowContext(ctx, "SELECT title FROM games WHERE id = $1", id).Scan(&game.Title)
 	if err != nil {
 		return nil, err
 	}

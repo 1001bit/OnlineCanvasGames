@@ -1,6 +1,7 @@
 package sse
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"strconv"
@@ -50,7 +51,7 @@ func (sse *GamesSSE) HandleSSE(w http.ResponseWriter, r *http.Request) {
 }
 
 func (sse *GamesSSE) InitHubs() error {
-	games, err := gamemodel.GetAll()
+	games, err := gamemodel.GetAll(context.Background())
 	if err != nil {
 		return err
 	}

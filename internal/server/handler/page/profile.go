@@ -1,6 +1,7 @@
 package page
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 
@@ -22,10 +23,14 @@ func HandleProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := usermodel.GetByID(id)
-	if err != nil {
+	user, err := usermodel.GetByID(r.Context(), id)
+	switch err {
+	case nil:
+		// no error
+	case context.DeadlineExceeded:
+		HandleServerOverload(w, r)
+	default:
 		HandleNotFound(w, r)
-		return
 	}
 
 	data.Username = user.Name

@@ -1,6 +1,7 @@
 package page
 
 import (
+	"context"
 	"database/sql"
 	"net/http"
 	"strconv"
@@ -21,12 +22,14 @@ func HandleGameHub(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data.Game, err = gamemodel.GetByID(gameID)
+	data.Game, err = gamemodel.GetByID(r.Context(), gameID)
 
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
 			HandleNotFound(w, r)
+		case context.DeadlineExceeded:
+			HandleServerOverload(w, r)
 		default:
 			HandleServerError(w, r)
 		}

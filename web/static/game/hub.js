@@ -29,8 +29,9 @@ $("#create").click(() => {
     })
     .then (response => {
         if(response.status != 200){
+            response.json().then(data => $("#create").text(data.message))
             return
         }
-        response.json().then(data => window.location.replace(`/games/room/${data.roomid}`))
+        response.json().then(data => window.location.href = `/games/room/${data.roomid}`)
     })
 })

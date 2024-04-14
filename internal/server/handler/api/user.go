@@ -1,7 +1,9 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,6 +12,8 @@ import (
 	"github.com/1001bit/OnlineCanvasGames/internal/auth"
 	usermodel "github.com/1001bit/OnlineCanvasGames/internal/model/user"
 )
+
+var ErrBadInput = errors.New("bad auth input")
 
 type UserPostRequest struct {
 	Username string `json:"username"`
@@ -26,21 +30,8 @@ func HandleUserPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// disallow empty fields
-	if request.Password == "" || request.Username == "" {
-		ServeJSONMessage(w, "Password or username field is empty", http.StatusBadRequest)
-		return
-	}
-
-	// disallow username with special characters
-	if request.Username != regexp.MustCompile(`[^a-zA-Z0-9 ]+`).ReplaceAllString(request.Username, "") {
-		ServeJSONMessage(w, "Username must not contain special characters", http.StatusBadRequest)
-		return
-	}
-
-	// disallow short password
-	if len(request.Password) < 8 {
-		ServeJSONMessage(w, "Password should be at least 8 characters long", http.StatusBadRequest)
+	if text, err := validateAuthInput(request.Username, request.Password); err != nil {
+		ServeJSONMessage(w, text, http.StatusBadRequest)
 		return
 	}
 
@@ -48,9 +39,9 @@ func HandleUserPost(w http.ResponseWriter, r *http.Request) {
 	var user *usermodel.User
 	switch request.Type {
 	case "login":
-		user, err = usermodel.GetByNameAndPassword(request.Username, request.Password)
+		user, err = usermodel.GetByNameAndPassword(r.Context(), request.Username, request.Password)
 	case "register":
-		user, err = usermodel.Insert(request.Username, request.Password)
+		user, err = usermodel.Insert(r.Context(), request.Username, request.Password)
 	}
 
 	if err != nil {
@@ -59,6 +50,9 @@ func HandleUserPost(w http.ResponseWriter, r *http.Request) {
 			ServeJSONMessage(w, "Incorrect username or password", http.StatusUnauthorized)
 		case usermodel.ErrUserExists:
 			ServeJSONMessage(w, fmt.Sprintf("%s already exists", request.Username), http.StatusUnauthorized)
+		case context.DeadlineExceeded:
+			ServeJSONMessage(w, "Deadline exceeded", http.StatusInternalServerError)
+			log.Println("Auth deadline exceeded", err)
 		default:
 			ServeJSONMessage(w, "Something went wrong", http.StatusInternalServerError)
 			log.Println("login/register err:", err)
@@ -87,4 +81,23 @@ func HandleUserPost(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &cookie)
 
 	ServeJSONMessage(w, "Success!", http.StatusOK)
+}
+
+func validateAuthInput(username, password string) (string, error) {
+	// disallow empty fields
+	if password == "" || username == "" {
+		return "Password or username field is empty", ErrBadInput
+	}
+
+	// disallow username with special characters
+	if username != regexp.MustCompile(`[^a-zA-Z0-9 ]+`).ReplaceAllString(username, "") {
+		return "Username must not contain special characters", ErrBadInput
+	}
+
+	// disallow short password
+	if len(password) < 8 {
+		return "Password should be at least 8 characters long", ErrBadInput
+	}
+
+	return "", nil
 }
