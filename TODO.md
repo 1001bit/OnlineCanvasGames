@@ -5,11 +5,9 @@
 - [X] Database models
 - [X] Get rid of prepared statements
 - [X] Switch to chi mux
-- [X] Allow storing images in formats (png, jpg)
 - [X] Icon and thumbnail for games
 - [X] Open access to some pages for unauthorized users
 - [X] Header
-- [X] Responsive design
 - [X] Favicon
 
 - [X] Profile page
@@ -26,3 +24,4 @@
     - [ ] Random room returner api
 
 - [ ] Room
+    - [X] WS Room connection
