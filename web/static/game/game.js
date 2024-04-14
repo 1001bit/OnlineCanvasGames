@@ -17,8 +17,22 @@ function connectToSSE(gameID){
     }
 }
 
+function createRoomDiv(roomJson){
+    let room = $("<div></div>").class("room")
+    let title = $("<h3></h3>").text(`${roomJson.owner}'s room`)
+    let clients = $("<button></button>").class("style-button physical small").text(`${roomJson.clients}`)
+    room.append(title)
+    room.append(clients)
+    return room
+}
+
 function handleMessage(msg){
-    console.log("server said:", msg)
+    const data = JSON.parse(msg.data)
+    if (data.type == "rooms"){
+        for (let i = 0; i < length(data.Data); i++){
+            $("#rooms").append(createRoomDiv(i))
+        }
+    } 
 }
 
 $("main").ready(() => {

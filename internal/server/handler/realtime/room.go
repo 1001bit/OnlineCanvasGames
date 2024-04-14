@@ -1,6 +1,7 @@
 package realtime
 
 import (
+	"encoding/json"
 	"log"
 	"math/rand"
 )
@@ -13,6 +14,8 @@ type RoomRTClientMessage struct {
 // Layer of RT which is responsible for handling WS clients
 type RoomRT struct {
 	gameRT *GameRT
+
+	done chan struct{}
 
 	clients              map[*RoomRTClient]bool
 	connectClientChan    chan *RoomRTClient
@@ -29,6 +32,8 @@ type RoomRT struct {
 func NewRoomRT() *RoomRT {
 	return &RoomRT{
 		gameRT: nil,
+
+		done: make(chan struct{}),
 
 		clients:              make(map[*RoomRTClient]bool),
 		connectClientChan:    make(chan *RoomRTClient),
@@ -67,6 +72,9 @@ func (roomRT *RoomRT) Run() {
 		case message := <-roomRT.readChan:
 			roomRT.handleReadMessage(message)
 			log.Println("<RoomRT Read Message>:", message)
+
+		case <-roomRT.done:
+			return
 		}
 	}
 }
@@ -87,6 +95,13 @@ func (roomRT *RoomRT) connectClient(client *RoomRTClient) {
 
 	// add client to RT's list
 	roomRT.gameRT.rt.connectRoomClientChan <- client
+
+	// notify all the clients of gameRT about new client
+	str, err := json.Marshal(roomRT.gameRT.prepareRoomsMessage())
+	if err != nil {
+		log.Println("error marshaling rooms:", err)
+	}
+	roomRT.gameRT.globalWriteChan <- str
 }
 
 // disconnects client from room and sets new owner if owner has left (owner is nil if no clients left, room is deleted after that)
@@ -96,7 +111,7 @@ func (roomRT *RoomRT) disconnectClient(client *RoomRTClient) {
 	}
 
 	delete(roomRT.clients, client)
-	close(client.writeChan)
+	close(client.done)
 
 	// change owner
 	if roomRT.owner == client {
@@ -105,6 +120,13 @@ func (roomRT *RoomRT) disconnectClient(client *RoomRTClient) {
 
 	// remove client from RT's list
 	roomRT.gameRT.rt.disconnectRoomClientChan <- client
+
+	// notify all the clients of gameRT about client delete
+	str, err := json.Marshal(roomRT.gameRT.prepareRoomsMessage())
+	if err != nil {
+		log.Println("error marshaling rooms:", err)
+	}
+	roomRT.gameRT.globalWriteChan <- str
 }
 
 // handles message that is read from a client

@@ -19,8 +19,8 @@
     - [X] New room creater api/ws
         - [X] Base
         - [X] Security
-    - [ ] Dynamic rooms list on hub page
-    - [ ] Room connect from hub
+    - [ ] Dynamic rooms list on game page
+    - [ ] Room connect from game
     - [ ] Random room returner api
 
 - [ ] Room

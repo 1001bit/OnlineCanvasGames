@@ -18,18 +18,22 @@ const (
 type RoomRTClient struct {
 	roomRT *RoomRT
 
+	done chan struct{}
+
 	conn      *websocket.Conn
 	userID    int
-	writeChan chan string
+	writeChan chan []byte
 }
 
 func NewRoomRTClient(conn *websocket.Conn, userID int) *RoomRTClient {
 	return &RoomRTClient{
 		roomRT: nil,
 
+		done: make(chan struct{}),
+
 		conn:      conn,
 		userID:    userID,
-		writeChan: make(chan string),
+		writeChan: make(chan []byte),
 	}
 }
 
@@ -95,18 +99,16 @@ func (client *RoomRTClient) writePump() {
 				return
 			}
 
-		case message, ok := <-client.writeChan:
+		case message := <-client.writeChan:
 			client.conn.SetWriteDeadline(time.Now().Add(writeWait))
 
-			// if hub closed client.writeChan
-			if !ok {
-				return
-			}
-
 			// write message from writeChan to connection
-			client.conn.WriteMessage(websocket.TextMessage, []byte(message))
+			client.conn.WriteMessage(websocket.TextMessage, message)
 
-			log.Println("<RoomRTClient Write>:", string(message))
+			log.Printf("<RoomRTClient Write>: %s\n", message)
+
+		case <-client.done:
+			return
 		}
 	}
 }

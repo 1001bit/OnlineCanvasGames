@@ -73,7 +73,6 @@ func (rt *Realtime) HandleRoomWS(w http.ResponseWriter, r *http.Request) {
 }
 
 func closeConnWithMessage(conn *websocket.Conn, text string) {
-	text = "  " + text
-	conn.WriteMessage(websocket.CloseMessage, []byte(text))
+	conn.WriteMessage(websocket.CloseMessage, []byte("  "+text))
 	conn.Close()
 }

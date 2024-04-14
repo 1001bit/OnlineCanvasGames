@@ -116,7 +116,12 @@ func (rt *Realtime) connectGame(game *GameRT) {
 
 // disconnect gameRT from RT
 func (rt *Realtime) disconnectGame(game *GameRT) {
+	if _, ok := rt.games[game.gameID]; !ok {
+		return
+	}
+
 	delete(rt.games, game.gameID)
+	close(game.done)
 }
 
 // Called by room when a client is connected. Disconnects client with the same id from previous room and puts new into list

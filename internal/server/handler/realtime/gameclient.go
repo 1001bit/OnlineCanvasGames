@@ -11,16 +11,20 @@ import (
 type GameRTClient struct {
 	gameRT *GameRT
 
+	done chan struct{}
+
 	writer    http.ResponseWriter
-	writeChan chan string
+	writeChan chan []byte
 }
 
 func NewGameRTClient(writer http.ResponseWriter) *GameRTClient {
 	return &GameRTClient{
 		gameRT: nil,
 
+		done: make(chan struct{}),
+
 		writer:    writer,
-		writeChan: make(chan string),
+		writeChan: make(chan []byte),
 	}
 }
 
@@ -35,14 +39,12 @@ func (client *GameRTClient) writePump(ctx context.Context) {
 
 	for {
 		select {
-		case message, ok := <-client.writeChan:
-			// if hub closed client.write chan
-			if !ok {
-				return
-			}
-
+		case message := <-client.writeChan:
 			client.writeMessage(message)
 			log.Println("<GameRTClient Write>:", string(message))
+
+		case <-client.done:
+			return
 
 		case <-ctx.Done():
 			return
@@ -50,7 +52,7 @@ func (client *GameRTClient) writePump(ctx context.Context) {
 	}
 }
 
-func (client *GameRTClient) writeMessage(message string) {
+func (client *GameRTClient) writeMessage(message []byte) {
 	fmt.Fprintf(client.writer, "data: %s\n\n", message)
 	client.writer.(http.Flusher).Flush()
 }
