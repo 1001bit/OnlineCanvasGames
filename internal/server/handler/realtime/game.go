@@ -1,10 +1,14 @@
 package realtime
 
 import (
+	"errors"
 	"log"
+	"math/rand"
 	"strconv"
 	"time"
 )
+
+var ErrNoRooms = errors.New("no rooms in the game")
 
 // Room that will be sent to client
 type RoomJSON struct {
@@ -84,16 +88,32 @@ func (gameRT *GameRT) Run() {
 			gameRT.disconnectRoom(room)
 			log.Println("<GameRT -Room>:", len(gameRT.rooms))
 
-		// Global messages
+		// Write message to every client if server told to do so
 		case message := <-gameRT.globalWriteChan:
 			gameRT.globalWriteMessage(message)
 			log.Println("<GameRT Global Message>")
 
-		// Done
+		// When realtime closed gameRT.done
 		case <-gameRT.done:
 			return
 		}
 	}
+}
+
+// returns random room
+func (gameRT *GameRT) PickRandomRoom() (*RoomRT, error) {
+	if len(gameRT.rooms) == 0 {
+		return nil, ErrNoRooms
+	}
+
+	k := rand.Intn(len(gameRT.rooms))
+	for _, room := range gameRT.rooms {
+		if k == 0 {
+			return room, nil
+		}
+		k--
+	}
+	return nil, ErrNoRooms
 }
 
 // connect GameRT client to GameRT

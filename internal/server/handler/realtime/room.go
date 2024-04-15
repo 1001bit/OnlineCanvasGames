@@ -1,11 +1,15 @@
 package realtime
 
 import (
+	"errors"
 	"log"
 	"math/rand"
 	"time"
 )
 
+var ErrNoClients = errors.New("no clients in the room")
+
+// Struct that contains message and a client who was the message read from
 type RoomReadMessage struct {
 	client  *RoomRTClient
 	message MessageJSON
@@ -51,19 +55,6 @@ func NewRoomRT() *RoomRT {
 func (roomRT *RoomRT) Run() {
 	log.Println("<RoomRT Run>")
 
-	// send rooms json data globally on room start
-	go func() {
-		roomRT.gameRT.globalWriteChan <- roomRT.gameRT.prepareRoomsMessage()
-	}()
-
-	// after 5 seconds of start, if there is no client - disconnect room
-	go func() {
-		time.Sleep(5 * time.Second)
-		if len(roomRT.clients) == 0 {
-			roomRT.gameRT.disconnectRoomChan <- roomRT
-		}
-	}()
-
 	defer func() {
 		roomRT.gameRT.disconnectRoomChan <- roomRT
 		log.Println("<RoomRT Run End>")
@@ -72,6 +63,19 @@ func (roomRT *RoomRT) Run() {
 		go func() {
 			roomRT.gameRT.globalWriteChan <- roomRT.gameRT.prepareRoomsMessage()
 		}()
+	}()
+
+	// send rooms json data globally on room start
+	go func() {
+		roomRT.gameRT.globalWriteChan <- roomRT.gameRT.prepareRoomsMessage()
+	}()
+
+	// after 5 seconds of start, if there is no client - disconnect the room
+	go func() {
+		time.Sleep(5 * time.Second)
+		if len(roomRT.clients) == 0 {
+			roomRT.gameRT.disconnectRoomChan <- roomRT
+		}
 	}()
 
 	for {
@@ -89,9 +93,6 @@ func (roomRT *RoomRT) Run() {
 
 		case client := <-roomRT.disconnectClientChan:
 			roomRT.disconnectClient(client)
-			if roomRT.owner == nil {
-				return
-			}
 
 			// send rooms json data globally on client delete
 			go func() {
@@ -100,12 +101,12 @@ func (roomRT *RoomRT) Run() {
 
 			log.Println("<RoomRT -Client>:", len(roomRT.clients))
 
-		// Read messages
+		// Handle messages that were read by all the clients of the room
 		case message := <-roomRT.readChan:
 			roomRT.handleReadMessage(message)
 			log.Println("<RoomRT Read Message>:", message)
 
-		// Done
+		// When game closed roomRT.done chan
 		case <-roomRT.done:
 			return
 		}
@@ -128,6 +129,8 @@ func (roomRT *RoomRT) connectClient(client *RoomRTClient) {
 
 	// add client to RT's list
 	roomRT.gameRT.rt.registerRoomClientChan <- client
+
+	go client.Run()
 }
 
 // disconnects client from room and sets new owner if owner has left (owner is nil if no clients left, room is deleted after that)
@@ -141,7 +144,12 @@ func (roomRT *RoomRT) disconnectClient(client *RoomRTClient) {
 
 	// change owner
 	if roomRT.owner == client {
-		roomRT.owner = roomRT.pickRandomClient()
+		roomRT.owner, _ = roomRT.pickRandomClient()
+	}
+
+	// delete room if no clients left
+	if len(roomRT.clients) == 0 {
+		roomRT.gameRT.disconnectRoomChan <- roomRT
 	}
 
 	// remove client from RT's list
@@ -154,17 +162,17 @@ func (roomRT *RoomRT) handleReadMessage(message RoomReadMessage) {
 }
 
 // returns random client
-func (roomRT *RoomRT) pickRandomClient() *RoomRTClient {
+func (roomRT *RoomRT) pickRandomClient() (*RoomRTClient, error) {
 	if len(roomRT.clients) == 0 {
-		return nil
+		return nil, ErrNoClients
 	}
 
 	k := rand.Intn(len(roomRT.clients))
 	for client := range roomRT.clients {
 		if k == 0 {
-			return client
+			return client, nil
 		}
 		k--
 	}
-	return nil
+	return nil, ErrNoClients
 }

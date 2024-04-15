@@ -8,13 +8,13 @@ import (
 
 func ServeJSON(w http.ResponseWriter, data any, status int) {
 	w.WriteHeader(status)
-	b, err := json.Marshal(data)
+	dataByte, err := json.Marshal(data)
 	if err != nil {
 		log.Println("err on response:", err)
 		ServeJSONMessage(w, "something went wrong", http.StatusInternalServerError)
 		return
 	}
-	w.Write(b)
+	w.Write(dataByte)
 }
 
 func ServeJSONMessage(w http.ResponseWriter, message string, status int) {

@@ -21,7 +21,7 @@
         - [X] Security
     - [X] Dynamic rooms list on game page
     - [X] Room connect from game
-    - [ ] Random room returner api
+    - [X] Random room returner api
 
 - [ ] Room
     - [X] WS Room connection

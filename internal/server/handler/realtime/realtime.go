@@ -26,6 +26,7 @@ type Realtime struct {
 	connectGameChan    chan *GameRT
 	disconnectGameChan chan *GameRT
 
+	// Not allowing the same user join two rooms at once
 	roomsClients             map[int]*RoomRTClient
 	registerRoomClientChan   chan *RoomRTClient
 	unregisterRoomClientChan chan *RoomRTClient
@@ -112,6 +113,11 @@ func (rt *Realtime) ConnectNewRoom(ctx context.Context, gameID int) (*RoomRT, er
 	case <-ctx.Done():
 		return nil, ErrCreateRoom
 	}
+}
+
+func (rt *Realtime) GetGameByID(id int) (*GameRT, bool) {
+	game, ok := rt.games[id]
+	return game, ok
 }
 
 // connect gameRT to RT

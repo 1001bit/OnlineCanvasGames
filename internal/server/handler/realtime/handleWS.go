@@ -30,8 +30,6 @@ func (rt *Realtime) HandleRoomWS(w http.ResponseWriter, r *http.Request) {
 
 	// Create client and start client
 	client := NewRoomRTClient(conn)
-	go client.readPump()
-	go client.writePump()
 
 	// Get game from path
 	gameID, err := strconv.Atoi(r.PathValue("gameid"))

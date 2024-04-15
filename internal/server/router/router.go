@@ -46,8 +46,13 @@ func NewRouter() (http.Handler, error) {
 
 		// Post
 		r.Post("/user", api.HandleUserPost)
-		r.Post("/room", func(w http.ResponseWriter, r *http.Request) {
+		r.Post("/game/{gameid}/room", func(w http.ResponseWriter, r *http.Request) {
 			api.HandleRoomPost(w, r, rt)
+		})
+
+		// Get
+		r.Get("/game/{gameid}/room", func(w http.ResponseWriter, r *http.Request) {
+			api.HandleRandomRoomGet(w, r, rt)
 		})
 	})
 

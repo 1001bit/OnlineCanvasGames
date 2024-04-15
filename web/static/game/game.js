@@ -37,8 +37,7 @@ function handleMessage(msg){
         $("#rooms").empty()
         data.body.forEach(roomJSON => {
             $("#rooms").append(createRoomDiv(roomJSON))
-        });
-        console.log(data.Data)
+        })
     } 
 }
 
@@ -47,15 +46,28 @@ $("main").ready(() => {
     connectToSSE(gameID)
 })
 
+$("#random").click(() => {
+    fetch(`/api/game/${gameID}/room`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    })
+    .then (response => {
+        if(response.status != 200){
+            response.json().then(data => $("#random").text(data.message))
+            return
+        }
+        response.json().then(data => window.location.href = `/game/${gameID}/room/${data.roomid}`)
+    })
+})
+
 $("#create").click(() => {
-    fetch("/api/room", {
+    fetch(`/api/game/${gameID}/room`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-            gameid: gameID
-        })
     })
     .then (response => {
         if(response.status != 200){

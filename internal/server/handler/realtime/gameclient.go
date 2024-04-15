@@ -30,23 +30,26 @@ func NewGameRTClient(writer http.ResponseWriter) *GameRTClient {
 }
 
 // Constantly wait for message from writeChan and write it to writer
-func (client *GameRTClient) writePump(ctx context.Context) {
-	log.Println("<GameRTClient WritePump>")
+func (client *GameRTClient) Run(ctx context.Context) {
+	log.Println("<GameRTClient Run>")
 
 	defer func() {
 		client.gameRT.disconnectClientChan <- client
-		log.Println("<GameRTClient WritePump End>")
+		log.Println("<GameRTClient Run End>")
 	}()
 
 	for {
 		select {
+		// Write message to writer if server told to do so
 		case message := <-client.writeChan:
 			client.writeMessage(message)
 			log.Println("<GameRTClient Write Message>")
 
+		// When game closed client.done
 		case <-client.done:
 			return
 
+		// When http request is done
 		case <-ctx.Done():
 			return
 		}
