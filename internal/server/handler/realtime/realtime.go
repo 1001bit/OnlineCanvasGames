@@ -14,6 +14,12 @@ var (
 	ErrCreateRoom = errors.New("could not create a room")
 )
 
+// Message that will be sent to client and sent from client
+type MessageJSON struct {
+	Type string `json:"type"`
+	Body any    `json:"body"`
+}
+
 // Basic layer of RT which is responsible for handling Games and room-client connections
 type Realtime struct {
 	games              map[int]*GameRT
@@ -21,8 +27,8 @@ type Realtime struct {
 	disconnectGameChan chan *GameRT
 
 	roomsClients             map[int]*RoomRTClient
-	connectRoomClientChan    chan *RoomRTClient
-	disconnectRoomClientChan chan *RoomRTClient
+	registerRoomClientChan   chan *RoomRTClient
+	unregisterRoomClientChan chan *RoomRTClient
 }
 
 func NewRealtime() *Realtime {
@@ -32,8 +38,8 @@ func NewRealtime() *Realtime {
 		disconnectGameChan: make(chan *GameRT),
 
 		roomsClients:             make(map[int]*RoomRTClient),
-		connectRoomClientChan:    make(chan *RoomRTClient),
-		disconnectRoomClientChan: make(chan *RoomRTClient),
+		registerRoomClientChan:   make(chan *RoomRTClient),
+		unregisterRoomClientChan: make(chan *RoomRTClient),
 	}
 }
 
@@ -61,6 +67,7 @@ func (rt *Realtime) Run() {
 
 	for {
 		select {
+		// Games
 		case game := <-rt.connectGameChan:
 			rt.connectGame(game)
 			log.Println("<Realtime +Game>:", len(rt.games))
@@ -69,11 +76,12 @@ func (rt *Realtime) Run() {
 			rt.disconnectGame(game)
 			log.Println("<Realtime -Game>:", len(rt.games))
 
-		case client := <-rt.connectRoomClientChan:
-			rt.connectRoomClient(client)
+		// Rooms clients
+		case client := <-rt.registerRoomClientChan:
+			rt.registerRoomClient(client)
 
-		case client := <-rt.disconnectRoomClientChan:
-			rt.disconnectRoomClient(client)
+		case client := <-rt.unregisterRoomClientChan:
+			rt.unregisterRoomClient(client)
 		}
 	}
 }
@@ -104,7 +112,6 @@ func (rt *Realtime) ConnectNewRoom(ctx context.Context, gameID int) (*RoomRT, er
 	case <-ctx.Done():
 		return nil, ErrCreateRoom
 	}
-
 }
 
 // connect gameRT to RT
@@ -125,16 +132,16 @@ func (rt *Realtime) disconnectGame(game *GameRT) {
 }
 
 // Called by room when a client is connected. Disconnects client with the same id from previous room and puts new into list
-func (rt *Realtime) connectRoomClient(client *RoomRTClient) {
+func (rt *Realtime) registerRoomClient(client *RoomRTClient) {
 	if oldClient, ok := rt.roomsClients[client.userID]; ok {
-		oldClient.roomRT.disconnectClientChan <- oldClient
+		oldClient.closeConnWithMessage("This user has just joined another room")
 	}
 
 	rt.roomsClients[client.userID] = client
 }
 
 // Called by room when a client is disconnected. Removes client from list if requested client IS the client in the list
-func (rt *Realtime) disconnectRoomClient(client *RoomRTClient) {
+func (rt *Realtime) unregisterRoomClient(client *RoomRTClient) {
 	if oldClient, ok := rt.roomsClients[client.userID]; ok && oldClient == client {
 		delete(rt.roomsClients, client.userID)
 	}

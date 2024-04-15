@@ -8,6 +8,10 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+type WSMessage struct {
+	Message string `json:"message"`
+}
+
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
@@ -24,55 +28,50 @@ func (rt *Realtime) HandleRoomWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Create client and start client
+	client := NewRoomRTClient(conn)
+	go client.readPump()
+	go client.writePump()
+
 	// Get game from path
 	gameID, err := strconv.Atoi(r.PathValue("gameid"))
 	if err != nil {
-		closeConnWithMessage(conn, "wrong game id!")
+		client.closeConnWithMessage("Wrong game id!")
 		return
 	}
 	game, ok := rt.games[gameID]
 	if !ok {
-		closeConnWithMessage(conn, "wrong game id!")
+		client.closeConnWithMessage("Wrong game id!")
 		return
 	}
 
 	// Get room from path
 	roomID, err := strconv.Atoi(r.PathValue("roomid"))
 	if err != nil {
-		closeConnWithMessage(conn, "wrong room id!")
+		client.closeConnWithMessage("Wrong room id!")
 		return
 	}
 
 	room, ok := game.rooms[roomID]
 	if !ok {
-		closeConnWithMessage(conn, "wrong room id!")
+		client.closeConnWithMessage("Wrong room id!")
 		return
 	}
+	// connect client to the room
+	room.connectClientChan <- client
 
 	// Get userID from JWT
 	claims, err := auth.JWTClaimsByRequest(r)
 	if err != nil {
-		closeConnWithMessage(conn, "unauthorized!")
+		client.closeConnWithMessage("Unauthorized!")
 		return
 	}
 	userIDstr, ok := claims["userID"]
 	if !ok {
-		closeConnWithMessage(conn, "unauthorized!")
+		client.closeConnWithMessage("Unauthorized!")
 		return
 	}
 
-	userID := int(userIDstr.(float64)) // for some reason, it's stored in float64
-
-	// Connect client to the room and start client
-	client := NewRoomRTClient(conn, userID)
-
-	room.connectClientChan <- client
-
-	go client.readPump()
-	go client.writePump()
-}
-
-func closeConnWithMessage(conn *websocket.Conn, text string) {
-	conn.WriteMessage(websocket.CloseMessage, []byte("  "+text))
-	conn.Close()
+	// set client userID from JWT
+	client.userID = int(userIDstr.(float64)) // for some reason, it's stored in float64
 }

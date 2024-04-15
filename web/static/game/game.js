@@ -17,21 +17,28 @@ function connectToSSE(gameID){
     }
 }
 
-function createRoomDiv(roomJson){
-    let room = $("<div></div>").class("room")
-    let title = $("<h3></h3>").text(`${roomJson.owner}'s room`)
-    let clients = $("<button></button>").class("style-button physical small").text(`${roomJson.clients}`)
+function createRoomDiv(roomJSON){
+    let room = $("<div></div>").addClass("room")
+    let title = $("<h3></h3>").text(`${roomJSON.owner}'s room`)
+    let link = $("<a></a>")
+    let button = $("<button></button>").addClass("style-button physical small").text(`${roomJSON.clients} clients`)
+
+    link.attr("href", `/game/${gameID}/room/${roomJSON.id}`)
+    link.append(button)
+
     room.append(title)
-    room.append(clients)
+    room.append(link)
     return room
 }
 
 function handleMessage(msg){
     const data = JSON.parse(msg.data)
     if (data.type == "rooms"){
-        for (let i = 0; i < length(data.Data); i++){
-            $("#rooms").append(createRoomDiv(i))
-        }
+        $("#rooms").empty()
+        data.body.forEach(roomJSON => {
+            $("#rooms").append(createRoomDiv(roomJSON))
+        });
+        console.log(data.Data)
     } 
 }
 

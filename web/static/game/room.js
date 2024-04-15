@@ -9,7 +9,6 @@ function connectToWS(roomID, gameID){
 
     websocket.onclose = (event) => {
         console.log("ws connection close")
-        $("#message").text(event.reason)
     }
 
     websocket.onmessage = (event) => {
@@ -19,7 +18,10 @@ function connectToWS(roomID, gameID){
 
 function handleMessage(message){
     msg = JSON.parse(message)
-    console.log("server said:", msg)
+    console.log(msg)
+    if (msg.type == "message"){
+        $("#message").text(msg.body)
+    }
 }
 
 $("main").ready(() => {

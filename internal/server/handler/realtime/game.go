@@ -1,21 +1,16 @@
 package realtime
 
 import (
-	"encoding/json"
 	"log"
 	"strconv"
 	"time"
 )
 
-type SSEMessageJSON struct {
-	Type string `json:"type"`
-	Data any
-}
-
 // Room that will be sent to client
 type RoomJSON struct {
 	Owner   string `json:"owner"`
 	Clients int    `json:"clients"`
+	ID      int    `json:"id"`
 }
 
 // Layer of RT which is responsible for game hub and containing rooms
@@ -32,7 +27,7 @@ type GameRT struct {
 	connectClientChan    chan *GameRTClient
 	disconnectClientChan chan *GameRTClient
 
-	globalWriteChan chan []byte
+	globalWriteChan chan MessageJSON
 
 	gameID int
 }
@@ -51,7 +46,7 @@ func NewGameRT() *GameRT {
 		connectClientChan:    make(chan *GameRTClient),
 		disconnectClientChan: make(chan *GameRTClient),
 
-		globalWriteChan: make(chan []byte),
+		globalWriteChan: make(chan MessageJSON),
 
 		gameID: 0,
 	}
@@ -67,25 +62,34 @@ func (gameRT *GameRT) Run() {
 
 	for {
 		select {
+		// Clients
 		case client := <-gameRT.connectClientChan:
 			gameRT.connectClient(client)
+
+			// send rooms data to client on it's join
+			client.writeChan <- gameRT.prepareRoomsMessage()
+
 			log.Println("<GameRT +Client>:", len(gameRT.clients))
 
 		case client := <-gameRT.disconnectClientChan:
 			gameRT.disconnectClient(client)
 			log.Println("<GameRT -Client>:", len(gameRT.clients))
 
+		// Rooms
 		case room := <-gameRT.connectRoomChan:
 			gameRT.connectRoom(room)
 			log.Println("<GameRT +Room>:", len(gameRT.rooms))
+
 		case room := <-gameRT.disconnectRoomChan:
 			gameRT.disconnectRoom(room)
 			log.Println("<GameRT -Room>:", len(gameRT.rooms))
 
+		// Global messages
 		case message := <-gameRT.globalWriteChan:
 			gameRT.globalWriteMessage(message)
-			log.Printf("<GameRT Global Message>: %s\n", message)
+			log.Println("<GameRT Global Message>")
 
+		// Done
 		case <-gameRT.done:
 			return
 		}
@@ -96,12 +100,6 @@ func (gameRT *GameRT) Run() {
 func (gameRT *GameRT) connectClient(client *GameRTClient) {
 	gameRT.clients[client] = true
 	client.gameRT = gameRT
-
-	str, err := json.Marshal(gameRT.prepareRoomsMessage())
-	if err != nil {
-		log.Println("error marshaling rooms:", err)
-	}
-	client.writeChan <- str
 }
 
 // disconnect GameRT client from gameRT
@@ -123,13 +121,6 @@ func (gameRT *GameRT) connectRoom(room *RoomRT) {
 	close(room.connectedToRT)
 
 	go room.Run()
-
-	// notify all the clients about new room
-	str, err := json.Marshal(gameRT.prepareRoomsMessage())
-	if err != nil {
-		log.Println("error marshaling rooms:", err)
-	}
-	gameRT.globalWriteChan <- str
 }
 
 // disconnect RoomRT from GameRT
@@ -140,40 +131,39 @@ func (gameRT *GameRT) disconnectRoom(room *RoomRT) {
 
 	delete(gameRT.rooms, room.id)
 	close(room.done)
-
-	// notify all the clients about room delete
-	str, err := json.Marshal(gameRT.prepareRoomsMessage())
-	if err != nil {
-		log.Println("error marshaling rooms:", err)
-	}
-	gameRT.globalWriteChan <- str
 }
 
 // write a message to every client
-func (gameRT *GameRT) globalWriteMessage(message []byte) {
+func (gameRT *GameRT) globalWriteMessage(message MessageJSON) {
 	for client := range gameRT.clients {
 		client.writeChan <- message
 	}
 }
 
-// get all the rooms in JSON
-func (gameRT *GameRT) prepareRoomsMessage() SSEMessageJSON {
-	message := SSEMessageJSON{
+// get all the rooms in JSON format
+func (gameRT *GameRT) prepareRoomsMessage() MessageJSON {
+	message := MessageJSON{
 		Type: "rooms",
 	}
 
-	rooms := make([]RoomJSON, len(gameRT.rooms))
+	rooms := make([]RoomJSON, 0)
 
-	for i := 0; i < len(gameRT.rooms); i++ {
-		roomRT := gameRT.rooms[i]
-		rooms[i] = RoomJSON{
-			// TODO: Make username instead of userid
-			Owner:   strconv.Itoa(roomRT.owner.userID),
-			Clients: len(roomRT.clients),
+	for _, roomRT := range gameRT.rooms {
+		<-roomRT.connectedToRT
+		ownerUserID := 0
+		if roomRT.owner != nil {
+			ownerUserID = roomRT.owner.userID
 		}
+
+		rooms = append(rooms, RoomJSON{
+			// TODO: Make username instead of userid
+			Owner:   strconv.Itoa(ownerUserID),
+			Clients: len(roomRT.clients),
+			ID:      roomRT.id,
+		})
 	}
 
-	message.Data = rooms
+	message.Body = rooms
 
 	return message
 }

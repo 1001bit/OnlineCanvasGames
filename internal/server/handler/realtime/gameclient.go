@@ -2,6 +2,7 @@ package realtime
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -14,7 +15,7 @@ type GameRTClient struct {
 	done chan struct{}
 
 	writer    http.ResponseWriter
-	writeChan chan []byte
+	writeChan chan MessageJSON
 }
 
 func NewGameRTClient(writer http.ResponseWriter) *GameRTClient {
@@ -24,7 +25,7 @@ func NewGameRTClient(writer http.ResponseWriter) *GameRTClient {
 		done: make(chan struct{}),
 
 		writer:    writer,
-		writeChan: make(chan []byte),
+		writeChan: make(chan MessageJSON),
 	}
 }
 
@@ -41,7 +42,7 @@ func (client *GameRTClient) writePump(ctx context.Context) {
 		select {
 		case message := <-client.writeChan:
 			client.writeMessage(message)
-			log.Println("<GameRTClient Write>:", string(message))
+			log.Println("<GameRTClient Write Message>")
 
 		case <-client.done:
 			return
@@ -52,7 +53,13 @@ func (client *GameRTClient) writePump(ctx context.Context) {
 	}
 }
 
-func (client *GameRTClient) writeMessage(message []byte) {
-	fmt.Fprintf(client.writer, "data: %s\n\n", message)
+func (client *GameRTClient) writeMessage(message MessageJSON) {
+	messageByte, err := json.Marshal(message)
+	if err != nil {
+		log.Println("error marshaling GameRTClient message:", err)
+		return
+	}
+
+	fmt.Fprintf(client.writer, "data: %s\n\n", messageByte)
 	client.writer.(http.Flusher).Flush()
 }
