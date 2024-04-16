@@ -15,82 +15,96 @@ const (
 	pingPeriod = pongWait * 9 / 10
 )
 
+type RoomClientUser struct {
+	ID   int
+	Name string
+}
+
 // Layer of RT which is responsible for handling connection WS
-type RoomRTClient struct {
+type RoomClient struct {
 	roomRT *RoomRT
 
-	done chan struct{}
+	stopChan chan struct{}
+	doneChan chan struct{}
 
-	conn   *websocket.Conn
-	userID int
+	conn *websocket.Conn
+	user RoomClientUser
 
 	writeChan chan MessageJSON
 	readChan  chan MessageJSON
 }
 
-func NewRoomRTClient(conn *websocket.Conn) *RoomRTClient {
-	return &RoomRTClient{
+func NewRoomClient(conn *websocket.Conn) *RoomClient {
+	return &RoomClient{
 		roomRT: nil,
 
-		done: make(chan struct{}),
+		stopChan: make(chan struct{}),
+		doneChan: make(chan struct{}),
 
-		conn:   conn,
-		userID: 0,
+		conn: conn,
+		user: RoomClientUser{
+			ID:   0,
+			Name: "",
+		},
 
 		writeChan: make(chan MessageJSON),
 		readChan:  make(chan MessageJSON),
 	}
 }
 
-func (client *RoomRTClient) Run() {
-	log.Println("<RoomRTClient Run>")
+func (client *RoomClient) Run() {
+	log.Println("<RoomClient Run>")
 
 	// ticker that indicates the need to send ping message
 	ticker := time.NewTicker(pingPeriod)
 
 	defer func() {
+		if client.roomRT != nil {
+			client.roomRT.disconnectClientChan <- client
+		}
 		ticker.Stop()
 		client.conn.Close()
-		log.Println("<RoomRTClient Run End>")
+		log.Println("<RoomClient Run End>")
 	}()
 
 	go client.readPump()
 
 	for {
 		select {
-		// Ping every tick
 		case <-ticker.C:
+			// Ping every tick
 			client.pingConn()
 
-		// Write message to conn if server told to do so
 		case message := <-client.writeChan:
+			// Write message to conn if server told to do so
 			client.writeMessage(message)
 
-		// Handle messages that were read in readPump
 		case message := <-client.readChan:
+			// Handle messages that were read in readPump
 			client.handleReadMessage(message)
 
-		// When room closed client.done chan
-		case <-client.done:
-			// warn client about ws closure
-			client.writeMessage(MessageJSON{
-				Type: "message",
-				Body: "WebSocket connection close!",
-			})
+		case <-client.stopChan:
+			// when server asked to stop running
+			return
+
+		case <-client.doneChan:
+			// when parent closed doneChan
 			return
 		}
 	}
 }
 
+func (client *RoomClient) Stop() {
+	client.stopChan <- struct{}{}
+}
+
 // constantly read messages from connection
-func (client *RoomRTClient) readPump() {
-	log.Println("<RoomRTClient ReadPump>")
+func (client *RoomClient) readPump() {
+	log.Println("<RoomClient ReadPump>")
 
 	defer func() {
-		if client.roomRT != nil {
-			client.roomRT.disconnectClientChan <- client
-		}
-		log.Println("<RoomRTClient ReadPump End>")
+		client.Stop()
+		log.Println("<RoomClient ReadPump End>")
 	}()
 
 	// On Pong
@@ -118,7 +132,7 @@ func (client *RoomRTClient) readPump() {
 			select {
 			case client.readChan <- messageStruct:
 				// send message to read chan
-			case <-client.done:
+			case <-client.doneChan:
 				return
 			}
 		}
@@ -126,36 +140,36 @@ func (client *RoomRTClient) readPump() {
 }
 
 // ping connection every tick of ticker
-func (client *RoomRTClient) pingConn() {
+func (client *RoomClient) pingConn() {
 	client.conn.SetWriteDeadline(time.Now().Add(writeWait)) // if WriteMessage can't ping in writeWait period, client is disconnected
 
 	// Ping the connection with special message
 	err := client.conn.WriteMessage(websocket.PingMessage, nil)
 	// if couldn't write message - disconnect
 	if err != nil {
-		client.roomRT.disconnectClientChan <- client
+		client.stopWithMessage("Unexpected error!")
 	}
 }
 
 // write message to connection
-func (client *RoomRTClient) writeMessage(message MessageJSON) {
+func (client *RoomClient) writeMessage(message MessageJSON) {
 	client.conn.SetWriteDeadline(time.Now().Add(writeWait)) // if WriteMessage can't send message in writeWait period, client is disconnected
 
 	messageByte, err := json.Marshal(message)
 	if err != nil {
-		log.Println("err marshaling RoomRTClient message:", err)
+		log.Println("err marshaling RoomClient message:", err)
 		return
 	}
 
 	err = client.conn.WriteMessage(websocket.TextMessage, messageByte)
 	// if couldn't write message - disconnect
 	if err != nil {
-		client.roomRT.disconnectClientChan <- client
+		client.stopWithMessage("Unexpected error!")
 	}
 }
 
 // process read message
-func (client *RoomRTClient) handleReadMessage(message MessageJSON) {
+func (client *RoomClient) handleReadMessage(message MessageJSON) {
 	// simply tell room about read message
 	client.roomRT.readChan <- RoomReadMessage{
 		client:  client,
@@ -164,15 +178,10 @@ func (client *RoomRTClient) handleReadMessage(message MessageJSON) {
 }
 
 // send message to client and close after
-func (client *RoomRTClient) closeConnWithMessage(text string) {
+func (client *RoomClient) stopWithMessage(text string) {
 	client.writeChan <- MessageJSON{
 		Type: "message",
 		Body: text,
 	}
-
-	// TODO: Make something without using sleep. For example, closeMessage chan
-	// wait for message to be sent, then close connection
-	time.Sleep(time.Second)
-
-	client.conn.Close()
+	client.Stop()
 }

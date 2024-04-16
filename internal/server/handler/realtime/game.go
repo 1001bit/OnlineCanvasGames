@@ -4,7 +4,6 @@ import (
 	"errors"
 	"log"
 	"math/rand"
-	"strconv"
 	"time"
 )
 
@@ -21,7 +20,8 @@ type RoomJSON struct {
 type GameRT struct {
 	rt *Realtime
 
-	done chan struct{}
+	stopChan chan struct{}
+	doneChan chan struct{}
 
 	rooms              map[int]*RoomRT
 	connectRoomChan    chan *RoomRT
@@ -40,7 +40,8 @@ func NewGameRT() *GameRT {
 	return &GameRT{
 		rt: nil,
 
-		done: make(chan struct{}),
+		stopChan: make(chan struct{}),
+		doneChan: make(chan struct{}),
 
 		rooms:              make(map[int]*RoomRT),
 		connectRoomChan:    make(chan *RoomRT),
@@ -66,38 +67,44 @@ func (gameRT *GameRT) Run() {
 
 	for {
 		select {
-		// Clients
 		case client := <-gameRT.connectClientChan:
+			// When server asked to connect a client
 			gameRT.connectClient(client)
-
-			// send rooms data to client on it's join
-			client.writeChan <- gameRT.prepareRoomsMessage()
-
 			log.Println("<GameRT +Client>:", len(gameRT.clients))
 
 		case client := <-gameRT.disconnectClientChan:
+			// When server asked to disconnect a client
 			gameRT.disconnectClient(client)
 			log.Println("<GameRT -Client>:", len(gameRT.clients))
 
-		// Rooms
 		case room := <-gameRT.connectRoomChan:
+			// When server asked to connect a room
 			gameRT.connectRoom(room)
 			log.Println("<GameRT +Room>:", len(gameRT.rooms))
 
 		case room := <-gameRT.disconnectRoomChan:
+			// When server asked to disconnect a client
 			gameRT.disconnectRoom(room)
 			log.Println("<GameRT -Room>:", len(gameRT.rooms))
 
-		// Write message to every client if server told to do so
 		case message := <-gameRT.globalWriteChan:
+			// Write message to every client if server told to do so
 			gameRT.globalWriteMessage(message)
 			log.Println("<GameRT Global Message>")
 
-		// When realtime closed gameRT.done
-		case <-gameRT.done:
+		case <-gameRT.stopChan:
+			// When server asked to stop running
+			return
+
+		case <-gameRT.doneChan:
+			// When parent closed done chan
 			return
 		}
 	}
+}
+
+func (gameRT *GameRT) Stop() {
+	gameRT.stopChan <- struct{}{}
 }
 
 // returns random room
@@ -120,6 +127,9 @@ func (gameRT *GameRT) PickRandomRoom() (*RoomRT, error) {
 func (gameRT *GameRT) connectClient(client *GameRTClient) {
 	gameRT.clients[client] = true
 	client.gameRT = gameRT
+
+	// send rooms data to client on it's join
+	client.writeChan <- gameRT.prepareRoomsMessage()
 }
 
 // disconnect GameRT client from gameRT
@@ -129,7 +139,7 @@ func (gameRT *GameRT) disconnectClient(client *GameRTClient) {
 	}
 
 	delete(gameRT.clients, client)
-	close(client.done)
+	close(client.doneChan)
 }
 
 // connect RoomRT to GameRT
@@ -150,7 +160,7 @@ func (gameRT *GameRT) disconnectRoom(room *RoomRT) {
 	}
 
 	delete(gameRT.rooms, room.id)
-	close(room.done)
+	close(room.doneChan)
 }
 
 // write a message to every client
@@ -170,14 +180,13 @@ func (gameRT *GameRT) prepareRoomsMessage() MessageJSON {
 
 	for _, roomRT := range gameRT.rooms {
 		<-roomRT.connectedToRT
-		ownerUserID := 0
+		ownerUser := RoomClientUser{}
 		if roomRT.owner != nil {
-			ownerUserID = roomRT.owner.userID
+			ownerUser = roomRT.owner.user
 		}
 
 		rooms = append(rooms, RoomJSON{
-			// TODO: Make username instead of userid
-			Owner:   strconv.Itoa(ownerUserID),
+			Owner:   ownerUser.Name,
 			Clients: len(roomRT.clients),
 			ID:      roomRT.id,
 		})
@@ -186,4 +195,8 @@ func (gameRT *GameRT) prepareRoomsMessage() MessageJSON {
 	message.Body = rooms
 
 	return message
+}
+
+func (gameRT *GameRT) globallyWriteRoomsMessage() {
+	gameRT.globalWriteChan <- gameRT.prepareRoomsMessage()
 }

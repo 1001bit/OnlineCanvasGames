@@ -29,5 +29,5 @@ func (rt *Realtime) HandleGameSSE(w http.ResponseWriter, r *http.Request) {
 
 	go client.Run(r.Context())
 
-	<-client.done
+	<-client.doneChan
 }

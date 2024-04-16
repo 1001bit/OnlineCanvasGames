@@ -12,7 +12,8 @@ import (
 type GameRTClient struct {
 	gameRT *GameRT
 
-	done chan struct{}
+	stopChan chan struct{}
+	doneChan chan struct{}
 
 	writer    http.ResponseWriter
 	writeChan chan MessageJSON
@@ -22,7 +23,8 @@ func NewGameRTClient(writer http.ResponseWriter) *GameRTClient {
 	return &GameRTClient{
 		gameRT: nil,
 
-		done: make(chan struct{}),
+		stopChan: make(chan struct{}),
+		doneChan: make(chan struct{}),
 
 		writer:    writer,
 		writeChan: make(chan MessageJSON),
@@ -40,20 +42,28 @@ func (client *GameRTClient) Run(ctx context.Context) {
 
 	for {
 		select {
-		// Write message to writer if server told to do so
 		case message := <-client.writeChan:
+			// Write message to writer if server told to do so
 			client.writeMessage(message)
 			log.Println("<GameRTClient Write Message>")
 
-		// When game closed client.done
-		case <-client.done:
+		case <-client.doneChan:
+			// When parent closed done chan
 			return
 
-		// When http request is done
+		case <-client.stopChan:
+			// When server asked to stop client
+			return
+
 		case <-ctx.Done():
+			// When http request is done
 			return
 		}
 	}
+}
+
+func (client *GameRTClient) Stop() {
+	client.stopChan <- struct{}{}
 }
 
 func (client *GameRTClient) writeMessage(message MessageJSON) {

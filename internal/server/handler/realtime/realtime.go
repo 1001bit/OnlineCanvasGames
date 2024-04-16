@@ -27,9 +27,9 @@ type Realtime struct {
 	disconnectGameChan chan *GameRT
 
 	// Not allowing the same user join two rooms at once
-	roomsClients             map[int]*RoomRTClient
-	registerRoomClientChan   chan *RoomRTClient
-	unregisterRoomClientChan chan *RoomRTClient
+	roomsClients             map[int]*RoomClient
+	registerRoomClientChan   chan *RoomClient
+	unregisterRoomClientChan chan *RoomClient
 }
 
 func NewRealtime() *Realtime {
@@ -38,9 +38,9 @@ func NewRealtime() *Realtime {
 		connectGameChan:    make(chan *GameRT),
 		disconnectGameChan: make(chan *GameRT),
 
-		roomsClients:             make(map[int]*RoomRTClient),
-		registerRoomClientChan:   make(chan *RoomRTClient),
-		unregisterRoomClientChan: make(chan *RoomRTClient),
+		roomsClients:             make(map[int]*RoomClient),
+		registerRoomClientChan:   make(chan *RoomClient),
+		unregisterRoomClientChan: make(chan *RoomClient),
 	}
 }
 
@@ -134,21 +134,21 @@ func (rt *Realtime) disconnectGame(game *GameRT) {
 	}
 
 	delete(rt.games, game.gameID)
-	close(game.done)
+	close(game.doneChan)
 }
 
 // Called by room when a client is connected. Disconnects client with the same id from previous room and puts new into list
-func (rt *Realtime) registerRoomClient(client *RoomRTClient) {
-	if oldClient, ok := rt.roomsClients[client.userID]; ok {
-		oldClient.closeConnWithMessage("This user has just joined another room")
+func (rt *Realtime) registerRoomClient(client *RoomClient) {
+	if oldClient, ok := rt.roomsClients[client.user.ID]; ok {
+		oldClient.stopWithMessage("This user has just joined another room")
 	}
 
-	rt.roomsClients[client.userID] = client
+	rt.roomsClients[client.user.ID] = client
 }
 
 // Called by room when a client is disconnected. Removes client from list if requested client IS the client in the list
-func (rt *Realtime) unregisterRoomClient(client *RoomRTClient) {
-	if oldClient, ok := rt.roomsClients[client.userID]; ok && oldClient == client {
-		delete(rt.roomsClients, client.userID)
+func (rt *Realtime) unregisterRoomClient(client *RoomClient) {
+	if oldClient, ok := rt.roomsClients[client.user.ID]; ok && oldClient == client {
+		delete(rt.roomsClients, client.user.ID)
 	}
 }

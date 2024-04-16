@@ -14,14 +14,14 @@
     - [X] Frontend
     - [X] Backend
 
-- [ ] Hub Page
+- [X] Game Page
     - [X] Room divs 
     - [X] New room creater api/ws
         - [X] Base
         - [X] Security
-    - [X] Dynamic rooms list on game page
-    - [X] Room connect from game
+    - [X] Dynamic rooms list
+    - [X] Room connect
     - [X] Random room returner api
 
-- [ ] Room
+- [ ] Room Page
     - [X] WS Room connection
