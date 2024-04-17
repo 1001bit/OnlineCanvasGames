@@ -60,9 +60,6 @@ func (roomRT *RoomRT) Run() {
 	defer func() {
 		roomRT.gameRT.disconnectRoomChan <- roomRT
 		log.Println("<RoomRT Run End>")
-
-		// send rooms json data globally on room stop
-		roomRT.gameRT.globallyWriteRoomsMessage()
 	}()
 
 	// after 5 seconds of start, if there is no client - disconnect the room

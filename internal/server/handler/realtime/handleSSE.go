@@ -25,9 +25,9 @@ func (rt *Realtime) HandleGameSSE(w http.ResponseWriter, r *http.Request) {
 	}
 
 	client := NewGameRTClient(w)
-	game.connectClientChan <- client
-
 	go client.Run(r.Context())
+
+	game.connectClientChan <- client
 
 	<-client.doneChan
 }

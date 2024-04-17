@@ -36,7 +36,7 @@ type GameRT struct {
 	gameID int
 }
 
-func NewGameRT() *GameRT {
+func NewGameRT(id int) *GameRT {
 	return &GameRT{
 		rt: nil,
 
@@ -53,7 +53,7 @@ func NewGameRT() *GameRT {
 
 		globalWriteChan: make(chan MessageJSON),
 
-		gameID: 0,
+		gameID: id,
 	}
 }
 
@@ -70,6 +70,10 @@ func (gameRT *GameRT) Run() {
 		case client := <-gameRT.connectClientChan:
 			// When server asked to connect a client
 			gameRT.connectClient(client)
+
+			// send rooms data to client on it's join
+			client.writeChan <- gameRT.prepareRoomsMessage()
+
 			log.Println("<GameRT +Client>:", len(gameRT.clients))
 
 		case client := <-gameRT.disconnectClientChan:
@@ -85,6 +89,10 @@ func (gameRT *GameRT) Run() {
 		case room := <-gameRT.disconnectRoomChan:
 			// When server asked to disconnect a client
 			gameRT.disconnectRoom(room)
+
+			// send rooms json data globally on room delete
+			go gameRT.globallyWriteRoomsMessage()
+
 			log.Println("<GameRT -Room>:", len(gameRT.rooms))
 
 		case message := <-gameRT.globalWriteChan:
@@ -127,9 +135,6 @@ func (gameRT *GameRT) PickRandomRoom() (*RoomRT, error) {
 func (gameRT *GameRT) connectClient(client *GameRTClient) {
 	gameRT.clients[client] = true
 	client.gameRT = gameRT
-
-	// send rooms data to client on it's join
-	client.writeChan <- gameRT.prepareRoomsMessage()
 }
 
 // disconnect GameRT client from gameRT
@@ -149,8 +154,6 @@ func (gameRT *GameRT) connectRoom(room *RoomRT) {
 	room.gameRT = gameRT
 
 	close(room.connectedToRT)
-
-	go room.Run()
 }
 
 // disconnect RoomRT from GameRT

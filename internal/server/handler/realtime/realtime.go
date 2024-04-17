@@ -52,8 +52,9 @@ func (rt *Realtime) InitGames() error {
 	}
 
 	for _, game := range games {
-		gameRT := NewGameRT()
-		gameRT.gameID = game.ID
+		gameRT := NewGameRT(game.ID)
+		go gameRT.Run()
+
 		go func() {
 			rt.connectGameChan <- gameRT
 		}()
@@ -98,8 +99,9 @@ func (rt *Realtime) ConnectNewRoom(ctx context.Context, gameID int) (*RoomRT, er
 	}
 
 	room := NewRoomRT()
+	go room.Run()
 
-	// request connecting room tw RT
+	// request connecting room to RT
 	select {
 	case gameRT.connectRoomChan <- room:
 	case <-ctx.Done():
@@ -124,7 +126,6 @@ func (rt *Realtime) GetGameByID(id int) (*GameRT, bool) {
 func (rt *Realtime) connectGame(game *GameRT) {
 	rt.games[game.gameID] = game
 	game.rt = rt
-	go game.Run()
 }
 
 // disconnect gameRT from RT

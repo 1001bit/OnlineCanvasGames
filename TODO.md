@@ -22,7 +22,6 @@
     - [X] Dynamic rooms list
     - [X] Room connect
     - [X] Random room returner api
-    - [ ] Move RT runs to their creation interface
 
 - [ ] Room Page
     - [X] WS Room connection
