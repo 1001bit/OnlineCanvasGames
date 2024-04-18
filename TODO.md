@@ -25,3 +25,4 @@
 
 - [ ] Room Page
     - [X] WS Room connection
+    - [ ] Multiplayer clicker app with canvas and ws
