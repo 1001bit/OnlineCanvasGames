@@ -1,7 +1,3 @@
-- [X] Home page
-    - [X] Frontend
-    - [X] Backend
-
 - [X] Database models
 - [X] Get rid of prepared statements
 - [X] Switch to chi mux
@@ -10,9 +6,9 @@
 - [X] Header
 - [X] Favicon
 
+- [X] Home page
+
 - [X] Profile page
-    - [X] Frontend
-    - [X] Backend
 
 - [X] Game Page
     - [X] Room divs 
