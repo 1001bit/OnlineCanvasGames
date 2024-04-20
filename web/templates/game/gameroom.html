@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/static/global/global.css">
-    <link rel="stylesheet" href="/static/room/room.css">
+    <link rel="stylesheet" href="/static/game/room.css">
     <title>{{ .Data.Game.Title }}</title>
 </head>
 <body>
@@ -13,8 +13,11 @@
     
         <p id="message"></p>
 
+        <canvas id="canvas"></canvas>
+
     </main>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-	<script src="/static/room/room.js"></script>
+	<script src="/static/game/room.js"></script>
+    <script src="/gamescript/1.js"></script>
 </body>
 </html>

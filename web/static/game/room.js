@@ -24,9 +24,17 @@ function handleMessage(message){
     }
 }
 
+function resizeCanvas() {
+    $("#canvas").width(window.innerWidth)
+    $("#canvas").height(window.innerHeight - 85)
+}
+
 $("main").ready(() => {
     const gameID = $("main").data("game-id")
     const roomID = $("main").data("room-id")
 
+    resizeCanvas()
     connectToWS(roomID, gameID)
 })
+
+window.addEventListener('resize', resizeCanvas, false);
