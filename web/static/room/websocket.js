@@ -10,12 +10,12 @@ class GameWebSocket {
 
     openConnection(roomID, gameID){
         this.websocket = new WebSocket(`ws://${document.location.host}/rt/ws/game/${gameID}/room/${roomID}`)
-        const websocket = this.websocket
+        const ws = this.websocket
 
-        websocket.onopen = (e) => {this.handleOpen()}
-        websocket.onclose = (e) => {this.handleClose()}
-        websocket.onerror = (e) => {this.handleError()}
-        websocket.onmessage = (e) => {this.handleMessage(e.data)}
+        ws.onopen = (e) => {this.handleOpen()}
+        ws.onclose = (e) => {this.handleClose()}
+        ws.onerror = (e) => {this.handleError()}
+        ws.onmessage = (e) => {this.handleMessage(e.data)}
     }
 
     handleOpen(){
@@ -23,23 +23,16 @@ class GameWebSocket {
             return
         }
         this.connected = true
+        this.canvas.start()
 
         console.log("websocket open")
     }
 
     handleClose(){
-        if(!this.connected){
-            return
-        }
-
         this.closeWithMessage("Connection closed!")
     }
 
     handleError(){
-        if(!this.connected){
-            return
-        }
-
         this.closeWithMessage("Something went wrong!")
     }
 
@@ -48,7 +41,8 @@ class GameWebSocket {
             return
         }
         this.connected = false
-
+        this.canvas.stop()
+        
         $("#message").text(text)
         this.canvas.resize()
     }

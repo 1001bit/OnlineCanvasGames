@@ -8,11 +8,11 @@ class GameSSE {
 
     openConnection(gameID){
         this.eventSource = new EventSource(`http://${document.location.host}/rt/sse/game/${gameID}`)
-        const ES = this.eventSource
+        const sse = this.eventSource
 
-        ES.onopen = (e) => {this.handleOpen()}
-        ES.onclose = (e) => {this.handleClose()}
-        ES.onmessage = (e) => {this.handleMessage(e.data)}
+        sse.onopen = (e) => {this.handleOpen()}
+        sse.onclose = (e) => {this.handleClose()}
+        sse.onmessage = (e) => {this.handleMessage(e.data)}
     }
 
     handleOpen(){
