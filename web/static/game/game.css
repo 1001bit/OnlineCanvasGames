@@ -32,6 +32,10 @@ main {
 
 /* UNDER GAME */
 
+#sample-room {
+    display: none;
+}
+
 #create {
     width: 100%;
     margin-bottom: 20px;

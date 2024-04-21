@@ -75,6 +75,10 @@ p {
     flex-wrap: nowrap;
 }
 
+.sample {
+    display: none;
+}
+
 /* BUTTON */
 
 .style-button {

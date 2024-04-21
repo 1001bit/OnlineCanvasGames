@@ -1,52 +1,13 @@
+const rooms = new Rooms("rooms")
+const sse = new GameSSE(rooms)
 let gameID = 0
-let eventSource
-
-function connectToSSE(gameID){
-    eventSource = new EventSource(`http://${document.location.host}/rt/sse/game/${gameID}`)
-
-    eventSource.onopen = (event) => {
-        console.log("sse connection open")
-    }
-
-    eventSource.onclose = (event) => {
-        console.log("sse connection close")
-    }
-
-    eventSource.onmessage = (msg) => {
-        handleMessage(msg)
-    }
-}
-
-function createRoomDiv(roomJSON){
-    let room = $("<div></div>").addClass("room")
-    let title = $("<h3></h3>").text(`${roomJSON.owner}'s room`)
-    let link = $("<a></a>")
-    let button = $("<button></button>").addClass("style-button physical small").text(`${roomJSON.clients} clients`)
-
-    link.attr("href", `/game/${gameID}/room/${roomJSON.id}`)
-    link.append(button)
-
-    room.append(title)
-    room.append(link)
-    return room
-}
-
-function handleMessage(msg){
-    const data = JSON.parse(msg.data)
-    if (data.type == "rooms"){
-        $("#rooms").empty()
-        data.body.forEach(roomJSON => {
-            $("#rooms").append(createRoomDiv(roomJSON))
-        })
-    } 
-}
 
 $("main").ready(() => {
     gameID = $("main").data("game-id")
-    connectToSSE(gameID)
+    sse.openConnection(gameID)
 })
 
-$("#random").click(() => {
+function joinRandomRoom(){
     fetch(`/api/game/${gameID}/room`, {
         method: "GET",
         headers: {
@@ -60,9 +21,9 @@ $("#random").click(() => {
         }
         response.json().then(data => window.location.href = `/game/${gameID}/room/${data.roomid}`)
     })
-})
+}
 
-$("#create").click(() => {
+function createRoom(){
     fetch(`/api/game/${gameID}/room`, {
         method: "POST",
         headers: {
@@ -76,4 +37,7 @@ $("#create").click(() => {
         }
         response.json().then(data => window.location.href = `/game/${gameID}/room/${data.roomid}`)
     })
-})
+}
+
+$("#random").click(joinRandomRoom)
+$("#create").click(createRoom)
