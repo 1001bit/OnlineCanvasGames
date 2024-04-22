@@ -1,3 +1,5 @@
+canvas.setBackgroundColor(RGB(50, 50, 50))
+
 for(let i = 0; i < 10; i++){
     rect = new RectangleShape(50, 50)
     rect.setPosition(i * 50, 0)
@@ -6,4 +8,6 @@ for(let i = 0; i < 10; i++){
     canvas.insertNewDrawable(rect)
 }
 
-canvas.setDrawRate(30)
+text = new Text("Hello world", 48)
+text.setPosition(100, 100)
+canvas.insertNewDrawable(text)

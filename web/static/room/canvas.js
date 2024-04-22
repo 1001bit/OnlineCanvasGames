@@ -9,10 +9,8 @@ class Rect {
     height
 
     constructor(){
-        this.left = 0
-        this.top = 0
-        this.width = 0
-        this.height = 0
+        this.setPosition(0, 0)
+        this.setSize(0, 0)
     }
 
     setPosition(left, top){
@@ -28,14 +26,14 @@ class Rect {
 
 class RectangleShape {
     rect
-    fillColor
+    color
 
     constructor(width, height){
         this.rect = new Rect()
         this.rect.setSize(width, height)
         this.rect.setPosition(0, 0)
 
-        this.fillColor = "rgb(0 0 0)"
+        this.setColor(RGB(255, 255, 255))
     }
 
     setPosition(left, top){
@@ -47,12 +45,58 @@ class RectangleShape {
     }
 
     setColor(fillColor){
-        this.fillColor = fillColor
+        this.color = fillColor
     }
 
     draw(ctx){
-        ctx.fillStyle = this.fillColor
+        ctx.fillStyle = this.color
         ctx.fillRect(this.rect.left, this.rect.top, this.rect.width, this.rect.height)
+    }
+}
+
+class Text {
+    string
+    color
+    font
+    size
+
+    x
+    y
+
+    constructor(string, size){
+        this.setString(string)
+        this.setColor(RGB(255, 255, 255))
+        this.setFont("serif")
+        this.setSize(size)
+        this.setPosition(0, 0)
+    }
+
+    setPosition(x, y){
+        this.x = x
+        this.y = y
+    }
+
+    setString(string){
+        this.string = string
+    }
+
+    setColor(color){
+        this.color = color
+    }
+
+    setFont(font){
+        this.font = font
+    }
+
+    setSize(size){
+        this.size = size
+    }
+
+    draw(ctx){
+        ctx.fillStyle = this.color
+        ctx.font = `${this.size}px ${this.font}`
+        // adding size to y because text's origin is located on the bottom
+        ctx.fillText(this.string, this.x, this.y + this.size) 
     }
 }
 
@@ -60,6 +104,7 @@ class GameCanvas {
     canvas
     ctx
     drawables
+    backgroundColor
     interval
 
     constructor(canvasID) {
@@ -67,23 +112,32 @@ class GameCanvas {
         this.ctx = this.canvas.getContext("2d")
         this.drawables = []
 
+        this.setBackgroundColor(RGB(0, 0, 0))
+
         window.addEventListener('resize', () => this.resize(), false);
     }
 
     start(){
         $("header").hide()
-        this.canvas.style.display = "block" 
+        this.setCanvasVisibility(true)
         this.resize()
-
-        const rate = 60
-        this.interval = setInterval(() => this.draw(), 1000/rate)
+        this.setDrawRate(60)
     }
 
     stop(){
         $("header").show()
-        this.canvas.style.display = "none" 
+        this.setCanvasVisibility(false)
 
         clearInterval(this.interval)
+    }
+
+    setDrawRate(rate){
+        clearInterval(this.interval)
+        this.interval = setInterval(() => this.draw(), 1000/rate)
+    }
+
+    setCanvasVisibility(visibility){
+        this.canvas.style.display = visibility ? "block" : "none"
     }
 
     resize(){
@@ -114,7 +168,11 @@ class GameCanvas {
         const canvas = this.canvas
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "rgb(0 0 0)"
+        ctx.fillStyle = this.backgroundColor
         ctx.fillRect(0, 0, canvas.width, canvas.height)
+    }
+
+    setBackgroundColor(color){
+        this.backgroundColor = color
     }
 }
