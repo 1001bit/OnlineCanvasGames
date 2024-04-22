@@ -28,7 +28,7 @@ type RoomRT struct {
 
 	readChan chan RoomReadMessage
 
-	connectedToRT chan struct{}
+	connectedToGame chan struct{}
 
 	id    int
 	owner *RoomClient
@@ -47,7 +47,7 @@ func NewRoomRT() *RoomRT {
 
 		readChan: make(chan RoomReadMessage),
 
-		connectedToRT: make(chan struct{}),
+		connectedToGame: make(chan struct{}),
 
 		id:    0,
 		owner: nil,
@@ -59,7 +59,9 @@ func (roomRT *RoomRT) Run() {
 
 	defer func() {
 		roomRT.gameRT.disconnectRoomChan <- roomRT
-		log.Println("<RoomRT Run End>")
+		close(roomRT.doneChan)
+
+		log.Println("<RoomRT Done>")
 	}()
 
 	// after 5 seconds of start, if there is no client - disconnect the room
@@ -77,7 +79,7 @@ func (roomRT *RoomRT) Run() {
 			roomRT.connectClient(client)
 
 			// send rooms json data globally on new client
-			go roomRT.gameRT.globallyWriteRoomsMessage()
+			go roomRT.gameRT.requestUpdatingRoomsJSON()
 
 			log.Println("<RoomRT +Client>:", len(roomRT.clients))
 
@@ -86,7 +88,7 @@ func (roomRT *RoomRT) Run() {
 			roomRT.disconnectClient(client)
 
 			// send rooms json data globally on client delete
-			go roomRT.gameRT.globallyWriteRoomsMessage()
+			go roomRT.gameRT.requestUpdatingRoomsJSON()
 
 			log.Println("<RoomRT -Client>:", len(roomRT.clients))
 
@@ -137,17 +139,19 @@ func (roomRT *RoomRT) disconnectClient(client *RoomClient) {
 	}
 
 	delete(roomRT.clients, client)
-	close(client.doneChan)
 
 	// change owner
 	if roomRT.owner == client {
 		roomRT.owner, _ = roomRT.pickRandomClient()
 	}
 
-	// stop room if no clients left
-	if len(roomRT.clients) == 0 {
-		go roomRT.Stop()
-	}
+	// stop room if no clients left after 2 seconds of disconnection
+	go func() {
+		time.Sleep(2 * time.Second)
+		if len(roomRT.clients) == 0 {
+			roomRT.Stop()
+		}
+	}()
 
 	// remove client from RT's list
 	roomRT.gameRT.rt.unregisterRoomClientChan <- client

@@ -65,7 +65,7 @@ func (rt *Realtime) InitGames() error {
 
 func (rt *Realtime) Run() {
 	log.Println("<Realtime Run>")
-	defer log.Println("<Realtime Run End>")
+	defer log.Println("<Realtime Done>")
 
 	for {
 		select {
@@ -110,7 +110,7 @@ func (rt *Realtime) ConnectNewRoom(ctx context.Context, gameID int) (*RoomRT, er
 
 	// wait until room connected to RT
 	select {
-	case <-room.connectedToRT:
+	case <-room.connectedToGame:
 		return room, nil
 	case <-ctx.Done():
 		return nil, ErrCreateRoom
@@ -135,21 +135,20 @@ func (rt *Realtime) disconnectGame(game *GameRT) {
 	}
 
 	delete(rt.games, game.gameID)
-	close(game.doneChan)
 }
 
 // Called by room when a client is connected. Disconnects client with the same id from previous room and puts new into list
 func (rt *Realtime) registerRoomClient(client *RoomClient) {
-	if oldClient, ok := rt.roomsClients[client.user.ID]; ok {
+	if oldClient, ok := rt.roomsClients[client.user.id]; ok {
 		oldClient.stopWithMessage("This user has just joined another room")
 	}
 
-	rt.roomsClients[client.user.ID] = client
+	rt.roomsClients[client.user.id] = client
 }
 
 // Called by room when a client is disconnected. Removes client from list if requested client IS the client in the list
 func (rt *Realtime) unregisterRoomClient(client *RoomClient) {
-	if oldClient, ok := rt.roomsClients[client.user.ID]; ok && oldClient == client {
-		delete(rt.roomsClients, client.user.ID)
+	if oldClient, ok := rt.roomsClients[client.user.id]; ok && oldClient == client {
+		delete(rt.roomsClients, client.user.id)
 	}
 }

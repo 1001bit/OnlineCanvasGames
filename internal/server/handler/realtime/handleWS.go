@@ -72,10 +72,10 @@ func (rt *Realtime) HandleRoomWS(w http.ResponseWriter, r *http.Request) {
 		client.stopWithMessage("Unauthorized!")
 		return
 	}
-	client.user.ID = int(userIDstr)
+	client.user.id = int(userIDstr)
 
 	// Name
-	client.user.Name, ok = claims["username"].(string)
+	client.user.name, ok = claims["username"].(string)
 	if !ok {
 		client.stopWithMessage("Unauthorized!")
 		return

@@ -37,7 +37,9 @@ func (client *GameRTClient) Run(ctx context.Context) {
 
 	defer func() {
 		client.gameRT.disconnectClientChan <- client
-		log.Println("<GameRTClient Run End>")
+		close(client.doneChan)
+
+		log.Println("<GameRTClient Done>")
 	}()
 
 	for {

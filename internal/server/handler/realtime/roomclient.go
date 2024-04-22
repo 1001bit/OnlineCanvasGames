@@ -16,8 +16,8 @@ const (
 )
 
 type RoomClientUser struct {
-	ID   int
-	Name string
+	id   int
+	name string
 }
 
 // Layer of RT which is responsible for handling connection WS
@@ -43,8 +43,8 @@ func NewRoomClient(conn *websocket.Conn) *RoomClient {
 
 		conn: conn,
 		user: RoomClientUser{
-			ID:   0,
-			Name: "",
+			id:   0,
+			name: "",
 		},
 
 		writeChan: make(chan *MessageJSON),
@@ -66,7 +66,9 @@ func (client *RoomClient) Run() {
 		ticker.Stop()
 		client.conn.Close()
 
-		log.Println("<RoomClient Run End>")
+		close(client.doneChan)
+
+		log.Println("<RoomClient Done>")
 	}()
 
 	go client.readPump()

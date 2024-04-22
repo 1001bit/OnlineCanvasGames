@@ -31,6 +31,9 @@ type GameRT struct {
 	connectClientChan    chan *GameRTClient
 	disconnectClientChan chan *GameRTClient
 
+	roomsJSON           *MessageJSON
+	roomsJSONUpdateChan chan struct{}
+
 	globalWriteChan chan *MessageJSON
 
 	gameID int
@@ -51,6 +54,12 @@ func NewGameRT(id int) *GameRT {
 		connectClientChan:    make(chan *GameRTClient),
 		disconnectClientChan: make(chan *GameRTClient),
 
+		roomsJSON: &MessageJSON{
+			Type: "rooms",
+			Body: make([]RoomJSON, 0),
+		},
+		roomsJSONUpdateChan: make(chan struct{}),
+
 		globalWriteChan: make(chan *MessageJSON),
 
 		gameID: id,
@@ -62,7 +71,9 @@ func (gameRT *GameRT) Run() {
 
 	defer func() {
 		gameRT.rt.disconnectGameChan <- gameRT
-		log.Println("<GameRT Run End>")
+		close(gameRT.doneChan)
+
+		log.Println("<GameRT Done>")
 	}()
 
 	for {
@@ -71,8 +82,10 @@ func (gameRT *GameRT) Run() {
 			// When server asked to connect a client
 			gameRT.connectClient(client)
 
-			// send rooms data to client on it's join
-			client.writeChan <- gameRT.prepareRoomsMessage()
+			// send roomsJSON to client on it's join
+			go func() {
+				client.writeChan <- gameRT.roomsJSON
+			}()
 
 			log.Println("<GameRT +Client>:", len(gameRT.clients))
 
@@ -90,8 +103,8 @@ func (gameRT *GameRT) Run() {
 			// When server asked to disconnect a client
 			gameRT.disconnectRoom(room)
 
-			// send rooms json data globally on room delete
-			go gameRT.globallyWriteRoomsMessage()
+			// update roomsJSON on room delete
+			gameRT.updateRoomsJSON()
 
 			log.Println("<GameRT -Room>:", len(gameRT.rooms))
 
@@ -99,6 +112,11 @@ func (gameRT *GameRT) Run() {
 			// Write message to every client if server told to do so
 			gameRT.globalWriteMessage(message)
 			log.Println("<GameRT Global Message>")
+
+		case <-gameRT.roomsJSONUpdateChan:
+			// When server asked to update roomsJSON
+			gameRT.updateRoomsJSON()
+			log.Println("<GameRT RoomsJSON Update>")
 
 		case <-gameRT.stopChan:
 			// When server asked to stop running
@@ -116,6 +134,7 @@ func (gameRT *GameRT) Stop() {
 }
 
 // returns random room
+// TODO: Make this thread safe
 func (gameRT *GameRT) PickRandomRoom() (*RoomRT, error) {
 	if len(gameRT.rooms) == 0 {
 		return nil, ErrNoRooms
@@ -144,7 +163,6 @@ func (gameRT *GameRT) disconnectClient(client *GameRTClient) {
 	}
 
 	delete(gameRT.clients, client)
-	close(client.doneChan)
 }
 
 // connect RoomRT to GameRT
@@ -153,7 +171,7 @@ func (gameRT *GameRT) connectRoom(room *RoomRT) {
 	gameRT.rooms[room.id] = room
 	room.gameRT = gameRT
 
-	close(room.connectedToRT)
+	close(room.connectedToGame)
 }
 
 // disconnect RoomRT from GameRT
@@ -163,7 +181,6 @@ func (gameRT *GameRT) disconnectRoom(room *RoomRT) {
 	}
 
 	delete(gameRT.rooms, room.id)
-	close(room.doneChan)
 }
 
 // write a message to every client
@@ -173,33 +190,28 @@ func (gameRT *GameRT) globalWriteMessage(message *MessageJSON) {
 	}
 }
 
-// get all the rooms in JSON format
-func (gameRT *GameRT) prepareRoomsMessage() *MessageJSON {
-	message := &MessageJSON{
-		Type: "rooms",
-	}
-
-	rooms := make([]RoomJSON, 0)
+func (gameRT *GameRT) updateRoomsJSON() {
+	roomsJSON := make([]RoomJSON, 0)
 
 	for _, roomRT := range gameRT.rooms {
-		<-roomRT.connectedToRT
-		ownerUser := RoomClientUser{}
+		<-roomRT.connectedToGame
+
+		roomOwnerName := "nobody"
 		if roomRT.owner != nil {
-			ownerUser = roomRT.owner.user
+			roomOwnerName = roomRT.owner.user.name
 		}
 
-		rooms = append(rooms, RoomJSON{
-			Owner:   ownerUser.Name,
+		roomsJSON = append(roomsJSON, RoomJSON{
+			Owner:   roomOwnerName,
 			Clients: len(roomRT.clients),
 			ID:      roomRT.id,
 		})
 	}
 
-	message.Body = rooms
-
-	return message
+	gameRT.roomsJSON.Body = roomsJSON
+	gameRT.globalWriteMessage(gameRT.roomsJSON)
 }
 
-func (gameRT *GameRT) globallyWriteRoomsMessage() {
-	gameRT.globalWriteChan <- gameRT.prepareRoomsMessage()
+func (gameRT *GameRT) requestUpdatingRoomsJSON() {
+	gameRT.roomsJSONUpdateChan <- struct{}{}
 }
