@@ -16,7 +16,7 @@ type GameRTClient struct {
 	doneChan chan struct{}
 
 	writer    http.ResponseWriter
-	writeChan chan MessageJSON
+	writeChan chan *MessageJSON
 }
 
 func NewGameRTClient(writer http.ResponseWriter) *GameRTClient {
@@ -27,7 +27,7 @@ func NewGameRTClient(writer http.ResponseWriter) *GameRTClient {
 		doneChan: make(chan struct{}),
 
 		writer:    writer,
-		writeChan: make(chan MessageJSON),
+		writeChan: make(chan *MessageJSON),
 	}
 }
 
@@ -66,7 +66,7 @@ func (client *GameRTClient) Stop() {
 	client.stopChan <- struct{}{}
 }
 
-func (client *GameRTClient) writeMessage(message MessageJSON) {
+func (client *GameRTClient) writeMessage(message *MessageJSON) {
 	messageByte, err := json.Marshal(message)
 	if err != nil {
 		log.Println("error marshaling GameRTClient message:", err)

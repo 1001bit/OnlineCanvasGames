@@ -30,8 +30,8 @@ type RoomClient struct {
 	conn *websocket.Conn
 	user RoomClientUser
 
-	writeChan chan MessageJSON
-	readChan  chan MessageJSON
+	writeChan chan *MessageJSON
+	readChan  chan *MessageJSON
 }
 
 func NewRoomClient(conn *websocket.Conn) *RoomClient {
@@ -47,8 +47,8 @@ func NewRoomClient(conn *websocket.Conn) *RoomClient {
 			Name: "",
 		},
 
-		writeChan: make(chan MessageJSON),
-		readChan:  make(chan MessageJSON),
+		writeChan: make(chan *MessageJSON),
+		readChan:  make(chan *MessageJSON),
 	}
 }
 
@@ -62,8 +62,10 @@ func (client *RoomClient) Run() {
 		if client.roomRT != nil {
 			client.roomRT.disconnectClientChan <- client
 		}
+
 		ticker.Stop()
 		client.conn.Close()
+
 		log.Println("<RoomClient Run End>")
 	}()
 
@@ -126,7 +128,7 @@ func (client *RoomClient) readPump() {
 		}
 
 		// transform message into struct and throw into channel
-		messageStruct := MessageJSON{}
+		messageStruct := &MessageJSON{}
 		err = json.Unmarshal(message, &messageStruct)
 		if err == nil {
 			select {
@@ -152,7 +154,7 @@ func (client *RoomClient) pingConn() {
 }
 
 // write message to connection
-func (client *RoomClient) writeMessage(message MessageJSON) {
+func (client *RoomClient) writeMessage(message *MessageJSON) {
 	client.conn.SetWriteDeadline(time.Now().Add(writeWait)) // if WriteMessage can't send message in writeWait period, client is disconnected
 
 	messageByte, err := json.Marshal(message)
@@ -169,7 +171,7 @@ func (client *RoomClient) writeMessage(message MessageJSON) {
 }
 
 // process read message
-func (client *RoomClient) handleReadMessage(message MessageJSON) {
+func (client *RoomClient) handleReadMessage(message *MessageJSON) {
 	// simply tell room about read message
 	client.roomRT.readChan <- RoomReadMessage{
 		client:  client,
@@ -179,7 +181,7 @@ func (client *RoomClient) handleReadMessage(message MessageJSON) {
 
 // send message to client and close after
 func (client *RoomClient) stopWithMessage(text string) {
-	client.writeChan <- MessageJSON{
+	client.writeChan <- &MessageJSON{
 		Type: "message",
 		Body: text,
 	}

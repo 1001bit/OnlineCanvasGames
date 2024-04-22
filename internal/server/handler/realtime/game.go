@@ -31,7 +31,7 @@ type GameRT struct {
 	connectClientChan    chan *GameRTClient
 	disconnectClientChan chan *GameRTClient
 
-	globalWriteChan chan MessageJSON
+	globalWriteChan chan *MessageJSON
 
 	gameID int
 }
@@ -51,7 +51,7 @@ func NewGameRT(id int) *GameRT {
 		connectClientChan:    make(chan *GameRTClient),
 		disconnectClientChan: make(chan *GameRTClient),
 
-		globalWriteChan: make(chan MessageJSON),
+		globalWriteChan: make(chan *MessageJSON),
 
 		gameID: id,
 	}
@@ -167,15 +167,15 @@ func (gameRT *GameRT) disconnectRoom(room *RoomRT) {
 }
 
 // write a message to every client
-func (gameRT *GameRT) globalWriteMessage(message MessageJSON) {
+func (gameRT *GameRT) globalWriteMessage(message *MessageJSON) {
 	for client := range gameRT.clients {
 		client.writeChan <- message
 	}
 }
 
 // get all the rooms in JSON format
-func (gameRT *GameRT) prepareRoomsMessage() MessageJSON {
-	message := MessageJSON{
+func (gameRT *GameRT) prepareRoomsMessage() *MessageJSON {
+	message := &MessageJSON{
 		Type: "rooms",
 	}
 

@@ -12,7 +12,7 @@ var ErrNoClients = errors.New("no clients in the room")
 // Struct that contains message and a client who was the message read from
 type RoomReadMessage struct {
 	client  *RoomClient
-	message MessageJSON
+	message *MessageJSON
 }
 
 // Layer of RT which is responsible for handling WS clients
@@ -77,7 +77,7 @@ func (roomRT *RoomRT) Run() {
 			roomRT.connectClient(client)
 
 			// send rooms json data globally on new client
-			roomRT.gameRT.globallyWriteRoomsMessage()
+			go roomRT.gameRT.globallyWriteRoomsMessage()
 
 			log.Println("<RoomRT +Client>:", len(roomRT.clients))
 
@@ -86,7 +86,7 @@ func (roomRT *RoomRT) Run() {
 			roomRT.disconnectClient(client)
 
 			// send rooms json data globally on client delete
-			roomRT.gameRT.globallyWriteRoomsMessage()
+			go roomRT.gameRT.globallyWriteRoomsMessage()
 
 			log.Println("<RoomRT -Client>:", len(roomRT.clients))
 
