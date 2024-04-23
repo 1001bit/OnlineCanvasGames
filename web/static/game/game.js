@@ -15,22 +15,6 @@ function joinRandomRoom(){
     }
     const room = roomList[Math.floor(Math.random() * roomList.length)]
     window.location.href = $(room).find(".join").attr("href")
-
-    return
-
-    fetch(`/api/game/${gameID}/room`, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-        },
-    })
-    .then (response => {
-        if(response.status != 200){
-            response.json().then(data => $("#random").text(data.message))
-            return
-        }
-        response.json().then(data => window.location.href = `/game/${gameID}/room/${data.roomid}`)
-    })
 }
 
 function createRoom(){
