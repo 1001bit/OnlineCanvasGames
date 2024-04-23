@@ -3,7 +3,6 @@ package realtime
 import (
 	"errors"
 	"log"
-	"math/rand"
 	"time"
 )
 
@@ -131,23 +130,6 @@ func (gameRT *GameRT) Run() {
 
 func (gameRT *GameRT) Stop() {
 	gameRT.stopChan <- struct{}{}
-}
-
-// returns random room
-// TODO: Make this thread safe
-func (gameRT *GameRT) PickRandomRoom() (*RoomRT, error) {
-	if len(gameRT.rooms) == 0 {
-		return nil, ErrNoRooms
-	}
-
-	k := rand.Intn(len(gameRT.rooms))
-	for _, room := range gameRT.rooms {
-		if k == 0 {
-			return room, nil
-		}
-		k--
-	}
-	return nil, ErrNoRooms
 }
 
 // connect GameRT client to GameRT

@@ -29,28 +29,3 @@ func HandleRoomPost(w http.ResponseWriter, r *http.Request, rt *realtime.Realtim
 
 	ServeJSON(w, resp, http.StatusOK)
 }
-
-func HandleRandomRoomGet(w http.ResponseWriter, r *http.Request, rt *realtime.Realtime) {
-	resp := RoomAPIResponse{}
-
-	gameID, err := strconv.Atoi(r.PathValue("gameid"))
-	if err != nil {
-		ServeJSONMessage(w, "Bad game id", http.StatusBadRequest)
-		return
-	}
-
-	game, ok := rt.GetGameByID(gameID)
-	if !ok {
-		ServeJSONMessage(w, "Game not found", http.StatusNotFound)
-		return
-	}
-
-	room, err := game.PickRandomRoom()
-	if err != nil {
-		ServeJSONMessage(w, "No rooms yet!", http.StatusBadRequest)
-		return
-	}
-	resp.RoomID = room.GetID()
-
-	ServeJSON(w, resp, http.StatusOK)
-}

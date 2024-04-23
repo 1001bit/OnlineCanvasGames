@@ -8,6 +8,16 @@ $("main").ready(() => {
 })
 
 function joinRandomRoom(){
+    const roomList = rooms.roomList.find(".room")
+    if (roomList.length == 0){
+        $("#random").text("No rooms yet!")
+        return
+    }
+    const room = roomList[Math.floor(Math.random() * roomList.length)]
+    window.location.href = $(room).find(".join").attr("href")
+
+    return
+
     fetch(`/api/game/${gameID}/room`, {
         method: "GET",
         headers: {
