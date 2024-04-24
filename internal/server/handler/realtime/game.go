@@ -172,6 +172,7 @@ func (gameRT *GameRT) globalWriteMessage(message *MessageJSON) {
 	}
 }
 
+// update gameRT.roomsJSON rooms list to send to all the clients of gameRT
 func (gameRT *GameRT) updateRoomsJSON() {
 	roomsJSON := make([]RoomJSON, 0)
 
@@ -194,6 +195,7 @@ func (gameRT *GameRT) updateRoomsJSON() {
 	gameRT.globalWriteMessage(gameRT.roomsJSON)
 }
 
+// ask gameRT to update gameRT.roomsJSON
 func (gameRT *GameRT) requestUpdatingRoomsJSON() {
 	gameRT.roomsJSONUpdateChan <- struct{}{}
 }

@@ -22,6 +22,16 @@ class Rect {
         this.width = width
         this.height = height
     }
+
+    containsPoint(x, y){
+        if(
+        this.left <= x && x <= this.left + this.width &&
+        this.top <= y && y <= this.top + this.height
+        ){
+            return true
+        }
+        return false
+    }
 }
 
 class RectangleShape {
@@ -174,5 +184,12 @@ class GameCanvas {
 
     setBackgroundColor(color){
         this.backgroundColor = color
+    }
+
+    getMousePosition(e){
+        let rect = this.canvas.getBoundingClientRect()
+        let x = e.clientX - rect.left
+        let y = e.clientY - rect.top
+        return {x, y}
     }
 }

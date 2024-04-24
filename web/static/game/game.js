@@ -7,6 +7,9 @@ $("main").ready(() => {
     sse.openConnection(gameID)
 })
 
+$("#random").click(joinRandomRoom)
+$("#create").click(createRoom)
+
 function joinRandomRoom(){
     const roomList = rooms.roomList.find(".room")
     if (roomList.length == 0){
@@ -32,6 +35,3 @@ function createRoom(){
         response.json().then(data => window.location.href = `/game/${gameID}/room/${data.roomid}`)
     })
 }
-
-$("#random").click(joinRandomRoom)
-$("#create").click(createRoom)
