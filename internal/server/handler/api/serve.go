@@ -4,24 +4,26 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+
+	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
 )
 
-func ServeJSON(w http.ResponseWriter, data any, status int) {
-	w.WriteHeader(status)
-	dataByte, err := json.Marshal(data)
+func ServeMessage(w http.ResponseWriter, msg message.JSON, status int) {
+	msgByte, err := json.Marshal(msg)
 	if err != nil {
 		log.Println("err on response:", err)
-		ServeJSONMessage(w, "something went wrong", http.StatusInternalServerError)
+		ServeTextMessage(w, "something went wrong", http.StatusInternalServerError)
 		return
 	}
-	w.Write(dataByte)
+
+	w.WriteHeader(status)
+	w.Write(msgByte)
 }
 
-func ServeJSONMessage(w http.ResponseWriter, message string, status int) {
-	data := struct {
-		Message string `json:"message"`
-	}{
-		Message: message,
+func ServeTextMessage(w http.ResponseWriter, text string, status int) {
+	msg := message.JSON{
+		Type: "message",
+		Body: text,
 	}
-	ServeJSON(w, data, status)
+	ServeMessage(w, msg, status)
 }

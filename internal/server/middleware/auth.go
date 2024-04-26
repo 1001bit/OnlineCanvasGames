@@ -13,7 +13,7 @@ func AuthJSON(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_, err := auth.JWTClaimsByRequest(r)
 		if err != nil {
-			api.ServeJSONMessage(w, "unauthorized", http.StatusUnauthorized)
+			api.ServeTextMessage(w, "unauthorized", http.StatusUnauthorized)
 			return
 		}
 

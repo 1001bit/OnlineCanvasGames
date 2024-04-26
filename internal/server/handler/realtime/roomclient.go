@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
 	"github.com/gorilla/websocket"
 )
 
@@ -24,22 +25,20 @@ type RoomClientUser struct {
 type RoomClient struct {
 	roomRT *RoomRT
 
-	stopChan chan struct{}
-	doneChan chan struct{}
+	flow RunFlow
 
 	conn *websocket.Conn
 	user RoomClientUser
 
-	writeChan chan *MessageJSON
-	readChan  chan *MessageJSON
+	writeChan chan *message.JSON
+	readChan  chan *message.JSON
 }
 
 func NewRoomClient(conn *websocket.Conn) *RoomClient {
 	return &RoomClient{
 		roomRT: nil,
 
-		stopChan: make(chan struct{}),
-		doneChan: make(chan struct{}),
+		flow: MakeRunFlow(),
 
 		conn: conn,
 		user: RoomClientUser{
@@ -47,8 +46,8 @@ func NewRoomClient(conn *websocket.Conn) *RoomClient {
 			name: "",
 		},
 
-		writeChan: make(chan *MessageJSON),
-		readChan:  make(chan *MessageJSON),
+		writeChan: make(chan *message.JSON),
+		readChan:  make(chan *message.JSON),
 	}
 }
 
@@ -66,7 +65,7 @@ func (client *RoomClient) Run() {
 		ticker.Stop()
 		client.conn.Close()
 
-		close(client.doneChan)
+		client.flow.CloseDone()
 
 		log.Println("<RoomClient Done>")
 	}()
@@ -79,27 +78,19 @@ func (client *RoomClient) Run() {
 			// Ping every tick
 			client.pingConn()
 
-		case message := <-client.writeChan:
+		case msg := <-client.writeChan:
 			// Write message to conn if server told to do so
-			client.writeMessage(message)
+			client.writeMessage(msg)
 
-		case message := <-client.readChan:
+		case msg := <-client.readChan:
 			// Handle messages that were read in readPump
-			client.handleReadMessage(message)
+			client.handleReadMessage(msg)
 
-		case <-client.stopChan:
+		case <-client.flow.Stopped():
 			// when server asked to stop running
-			return
-
-		case <-client.doneChan:
-			// when parent closed doneChan
 			return
 		}
 	}
-}
-
-func (client *RoomClient) Stop() {
-	client.stopChan <- struct{}{}
 }
 
 // constantly read messages from connection
@@ -107,7 +98,7 @@ func (client *RoomClient) readPump() {
 	log.Println("<RoomClient ReadPump>")
 
 	defer func() {
-		client.Stop()
+		client.flow.Stop()
 		log.Println("<RoomClient ReadPump End>")
 	}()
 
@@ -119,8 +110,8 @@ func (client *RoomClient) readPump() {
 	})
 
 	for {
-		// Get message from client
-		_, message, err := client.conn.ReadMessage()
+		// Get msg from client
+		_, msg, err := client.conn.ReadMessage()
 
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
@@ -130,13 +121,13 @@ func (client *RoomClient) readPump() {
 		}
 
 		// transform message into struct and throw into channel
-		messageStruct := &MessageJSON{}
-		err = json.Unmarshal(message, &messageStruct)
+		msgStruct := &message.JSON{}
+		err = json.Unmarshal(msg, &msgStruct)
 		if err == nil {
 			select {
-			case client.readChan <- messageStruct:
+			case client.readChan <- msgStruct:
 				// send message to read chan
-			case <-client.doneChan:
+			case <-client.flow.Done():
 				return
 			}
 		}
@@ -156,16 +147,16 @@ func (client *RoomClient) pingConn() {
 }
 
 // write message to connection
-func (client *RoomClient) writeMessage(message *MessageJSON) {
+func (client *RoomClient) writeMessage(msg *message.JSON) {
 	client.conn.SetWriteDeadline(time.Now().Add(writeWait)) // if WriteMessage can't send message in writeWait period, client is disconnected
 
-	messageByte, err := json.Marshal(message)
+	msgByte, err := json.Marshal(msg)
 	if err != nil {
 		log.Println("err marshaling RoomClient message:", err)
 		return
 	}
 
-	err = client.conn.WriteMessage(websocket.TextMessage, messageByte)
+	err = client.conn.WriteMessage(websocket.TextMessage, msgByte)
 	// if couldn't write message - disconnect
 	if err != nil {
 		client.stopWithMessage("Unexpected error!")
@@ -173,19 +164,19 @@ func (client *RoomClient) writeMessage(message *MessageJSON) {
 }
 
 // process read message
-func (client *RoomClient) handleReadMessage(message *MessageJSON) {
+func (client *RoomClient) handleReadMessage(msg *message.JSON) {
 	// simply tell room about read message
 	client.roomRT.readChan <- RoomReadMessage{
 		client:  client,
-		message: message,
+		message: msg,
 	}
 }
 
 // send message to client and close after
 func (client *RoomClient) stopWithMessage(text string) {
-	client.writeChan <- &MessageJSON{
+	client.writeChan <- &message.JSON{
 		Type: "message",
 		Body: text,
 	}
-	client.Stop()
+	client.flow.Stop()
 }

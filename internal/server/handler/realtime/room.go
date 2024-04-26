@@ -5,6 +5,8 @@ import (
 	"log"
 	"math/rand"
 	"time"
+
+	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
 )
 
 var ErrNoClients = errors.New("no clients in the room")
@@ -12,21 +14,21 @@ var ErrNoClients = errors.New("no clients in the room")
 // Struct that contains message and a client who was the message read from
 type RoomReadMessage struct {
 	client  *RoomClient
-	message *MessageJSON
+	message *message.JSON
 }
 
 // Layer of RT which is responsible for handling WS clients
 type RoomRT struct {
 	gameRT *GameRT
 
-	stopChan chan struct{}
-	doneChan chan struct{}
+	flow RunFlow
 
 	clients              map[*RoomClient]bool
 	connectClientChan    chan *RoomClient
 	disconnectClientChan chan *RoomClient
 
-	readChan chan RoomReadMessage
+	readChan        chan RoomReadMessage
+	globalWriteChan chan *message.JSON
 
 	connectedToGame chan struct{}
 
@@ -38,14 +40,14 @@ func NewRoomRT() *RoomRT {
 	return &RoomRT{
 		gameRT: nil,
 
-		stopChan: make(chan struct{}),
-		doneChan: make(chan struct{}),
+		flow: MakeRunFlow(),
 
 		clients:              make(map[*RoomClient]bool),
 		connectClientChan:    make(chan *RoomClient),
 		disconnectClientChan: make(chan *RoomClient),
 
-		readChan: make(chan RoomReadMessage),
+		readChan:        make(chan RoomReadMessage),
+		globalWriteChan: make(chan *message.JSON),
 
 		connectedToGame: make(chan struct{}),
 
@@ -59,7 +61,7 @@ func (roomRT *RoomRT) Run() {
 
 	defer func() {
 		roomRT.gameRT.disconnectRoomChan <- roomRT
-		close(roomRT.doneChan)
+		roomRT.flow.CloseDone()
 
 		log.Println("<RoomRT Done>")
 	}()
@@ -68,7 +70,7 @@ func (roomRT *RoomRT) Run() {
 	go func() {
 		time.Sleep(5 * time.Second)
 		if len(roomRT.clients) == 0 {
-			roomRT.Stop()
+			roomRT.flow.Stop()
 		}
 	}()
 
@@ -92,24 +94,21 @@ func (roomRT *RoomRT) Run() {
 
 			log.Println("<RoomRT -Client>:", len(roomRT.clients))
 
-		case message := <-roomRT.readChan:
+		case msg := <-roomRT.readChan:
 			// Handle messages that were read by all the clients of the room
-			roomRT.handleReadMessage(message)
-			log.Println("<RoomRT Read Message>:", message)
+			roomRT.handleReadMessage(msg)
+			log.Println("<RoomRT Read Message>:", msg)
 
-		case <-roomRT.stopChan:
+		case msg := <-roomRT.globalWriteChan:
+			// Write message to every client if server told to do so
+			roomRT.globalWriteMessage(msg)
+			log.Println("<RoomRT Global Message>:", msg)
+
+		case <-roomRT.flow.Stopped():
 			// When server asked to stop running
-			return
-
-		case <-roomRT.doneChan:
-			// When parent closed done chan
 			return
 		}
 	}
-}
-
-func (roomRT *RoomRT) Stop() {
-	roomRT.stopChan <- struct{}{}
 }
 
 func (roomRT *RoomRT) GetID() int {
@@ -149,7 +148,7 @@ func (roomRT *RoomRT) disconnectClient(client *RoomClient) {
 	go func() {
 		time.Sleep(2 * time.Second)
 		if len(roomRT.clients) == 0 {
-			roomRT.Stop()
+			roomRT.flow.Stop()
 		}
 	}()
 
@@ -158,8 +157,15 @@ func (roomRT *RoomRT) disconnectClient(client *RoomClient) {
 }
 
 // handles message that is read from a client
-func (roomRT *RoomRT) handleReadMessage(message RoomReadMessage) {
+func (roomRT *RoomRT) handleReadMessage(msg RoomReadMessage) {
 
+}
+
+// write a message to every client
+func (roomRT *RoomRT) globalWriteMessage(msg *message.JSON) {
+	for client := range roomRT.clients {
+		client.writeChan <- msg
+	}
 }
 
 // returns random client

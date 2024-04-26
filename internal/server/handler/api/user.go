@@ -26,12 +26,12 @@ func HandleUserPost(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		ServeJSONMessage(w, "Something went wrong. Please, try again", http.StatusBadRequest)
+		ServeTextMessage(w, "Something went wrong. Please, try again", http.StatusBadRequest)
 		return
 	}
 
 	if text, err := validateAuthInput(request.Username, request.Password); err != nil {
-		ServeJSONMessage(w, text, http.StatusBadRequest)
+		ServeTextMessage(w, text, http.StatusBadRequest)
 		return
 	}
 
@@ -47,14 +47,14 @@ func HandleUserPost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch err {
 		case usermodel.ErrNoSuchUser:
-			ServeJSONMessage(w, "Incorrect username or password", http.StatusUnauthorized)
+			ServeTextMessage(w, "Incorrect username or password", http.StatusUnauthorized)
 		case usermodel.ErrUserExists:
-			ServeJSONMessage(w, fmt.Sprintf("%s already exists", request.Username), http.StatusUnauthorized)
+			ServeTextMessage(w, fmt.Sprintf("%s already exists", request.Username), http.StatusUnauthorized)
 		case context.DeadlineExceeded:
-			ServeJSONMessage(w, "Deadline exceeded", http.StatusInternalServerError)
+			ServeTextMessage(w, "Deadline exceeded", http.StatusInternalServerError)
 			log.Println("Auth deadline exceeded", err)
 		default:
-			ServeJSONMessage(w, "Something went wrong", http.StatusInternalServerError)
+			ServeTextMessage(w, "Something went wrong", http.StatusInternalServerError)
 			log.Println("login/register err:", err)
 		}
 		return
@@ -63,7 +63,7 @@ func HandleUserPost(w http.ResponseWriter, r *http.Request) {
 	// set token cookie
 	token, err := auth.CreateJWT(user.ID, user.Name)
 	if err != nil {
-		ServeJSONMessage(w, "Something went wrong", http.StatusInternalServerError)
+		ServeTextMessage(w, "Something went wrong", http.StatusInternalServerError)
 		log.Println("jwt creation err:", err)
 		return
 	}
@@ -80,7 +80,7 @@ func HandleUserPost(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, &cookie)
 
-	ServeJSONMessage(w, "Success!", http.StatusOK)
+	ServeTextMessage(w, "Success!", http.StatusOK)
 }
 
 func validateAuthInput(username, password string) (string, error) {

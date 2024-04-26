@@ -6,28 +6,28 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
 )
 
 // Layer of RT which is responsible for handling connection with GameRT SSE
 type GameRTClient struct {
 	gameRT *GameRT
 
-	stopChan chan struct{}
-	doneChan chan struct{}
+	flow RunFlow
 
 	writer    http.ResponseWriter
-	writeChan chan *MessageJSON
+	writeChan chan *message.JSON
 }
 
 func NewGameRTClient(writer http.ResponseWriter) *GameRTClient {
 	return &GameRTClient{
 		gameRT: nil,
 
-		stopChan: make(chan struct{}),
-		doneChan: make(chan struct{}),
+		flow: MakeRunFlow(),
 
 		writer:    writer,
-		writeChan: make(chan *MessageJSON),
+		writeChan: make(chan *message.JSON),
 	}
 }
 
@@ -37,23 +37,19 @@ func (client *GameRTClient) Run(ctx context.Context) {
 
 	defer func() {
 		client.gameRT.disconnectClientChan <- client
-		close(client.doneChan)
+		client.flow.CloseDone()
 
 		log.Println("<GameRTClient Done>")
 	}()
 
 	for {
 		select {
-		case message := <-client.writeChan:
+		case msg := <-client.writeChan:
 			// Write message to writer if server told to do so
-			client.writeMessage(message)
+			client.writeMessage(msg)
 			log.Println("<GameRTClient Write Message>")
 
-		case <-client.doneChan:
-			// When parent closed done chan
-			return
-
-		case <-client.stopChan:
+		case <-client.flow.Stopped():
 			// When server asked to stop client
 			return
 
@@ -64,17 +60,13 @@ func (client *GameRTClient) Run(ctx context.Context) {
 	}
 }
 
-func (client *GameRTClient) Stop() {
-	client.stopChan <- struct{}{}
-}
-
-func (client *GameRTClient) writeMessage(message *MessageJSON) {
-	messageByte, err := json.Marshal(message)
+func (client *GameRTClient) writeMessage(msg *message.JSON) {
+	msgByte, err := json.Marshal(msg)
 	if err != nil {
 		log.Println("error marshaling GameRTClient message:", err)
 		return
 	}
 
-	fmt.Fprintf(client.writer, "data: %s\n\n", messageByte)
+	fmt.Fprintf(client.writer, "data: %s\n\n", msgByte)
 	client.writer.(http.Flusher).Flush()
 }

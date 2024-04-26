@@ -18,7 +18,7 @@ function postInput(type){
         body: JSON.stringify(inputData)
     })
     .then (response => {
-        response.json().then(data => $("#info").html(data.message))
+        response.json().then(data => $("#info").html(data.body))
         if(response.status == 200){
             window.location.reload()
         }

@@ -29,5 +29,5 @@ func (rt *Realtime) HandleGameSSE(w http.ResponseWriter, r *http.Request) {
 
 	game.connectClientChan <- client
 
-	<-client.doneChan
+	<-client.flow.Done()
 }

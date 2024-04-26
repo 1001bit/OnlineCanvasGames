@@ -14,12 +14,6 @@ var (
 	ErrCreateRoom = errors.New("could not create a room")
 )
 
-// Message that will be sent to client and sent from client
-type MessageJSON struct {
-	Type string `json:"type"`
-	Body any    `json:"body"`
-}
-
 // Basic layer of RT which is responsible for handling Games and room-client connections
 type Realtime struct {
 	games              map[int]*GameRT

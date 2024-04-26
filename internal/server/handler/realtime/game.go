@@ -4,6 +4,8 @@ import (
 	"errors"
 	"log"
 	"time"
+
+	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
 )
 
 var ErrNoRooms = errors.New("no rooms in the game")
@@ -19,8 +21,7 @@ type RoomJSON struct {
 type GameRT struct {
 	rt *Realtime
 
-	stopChan chan struct{}
-	doneChan chan struct{}
+	flow RunFlow
 
 	rooms              map[int]*RoomRT
 	connectRoomChan    chan *RoomRT
@@ -30,10 +31,10 @@ type GameRT struct {
 	connectClientChan    chan *GameRTClient
 	disconnectClientChan chan *GameRTClient
 
-	roomsJSON           *MessageJSON
+	roomsJSON           *message.JSON
 	roomsJSONUpdateChan chan struct{}
 
-	globalWriteChan chan *MessageJSON
+	globalWriteChan chan *message.JSON
 
 	gameID int
 }
@@ -42,8 +43,7 @@ func NewGameRT(id int) *GameRT {
 	return &GameRT{
 		rt: nil,
 
-		stopChan: make(chan struct{}),
-		doneChan: make(chan struct{}),
+		flow: MakeRunFlow(),
 
 		rooms:              make(map[int]*RoomRT),
 		connectRoomChan:    make(chan *RoomRT),
@@ -53,13 +53,13 @@ func NewGameRT(id int) *GameRT {
 		connectClientChan:    make(chan *GameRTClient),
 		disconnectClientChan: make(chan *GameRTClient),
 
-		roomsJSON: &MessageJSON{
+		roomsJSON: &message.JSON{
 			Type: "rooms",
 			Body: make([]RoomJSON, 0),
 		},
 		roomsJSONUpdateChan: make(chan struct{}),
 
-		globalWriteChan: make(chan *MessageJSON),
+		globalWriteChan: make(chan *message.JSON),
 
 		gameID: id,
 	}
@@ -70,7 +70,7 @@ func (gameRT *GameRT) Run() {
 
 	defer func() {
 		gameRT.rt.disconnectGameChan <- gameRT
-		close(gameRT.doneChan)
+		gameRT.flow.CloseDone()
 
 		log.Println("<GameRT Done>")
 	}()
@@ -107,9 +107,9 @@ func (gameRT *GameRT) Run() {
 
 			log.Println("<GameRT -Room>:", len(gameRT.rooms))
 
-		case message := <-gameRT.globalWriteChan:
+		case msg := <-gameRT.globalWriteChan:
 			// Write message to every client if server told to do so
-			gameRT.globalWriteMessage(message)
+			gameRT.globalWriteMessage(msg)
 			log.Println("<GameRT Global Message>")
 
 		case <-gameRT.roomsJSONUpdateChan:
@@ -117,19 +117,11 @@ func (gameRT *GameRT) Run() {
 			gameRT.updateRoomsJSON()
 			log.Println("<GameRT RoomsJSON Update>")
 
-		case <-gameRT.stopChan:
+		case <-gameRT.flow.Stopped():
 			// When server asked to stop running
-			return
-
-		case <-gameRT.doneChan:
-			// When parent closed done chan
 			return
 		}
 	}
-}
-
-func (gameRT *GameRT) Stop() {
-	gameRT.stopChan <- struct{}{}
 }
 
 // connect GameRT client to GameRT
@@ -166,9 +158,9 @@ func (gameRT *GameRT) disconnectRoom(room *RoomRT) {
 }
 
 // write a message to every client
-func (gameRT *GameRT) globalWriteMessage(message *MessageJSON) {
+func (gameRT *GameRT) globalWriteMessage(msg *message.JSON) {
 	for client := range gameRT.clients {
-		client.writeChan <- message
+		client.writeChan <- msg
 	}
 }
 

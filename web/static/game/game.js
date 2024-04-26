@@ -29,9 +29,10 @@ function createRoom(){
     })
     .then (response => {
         if(response.status != 200){
-            response.json().then(data => $("#create").text(data.message))
+            response.json().then(data => $("#create").text(data.body))
             return
         }
-        response.json().then(data => window.location.href = `/game/${gameID}/room/${data.roomid}`)
+        
+        response.json().then(data => window.location.href = `/game/${gameID}/room/${data.body}`)
     })
 }
