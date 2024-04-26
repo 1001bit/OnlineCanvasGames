@@ -21,5 +21,7 @@
 
 - [ ] Room Page
     - [X] WS Room connection
-    - [ ] Multiplayer clicker app with canvas and ws
     - [ ] Different rooms for different games
+    - [ ] Make RT nodes independent of each others
+
+- [ ] Multiplayer clicker game
