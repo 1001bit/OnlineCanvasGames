@@ -10,10 +10,6 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type WSMessage struct {
-	Message string `json:"message"`
-}
-
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
