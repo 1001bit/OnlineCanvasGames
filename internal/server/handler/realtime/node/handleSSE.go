@@ -1,4 +1,4 @@
-package realtime
+package rtnode
 
 import (
 	"net/http"
@@ -6,7 +6,7 @@ import (
 )
 
 // handle SSE endpoint
-func (rt *Realtime) HandleGameSSE(w http.ResponseWriter, r *http.Request) {
+func (baseRT *BaseRT) HandleGameSSE(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
@@ -19,7 +19,7 @@ func (rt *Realtime) HandleGameSSE(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	game, ok := rt.games.idMap[gameID]
+	game, ok := baseRT.games.IDMap[gameID]
 	if !ok {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -28,5 +28,5 @@ func (rt *Realtime) HandleGameSSE(w http.ResponseWriter, r *http.Request) {
 	client := NewGameRTClient(w)
 	go client.Run(r.Context(), game)
 
-	<-client.flow.Done()
+	<-client.Flow.Done()
 }

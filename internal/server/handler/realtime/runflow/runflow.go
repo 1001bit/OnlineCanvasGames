@@ -1,4 +1,4 @@
-package realtime
+package runflow
 
 type RunFlow struct {
 	stopChan chan struct{}

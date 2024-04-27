@@ -1,4 +1,4 @@
-package realtime
+package rtnode
 
 import (
 	"net/http"
@@ -29,7 +29,7 @@ func closeConnWithMessage(conn *websocket.Conn, text string) {
 }
 
 // Handle WS endpoint
-func (rt *Realtime) HandleRoomWS(w http.ResponseWriter, r *http.Request) {
+func (baseRT *BaseRT) HandleRoomWS(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -42,7 +42,7 @@ func (rt *Realtime) HandleRoomWS(w http.ResponseWriter, r *http.Request) {
 		closeConnWithMessage(conn, "Wrong game id!")
 		return
 	}
-	game, ok := rt.games.idMap[gameID]
+	game, ok := baseRT.games.IDMap[gameID]
 	if !ok {
 		closeConnWithMessage(conn, "Wrong game id!")
 		return
@@ -55,7 +55,7 @@ func (rt *Realtime) HandleRoomWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	room, ok := game.rooms.idMap[roomID]
+	room, ok := game.rooms.IDMap[roomID]
 	if !ok {
 		closeConnWithMessage(conn, "Wrong room id!")
 		return

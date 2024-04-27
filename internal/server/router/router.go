@@ -5,7 +5,7 @@ import (
 
 	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/api"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/page"
-	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/realtime"
+	rtnode "github.com/1001bit/OnlineCanvasGames/internal/server/handler/realtime/node"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/storage"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/middleware"
 
@@ -25,10 +25,10 @@ func NewRouter() (http.Handler, error) {
 	router.Handle("/gamescript/*", http.StripPrefix("/gamescript", http.HandlerFunc(storage.HandleGamescript)))
 
 	// Realtime
-	rt := realtime.NewRealtime()
-	go rt.Run()
+	baseRT := rtnode.NewBaseRT()
+	go baseRT.Run()
 
-	err := rt.InitGames()
+	err := baseRT.InitGames()
 	if err != nil {
 		return nil, err
 	}
@@ -37,8 +37,8 @@ func NewRouter() (http.Handler, error) {
 	router.Route("/rt", func(rs chi.Router) {
 		rs.Use(middleware.AuthJSON)
 
-		rs.Get("/sse/game/{gameid}", rt.HandleGameSSE)
-		rs.Get("/ws/game/{gameid}/room/{roomid}", rt.HandleRoomWS)
+		rs.Get("/sse/game/{gameid}", baseRT.HandleGameSSE)
+		rs.Get("/ws/game/{gameid}/room/{roomid}", baseRT.HandleRoomWS)
 	})
 
 	// API
@@ -48,7 +48,7 @@ func NewRouter() (http.Handler, error) {
 		// Post
 		r.Post("/user", api.HandleUserPost)
 		r.Post("/game/{gameid}/room", func(w http.ResponseWriter, r *http.Request) {
-			api.HandleRoomPost(w, r, rt)
+			api.HandleRoomPost(w, r, baseRT)
 		})
 	})
 

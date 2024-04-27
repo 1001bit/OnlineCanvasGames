@@ -1,4 +1,4 @@
-package realtime
+package rtnode
 
 import (
 	"context"
@@ -7,12 +7,13 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/realtime/runflow"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
 )
 
 // Layer of RT which is responsible for handling connection with GameRT SSE
 type GameRTClient struct {
-	flow RunFlow
+	Flow runflow.RunFlow
 
 	writer    http.ResponseWriter
 	writeChan chan *message.JSON
@@ -20,7 +21,7 @@ type GameRTClient struct {
 
 func NewGameRTClient(writer http.ResponseWriter) *GameRTClient {
 	return &GameRTClient{
-		flow: MakeRunFlow(),
+		Flow: runflow.MakeRunFlow(),
 
 		writer:    writer,
 		writeChan: make(chan *message.JSON),
@@ -35,7 +36,7 @@ func (client *GameRTClient) Run(ctx context.Context, gameRT *GameRT) {
 
 	defer func() {
 		go gameRT.clients.DisconnectChild(client)
-		client.flow.CloseDone()
+		client.Flow.CloseDone()
 
 		log.Println("<GameRTClient Done>")
 	}()
@@ -47,7 +48,7 @@ func (client *GameRTClient) Run(ctx context.Context, gameRT *GameRT) {
 			client.writeMessage(msg)
 			log.Println("<GameRTClient Write Message>")
 
-		case <-client.flow.Stopped():
+		case <-client.Flow.Stopped():
 			// When server asked to stop client
 			return
 

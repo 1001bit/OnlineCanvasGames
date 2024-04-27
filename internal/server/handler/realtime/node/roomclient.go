@@ -1,10 +1,11 @@
-package realtime
+package rtnode
 
 import (
 	"io"
 	"log"
 	"time"
 
+	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/realtime/runflow"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
 	"github.com/gorilla/websocket"
 )
@@ -23,7 +24,7 @@ type RoomClientUser struct {
 
 // Layer of RT which is responsible for handling connection WS
 type RoomClient struct {
-	flow RunFlow
+	Flow runflow.RunFlow
 
 	conn *websocket.Conn
 	user RoomClientUser
@@ -34,7 +35,7 @@ type RoomClient struct {
 
 func NewRoomClient(conn *websocket.Conn, user RoomClientUser) *RoomClient {
 	return &RoomClient{
-		flow: MakeRunFlow(),
+		Flow: runflow.MakeRunFlow(),
 
 		conn: conn,
 		user: user,
@@ -58,7 +59,7 @@ func (client *RoomClient) Run(roomRT *RoomRT) {
 		ticker.Stop()
 		client.conn.Close()
 
-		client.flow.CloseDone()
+		client.Flow.CloseDone()
 
 		log.Println("<RoomClient Done>")
 	}()
@@ -79,7 +80,7 @@ func (client *RoomClient) Run(roomRT *RoomRT) {
 			// Handle messages that were read in readPump
 			client.handleReadMessage(msg, roomRT)
 
-		case <-client.flow.Stopped():
+		case <-client.Flow.Stopped():
 			// when server asked to stop running
 			return
 		}
@@ -91,7 +92,7 @@ func (client *RoomClient) readPump() {
 	log.Println("<RoomClient ReadPump>")
 
 	defer func() {
-		client.flow.Stop()
+		client.Flow.Stop()
 		log.Println("<RoomClient ReadPump End>")
 	}()
 
@@ -126,7 +127,7 @@ func (client *RoomClient) readPump() {
 		select {
 		case client.readChan <- msg:
 			// send message to read chan
-		case <-client.flow.Done():
+		case <-client.Flow.Done():
 			return
 		}
 	}
@@ -151,7 +152,7 @@ func (client *RoomClient) writeMessage(msg *message.JSON) {
 	err := client.conn.WriteJSON(msg)
 	// if couldn't write message - disconnect
 	if err != nil {
-		client.flow.Stop()
+		client.Flow.Stop()
 	}
 }
 
@@ -170,5 +171,5 @@ func (client *RoomClient) stopWithMessage(text string) {
 		Type: "message",
 		Body: text,
 	}
-	client.flow.Stop()
+	client.Flow.Stop()
 }

@@ -1,4 +1,4 @@
-package realtime
+package rtnode
 
 import (
 	"errors"
@@ -6,6 +6,8 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/realtime/children"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/realtime/runflow"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
 )
 
@@ -19,9 +21,9 @@ type RoomReadMessage struct {
 
 // Layer of RT which is responsible for handling WS clients
 type RoomRT struct {
-	flow RunFlow
+	Flow runflow.RunFlow
 
-	clients Children[RoomClient]
+	clients children.Children[RoomClient]
 
 	readChan        chan RoomReadMessage
 	globalWriteChan chan *message.JSON
@@ -34,9 +36,9 @@ type RoomRT struct {
 
 func NewRoomRT() *RoomRT {
 	return &RoomRT{
-		flow: MakeRunFlow(),
+		Flow: runflow.MakeRunFlow(),
 
-		clients: MakeChildren[RoomClient](),
+		clients: children.MakeChildren[RoomClient](),
 
 		readChan:        make(chan RoomReadMessage),
 		globalWriteChan: make(chan *message.JSON),
@@ -55,7 +57,7 @@ func (roomRT *RoomRT) Run(gameRT *GameRT) {
 
 	defer func() {
 		go gameRT.rooms.DisconnectChild(roomRT)
-		roomRT.flow.CloseDone()
+		roomRT.Flow.CloseDone()
 
 		log.Println("<RoomRT Done>")
 	}()
@@ -63,30 +65,30 @@ func (roomRT *RoomRT) Run(gameRT *GameRT) {
 	// after 5 seconds of start, if there is no client - disconnect the room
 	go func() {
 		time.Sleep(5 * time.Second)
-		if len(roomRT.clients.childMap) == 0 {
-			roomRT.flow.Stop()
+		if len(roomRT.clients.ChildMap) == 0 {
+			roomRT.Flow.Stop()
 		}
 	}()
 
 	for {
 		select {
-		case client := <-roomRT.clients.connectChan:
+		case client := <-roomRT.clients.ToConnect():
 			// When server asked to connect a client
 			roomRT.connectClient(client)
 
 			// send rooms json data globally on new client
 			go gameRT.requestUpdatingRoomsJSON()
 
-			log.Println("<RoomRT +Client>:", len(roomRT.clients.childMap))
+			log.Println("<RoomRT +Client>:", len(roomRT.clients.ChildMap))
 
-		case client := <-roomRT.clients.disconnectChan:
+		case client := <-roomRT.clients.ToDisconnect():
 			// When server asked to disconnect a client
 			roomRT.disconnectClient(client)
 
 			// send rooms json data globally on client delete
 			go gameRT.requestUpdatingRoomsJSON()
 
-			log.Println("<RoomRT -Client>:", len(roomRT.clients.childMap))
+			log.Println("<RoomRT -Client>:", len(roomRT.clients.ChildMap))
 
 		case msg := <-roomRT.readChan:
 			// Handle messages that were read by all the clients of the room
@@ -98,7 +100,7 @@ func (roomRT *RoomRT) Run(gameRT *GameRT) {
 			roomRT.globalWriteMessage(msg)
 			log.Println("<RoomRT Global Message>:", msg)
 
-		case <-roomRT.flow.Stopped():
+		case <-roomRT.Flow.Stopped():
 			// When server asked to stop running
 			return
 		}
@@ -111,7 +113,7 @@ func (roomRT *RoomRT) GetID() int {
 
 // connects client to room and makes it owner if no owner exists
 func (roomRT *RoomRT) connectClient(client *RoomClient) {
-	roomRT.clients.childMap[client] = true
+	roomRT.clients.ChildMap[client] = true
 
 	// change owner if no owner yet
 	if roomRT.owner == nil {
@@ -121,11 +123,11 @@ func (roomRT *RoomRT) connectClient(client *RoomClient) {
 
 // disconnects client from room and sets new owner if owner has left (owner is nil if no clients left, room is deleted after that)
 func (roomRT *RoomRT) disconnectClient(client *RoomClient) {
-	if _, ok := roomRT.clients.childMap[client]; !ok {
+	if _, ok := roomRT.clients.ChildMap[client]; !ok {
 		return
 	}
 
-	delete(roomRT.clients.childMap, client)
+	delete(roomRT.clients.ChildMap, client)
 
 	// change owner
 	if roomRT.owner == client {
@@ -135,8 +137,8 @@ func (roomRT *RoomRT) disconnectClient(client *RoomClient) {
 	// stop room if no clients left after 2 seconds of disconnection
 	go func() {
 		time.Sleep(2 * time.Second)
-		if len(roomRT.clients.childMap) == 0 {
-			roomRT.flow.Stop()
+		if len(roomRT.clients.ChildMap) == 0 {
+			roomRT.Flow.Stop()
 		}
 	}()
 }
@@ -148,19 +150,19 @@ func (roomRT *RoomRT) handleReadMessage(msg RoomReadMessage) {
 
 // write a message to every client
 func (roomRT *RoomRT) globalWriteMessage(msg *message.JSON) {
-	for client := range roomRT.clients.childMap {
+	for client := range roomRT.clients.ChildMap {
 		client.writeChan <- msg
 	}
 }
 
 // returns random client
 func (roomRT *RoomRT) pickRandomClient() (*RoomClient, error) {
-	if len(roomRT.clients.childMap) == 0 {
+	if len(roomRT.clients.ChildMap) == 0 {
 		return nil, ErrNoClients
 	}
 
-	k := rand.Intn(len(roomRT.clients.childMap))
-	for client := range roomRT.clients.childMap {
+	k := rand.Intn(len(roomRT.clients.ChildMap))
+	for client := range roomRT.clients.ChildMap {
 		if k == 0 {
 			return client, nil
 		}
