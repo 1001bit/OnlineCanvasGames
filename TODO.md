@@ -21,8 +21,8 @@
 
 - [ ] Room Page
     - [X] WS Room connection
+    - [X] Make RT nodes independent from each other
     - [ ] Make WS connection safer by not allowing single user joining twice
-    - [ ] Make RT nodes independent from each other
     - [ ] Different rooms for different games
 
 - [ ] Multiplayer clicker game

@@ -1,4 +1,4 @@
-package rtnode
+package basenode
 
 import (
 	"context"
@@ -8,6 +8,8 @@ import (
 
 	gamemodel "github.com/1001bit/OnlineCanvasGames/internal/model/game"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/realtime/children"
+	gamenode "github.com/1001bit/OnlineCanvasGames/internal/server/handler/realtime/nodes/game"
+	roomnode "github.com/1001bit/OnlineCanvasGames/internal/server/handler/realtime/nodes/room"
 )
 
 var (
@@ -17,12 +19,12 @@ var (
 
 // Basic layer of RT which is responsible for handling Games and room-client connections
 type BaseRT struct {
-	games children.ChildrenWithID[GameRT]
+	games children.ChildrenWithID[gamenode.GameRT]
 }
 
 func NewBaseRT() *BaseRT {
 	return &BaseRT{
-		games: children.MakeChildrenWithID[GameRT](),
+		games: children.MakeChildrenWithID[gamenode.GameRT](),
 	}
 }
 
@@ -34,8 +36,14 @@ func (baseRT *BaseRT) InitGames() error {
 	}
 
 	for _, game := range games {
-		gameRT := NewGameRT(game.ID)
-		go gameRT.Run(baseRT)
+		gameRT := gamenode.NewGameRT(game.ID)
+
+		// RUN gameRT
+		go func() {
+			baseRT.games.ConnectChild(gameRT)
+			gameRT.Run()
+			baseRT.games.DisconnectChild(gameRT)
+		}()
 	}
 
 	return nil
@@ -60,7 +68,7 @@ func (baseRT *BaseRT) Run() {
 }
 
 // create new room and connect it to BaseRT
-func (baseRT *BaseRT) ConnectNewRoom(ctx context.Context, gameID int) (*RoomRT, error) {
+func (baseRT *BaseRT) ConnectNewRoom(ctx context.Context, gameID int) (*roomnode.RoomRT, error) {
 	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
 	defer cancel()
 
@@ -69,12 +77,18 @@ func (baseRT *BaseRT) ConnectNewRoom(ctx context.Context, gameID int) (*RoomRT, 
 		return nil, ErrNoGame
 	}
 
-	room := NewRoomRT()
-	go room.Run(gameRT)
+	room := roomnode.NewRoomRT()
+
+	// RUN roomRT
+	go func() {
+		gameRT.Rooms.ConnectChild(room)
+		room.Run(gameRT.RequestUpdatingRoomsJSON)
+		gameRT.Rooms.DisconnectChild(room)
+	}()
 
 	// wait until room connected to BaseRT
 	select {
-	case <-room.connectedToGame:
+	case <-room.ConnectedToGame():
 		return room, nil
 	case <-ctx.Done():
 		room.Flow.Stop()
@@ -82,17 +96,17 @@ func (baseRT *BaseRT) ConnectNewRoom(ctx context.Context, gameID int) (*RoomRT, 
 	}
 }
 
-func (baseRT *BaseRT) GetGameByID(id int) (*GameRT, bool) {
+func (baseRT *BaseRT) GetGameByID(id int) (*gamenode.GameRT, bool) {
 	game, ok := baseRT.games.IDMap[id]
 	return game, ok
 }
 
 // connect gameRT to BaseRT
-func (baseRT *BaseRT) connectGame(game *GameRT) {
-	baseRT.games.IDMap[game.gameID] = game
+func (baseRT *BaseRT) connectGame(game *gamenode.GameRT) {
+	baseRT.games.IDMap[game.GetID()] = game
 }
 
 // disconnect gameRT from BaseRT
-func (baseRT *BaseRT) disconnectGame(game *GameRT) {
-	delete(baseRT.games.IDMap, game.gameID)
+func (baseRT *BaseRT) disconnectGame(game *gamenode.GameRT) {
+	delete(baseRT.games.IDMap, game.GetID())
 }

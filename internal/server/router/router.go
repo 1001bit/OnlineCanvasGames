@@ -5,7 +5,7 @@ import (
 
 	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/api"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/page"
-	rtnode "github.com/1001bit/OnlineCanvasGames/internal/server/handler/realtime/node"
+	basenode "github.com/1001bit/OnlineCanvasGames/internal/server/handler/realtime/nodes/base"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/storage"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/middleware"
 
@@ -25,7 +25,7 @@ func NewRouter() (http.Handler, error) {
 	router.Handle("/gamescript/*", http.StripPrefix("/gamescript", http.HandlerFunc(storage.HandleGamescript)))
 
 	// Realtime
-	baseRT := rtnode.NewBaseRT()
+	baseRT := basenode.NewBaseRT()
 	go baseRT.Run()
 
 	err := baseRT.InitGames()

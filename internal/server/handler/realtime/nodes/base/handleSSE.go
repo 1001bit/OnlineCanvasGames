@@ -1,8 +1,10 @@
-package rtnode
+package basenode
 
 import (
 	"net/http"
 	"strconv"
+
+	gamenode "github.com/1001bit/OnlineCanvasGames/internal/server/handler/realtime/nodes/game"
 )
 
 // handle SSE endpoint
@@ -19,14 +21,20 @@ func (baseRT *BaseRT) HandleGameSSE(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	game, ok := baseRT.games.IDMap[gameID]
+	gameRT, ok := baseRT.games.IDMap[gameID]
 	if !ok {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	client := NewGameRTClient(w)
-	go client.Run(r.Context(), game)
+	client := gamenode.NewGameRTClient(w)
+
+	// RUN GameRTClient
+	go func() {
+		gameRT.Clients.ConnectChild(client)
+		client.Run(r.Context())
+		gameRT.Clients.DisconnectChild(client)
+	}()
 
 	<-client.Flow.Done()
 }

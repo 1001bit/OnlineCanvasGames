@@ -1,4 +1,4 @@
-package rtnode
+package roomnode
 
 import (
 	"io"
@@ -18,8 +18,8 @@ const (
 )
 
 type RoomClientUser struct {
-	id   int
-	name string
+	ID   int
+	Name string
 }
 
 // Layer of RT which is responsible for handling connection WS
@@ -51,14 +51,9 @@ func (client *RoomClient) Run(roomRT *RoomRT) {
 	// ticker that indicates the need to send ping message
 	ticker := time.NewTicker(pingPeriod)
 
-	roomRT.clients.ConnectChild(client)
-
 	defer func() {
-		go roomRT.clients.DisconnectChild(client)
-
 		ticker.Stop()
 		client.conn.Close()
-
 		client.Flow.CloseDone()
 
 		log.Println("<RoomClient Done>")

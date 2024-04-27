@@ -1,10 +1,11 @@
-package rtnode
+package basenode
 
 import (
 	"net/http"
 	"strconv"
 
 	"github.com/1001bit/OnlineCanvasGames/internal/auth"
+	roomnode "github.com/1001bit/OnlineCanvasGames/internal/server/handler/realtime/nodes/room"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
 	"github.com/gorilla/websocket"
 )
@@ -42,7 +43,7 @@ func (baseRT *BaseRT) HandleRoomWS(w http.ResponseWriter, r *http.Request) {
 		closeConnWithMessage(conn, "Wrong game id!")
 		return
 	}
-	game, ok := baseRT.games.IDMap[gameID]
+	gameRT, ok := baseRT.games.IDMap[gameID]
 	if !ok {
 		closeConnWithMessage(conn, "Wrong game id!")
 		return
@@ -55,7 +56,7 @@ func (baseRT *BaseRT) HandleRoomWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	room, ok := game.rooms.IDMap[roomID]
+	roomRT, ok := gameRT.Rooms.IDMap[roomID]
 	if !ok {
 		closeConnWithMessage(conn, "Wrong room id!")
 		return
@@ -67,7 +68,7 @@ func (baseRT *BaseRT) HandleRoomWS(w http.ResponseWriter, r *http.Request) {
 		closeConnWithMessage(conn, "Unauthorized!")
 		return
 	}
-	user := RoomClientUser{}
+	user := roomnode.RoomClientUser{}
 
 	// ID
 	userIDfloat, ok := claims["userID"].(float64) // for some reason, in JWT it's stored as float64
@@ -75,16 +76,22 @@ func (baseRT *BaseRT) HandleRoomWS(w http.ResponseWriter, r *http.Request) {
 		closeConnWithMessage(conn, "Unauthorized!")
 		return
 	}
-	user.id = int(userIDfloat)
+	user.ID = int(userIDfloat)
 
 	// Name
-	user.name, ok = claims["username"].(string)
+	user.Name, ok = claims["username"].(string)
 	if !ok {
 		closeConnWithMessage(conn, "Unauthorized!")
 		return
 	}
 
 	// Create client and start client
-	client := NewRoomClient(conn, user)
-	go client.Run(room)
+	client := roomnode.NewRoomClient(conn, user)
+
+	// RUN RoomClient
+	go func() {
+		roomRT.Clients.ConnectChild(client)
+		client.Run(roomRT)
+		roomRT.Clients.DisconnectChild(client)
+	}()
 }

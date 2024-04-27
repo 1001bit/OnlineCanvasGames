@@ -1,4 +1,4 @@
-package rtnode
+package gamenode
 
 import (
 	"context"
@@ -29,15 +29,11 @@ func NewGameRTClient(writer http.ResponseWriter) *GameRTClient {
 }
 
 // Constantly wait for message from writeChan and write it to writer
-func (client *GameRTClient) Run(ctx context.Context, gameRT *GameRT) {
+func (client *GameRTClient) Run(ctx context.Context) {
 	log.Println("<GameRTClient Run>")
 
-	gameRT.clients.ConnectChild(client)
-
 	defer func() {
-		go gameRT.clients.DisconnectChild(client)
 		client.Flow.CloseDone()
-
 		log.Println("<GameRTClient Done>")
 	}()
 

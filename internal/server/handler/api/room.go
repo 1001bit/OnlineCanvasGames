@@ -4,11 +4,11 @@ import (
 	"net/http"
 	"strconv"
 
-	rtnode "github.com/1001bit/OnlineCanvasGames/internal/server/handler/realtime/node"
+	basenode "github.com/1001bit/OnlineCanvasGames/internal/server/handler/realtime/nodes/base"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
 )
 
-func HandleRoomPost(w http.ResponseWriter, r *http.Request, baseRT *rtnode.BaseRT) {
+func HandleRoomPost(w http.ResponseWriter, r *http.Request, baseRT *basenode.BaseRT) {
 	gameID, err := strconv.Atoi(r.PathValue("gameid"))
 	if err != nil {
 		ServeTextMessage(w, "Bad game id", http.StatusBadRequest)
