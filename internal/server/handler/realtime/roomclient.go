@@ -1,7 +1,7 @@
 package realtime
 
 import (
-	"encoding/json"
+	"io"
 	"log"
 	"time"
 
@@ -23,8 +23,6 @@ type RoomClientUser struct {
 
 // Layer of RT which is responsible for handling connection WS
 type RoomClient struct {
-	roomRT *RoomRT
-
 	flow RunFlow
 
 	conn *websocket.Conn
@@ -34,33 +32,28 @@ type RoomClient struct {
 	readChan  chan *message.JSON
 }
 
-func NewRoomClient(conn *websocket.Conn) *RoomClient {
+func NewRoomClient(conn *websocket.Conn, user RoomClientUser) *RoomClient {
 	return &RoomClient{
-		roomRT: nil,
-
 		flow: MakeRunFlow(),
 
 		conn: conn,
-		user: RoomClientUser{
-			id:   0,
-			name: "",
-		},
+		user: user,
 
 		writeChan: make(chan *message.JSON),
 		readChan:  make(chan *message.JSON),
 	}
 }
 
-func (client *RoomClient) Run() {
+func (client *RoomClient) Run(roomRT *RoomRT) {
 	log.Println("<RoomClient Run>")
 
 	// ticker that indicates the need to send ping message
 	ticker := time.NewTicker(pingPeriod)
 
+	roomRT.clients.ConnectChild(client)
+
 	defer func() {
-		if client.roomRT != nil {
-			client.roomRT.disconnectClientChan <- client
-		}
+		go roomRT.clients.DisconnectChild(client)
 
 		ticker.Stop()
 		client.conn.Close()
@@ -84,7 +77,7 @@ func (client *RoomClient) Run() {
 
 		case msg := <-client.readChan:
 			// Handle messages that were read in readPump
-			client.handleReadMessage(msg)
+			client.handleReadMessage(msg, roomRT)
 
 		case <-client.flow.Stopped():
 			// when server asked to stop running
@@ -111,25 +104,30 @@ func (client *RoomClient) readPump() {
 
 	for {
 		// Get msg from client
-		_, msg, err := client.conn.ReadMessage()
+		msg := &message.JSON{}
+		err := client.conn.ReadJSON(msg)
 
-		if err != nil {
+		switch err {
+		case nil:
+			// no error
+
+		case io.ErrUnexpectedEOF:
+			// unmarshaling error
+			continue
+
+		default:
+			// reading error
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Println("error reading ws message:", err)
 			}
-			break
+			return
 		}
 
-		// transform message into struct and throw into channel
-		msgStruct := &message.JSON{}
-		err = json.Unmarshal(msg, &msgStruct)
-		if err == nil {
-			select {
-			case client.readChan <- msgStruct:
-				// send message to read chan
-			case <-client.flow.Done():
-				return
-			}
+		select {
+		case client.readChan <- msg:
+			// send message to read chan
+		case <-client.flow.Done():
+			return
 		}
 	}
 }
@@ -150,23 +148,17 @@ func (client *RoomClient) pingConn() {
 func (client *RoomClient) writeMessage(msg *message.JSON) {
 	client.conn.SetWriteDeadline(time.Now().Add(writeWait)) // if WriteMessage can't send message in writeWait period, client is disconnected
 
-	msgByte, err := json.Marshal(msg)
-	if err != nil {
-		log.Println("err marshaling RoomClient message:", err)
-		return
-	}
-
-	err = client.conn.WriteMessage(websocket.TextMessage, msgByte)
+	err := client.conn.WriteJSON(msg)
 	// if couldn't write message - disconnect
 	if err != nil {
-		client.stopWithMessage("Unexpected error!")
+		client.flow.Stop()
 	}
 }
 
 // process read message
-func (client *RoomClient) handleReadMessage(msg *message.JSON) {
+func (client *RoomClient) handleReadMessage(msg *message.JSON, roomRT *RoomRT) {
 	// simply tell room about read message
-	client.roomRT.readChan <- RoomReadMessage{
+	roomRT.readChan <- RoomReadMessage{
 		client:  client,
 		message: msg,
 	}

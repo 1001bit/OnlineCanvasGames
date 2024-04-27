@@ -12,8 +12,6 @@ import (
 
 // Layer of RT which is responsible for handling connection with GameRT SSE
 type GameRTClient struct {
-	gameRT *GameRT
-
 	flow RunFlow
 
 	writer    http.ResponseWriter
@@ -22,8 +20,6 @@ type GameRTClient struct {
 
 func NewGameRTClient(writer http.ResponseWriter) *GameRTClient {
 	return &GameRTClient{
-		gameRT: nil,
-
 		flow: MakeRunFlow(),
 
 		writer:    writer,
@@ -32,11 +28,13 @@ func NewGameRTClient(writer http.ResponseWriter) *GameRTClient {
 }
 
 // Constantly wait for message from writeChan and write it to writer
-func (client *GameRTClient) Run(ctx context.Context) {
+func (client *GameRTClient) Run(ctx context.Context, gameRT *GameRT) {
 	log.Println("<GameRTClient Run>")
 
+	gameRT.clients.ConnectChild(client)
+
 	defer func() {
-		client.gameRT.disconnectClientChan <- client
+		go gameRT.clients.DisconnectChild(client)
 		client.flow.CloseDone()
 
 		log.Println("<GameRTClient Done>")

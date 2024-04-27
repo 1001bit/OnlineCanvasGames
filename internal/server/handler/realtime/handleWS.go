@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/1001bit/OnlineCanvasGames/internal/auth"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
 	"github.com/gorilla/websocket"
 )
 
@@ -20,6 +21,13 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
+func closeConnWithMessage(conn *websocket.Conn, text string) {
+	conn.WriteJSON(message.JSON{
+		Type: "message",
+		Body: text,
+	})
+}
+
 // Handle WS endpoint
 func (rt *Realtime) HandleRoomWS(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
@@ -28,56 +36,55 @@ func (rt *Realtime) HandleRoomWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create client and start client
-	client := NewRoomClient(conn)
-	go client.Run()
-
 	// Get game from path
 	gameID, err := strconv.Atoi(r.PathValue("gameid"))
 	if err != nil {
-		client.stopWithMessage("Wrong game id!")
+		closeConnWithMessage(conn, "Wrong game id!")
 		return
 	}
-	game, ok := rt.games[gameID]
+	game, ok := rt.games.idMap[gameID]
 	if !ok {
-		client.stopWithMessage("Wrong game id!")
+		closeConnWithMessage(conn, "Wrong game id!")
 		return
 	}
 
 	// Get room from path
 	roomID, err := strconv.Atoi(r.PathValue("roomid"))
 	if err != nil {
-		client.stopWithMessage("Wrong room id!")
+		closeConnWithMessage(conn, "Wrong room id!")
 		return
 	}
 
-	room, ok := game.rooms[roomID]
+	room, ok := game.rooms.idMap[roomID]
 	if !ok {
-		client.stopWithMessage("Wrong room id!")
+		closeConnWithMessage(conn, "Wrong room id!")
 		return
 	}
-	// connect client to the room
-	room.connectClientChan <- client
 
 	// Get user from JWT
 	claims, err := auth.JWTClaimsByRequest(r)
 	if err != nil {
-		client.stopWithMessage("Unauthorized!")
+		closeConnWithMessage(conn, "Unauthorized!")
 		return
 	}
+	user := RoomClientUser{}
 
 	// ID
-	userIDstr, ok := claims["userID"].(float64) // for some reason, in JWT it's stored as float64
+	userIDfloat, ok := claims["userID"].(float64) // for some reason, in JWT it's stored as float64
 	if !ok {
-		client.stopWithMessage("Unauthorized!")
+		closeConnWithMessage(conn, "Unauthorized!")
 		return
 	}
-	client.user.id = int(userIDstr)
+	user.id = int(userIDfloat)
 
 	// Name
-	client.user.name, ok = claims["username"].(string)
+	user.name, ok = claims["username"].(string)
 	if !ok {
-		client.stopWithMessage("Unauthorized!")
+		closeConnWithMessage(conn, "Unauthorized!")
 		return
 	}
+
+	// Create client and start client
+	client := NewRoomClient(conn, user)
+	go client.Run(room)
 }
