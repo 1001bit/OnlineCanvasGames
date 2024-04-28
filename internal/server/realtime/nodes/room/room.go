@@ -11,6 +11,8 @@ import (
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/runflow"
 )
 
+const roomStopWait = 5 * time.Second
+
 var ErrNoClients = errors.New("no clients in the room")
 
 // Struct that contains message and a client who was the message read from
@@ -60,13 +62,7 @@ func (roomRT *RoomRT) Run(requestUpdatingRoomsJSON func()) {
 		log.Println("<RoomRT Done>")
 	}()
 
-	// after 5 seconds of start, if there is no client - disconnect the room
-	go func() {
-		time.Sleep(5 * time.Second)
-		if len(roomRT.Clients.ChildMap) == 0 {
-			roomRT.Flow.Stop()
-		}
-	}()
+	stopTimer := time.NewTimer(roomStopWait)
 
 	for {
 		select {
@@ -81,7 +77,7 @@ func (roomRT *RoomRT) Run(requestUpdatingRoomsJSON func()) {
 
 		case client := <-roomRT.Clients.ToDisconnect():
 			// When server asked to disconnect a client
-			roomRT.disconnectClient(client)
+			roomRT.disconnectClient(client, stopTimer)
 
 			// Request updaing GameRT's RoomsJSON
 			go requestUpdatingRoomsJSON()
@@ -97,6 +93,10 @@ func (roomRT *RoomRT) Run(requestUpdatingRoomsJSON func()) {
 			// Write message to every client if server told to do so
 			roomRT.globalWriteMessage(msg)
 			log.Println("<RoomRT Global Message>:", msg)
+
+		case <-stopTimer.C:
+			// If timer is over, check for clients
+			roomRT.stopIfNoClients()
 
 		case <-roomRT.Flow.Stopped():
 			// When server asked to stop running
@@ -141,7 +141,7 @@ func (roomRT *RoomRT) connectClient(client *RoomClient) {
 }
 
 // disconnects client from room and sets new owner if owner has left (owner is nil if no clients left, room is deleted after that)
-func (roomRT *RoomRT) disconnectClient(client *RoomClient) {
+func (roomRT *RoomRT) disconnectClient(client *RoomClient, stopTimer *time.Timer) {
 	if _, ok := roomRT.Clients.ChildMap[client]; !ok {
 		return
 	}
@@ -154,12 +154,8 @@ func (roomRT *RoomRT) disconnectClient(client *RoomClient) {
 	}
 
 	// stop room if no clients left after 2 seconds of disconnection
-	go func() {
-		time.Sleep(2 * time.Second)
-		if len(roomRT.Clients.ChildMap) == 0 {
-			roomRT.Flow.Stop()
-		}
-	}()
+	stopTimer.Stop()
+	stopTimer.Reset(roomStopWait)
 }
 
 // handles message that is read from a client
@@ -188,4 +184,11 @@ func (roomRT *RoomRT) pickRandomClient() (*RoomClient, error) {
 		k--
 	}
 	return nil, ErrNoClients
+}
+
+// stops the room if no clients left
+func (roomRT *RoomRT) stopIfNoClients() {
+	if len(roomRT.Clients.ChildMap) == 0 {
+		go roomRT.Flow.Stop()
+	}
 }

@@ -82,12 +82,25 @@ func (client *RoomClient) Run(roomRT *RoomRT) {
 	}
 }
 
+// send message to client and close after
+func (client *RoomClient) StopWithMessage(text string) {
+	client.writeChan <- &message.JSON{
+		Type: "message",
+		Body: text,
+	}
+	go client.Flow.Stop()
+}
+
+func (client *RoomClient) GetID() int {
+	return client.user.ID
+}
+
 // constantly read messages from connection
 func (client *RoomClient) readPump() {
 	log.Println("<RoomClient ReadPump>")
 
 	defer func() {
-		client.Flow.Stop()
+		go client.Flow.Stop()
 		log.Println("<RoomClient ReadPump End>")
 	}()
 
@@ -136,7 +149,7 @@ func (client *RoomClient) pingConn() {
 	err := client.conn.WriteMessage(websocket.PingMessage, nil)
 	// if couldn't write message - disconnect
 	if err != nil {
-		client.stopWithMessage("Unexpected error!")
+		client.StopWithMessage("Unexpected error!")
 	}
 }
 
@@ -147,7 +160,7 @@ func (client *RoomClient) writeMessage(msg *message.JSON) {
 	err := client.conn.WriteJSON(msg)
 	// if couldn't write message - disconnect
 	if err != nil {
-		client.Flow.Stop()
+		go client.Flow.Stop()
 	}
 }
 
@@ -158,13 +171,4 @@ func (client *RoomClient) handleReadMessage(msg *message.JSON, roomRT *RoomRT) {
 		client:  client,
 		message: msg,
 	}
-}
-
-// send message to client and close after
-func (client *RoomClient) stopWithMessage(text string) {
-	client.writeChan <- &message.JSON{
-		Type: "message",
-		Body: text,
-	}
-	client.Flow.Stop()
 }

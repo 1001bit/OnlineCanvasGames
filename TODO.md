@@ -23,7 +23,7 @@
     - [X] WS Room connection
     - [X] Make RT nodes independent from each other
     - [X] Split WS/SSE handlers and basenode package
-    - [ ] Make WS connection safer by not allowing single user joining twice
+    - [X] Make WS connection safer by not allowing single user joining twice
     - [ ] Different rooms for different games
 
 - [ ] Multiplayer clicker game

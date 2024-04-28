@@ -21,11 +21,15 @@ var (
 // Basic layer of RT which is responsible for handling Games and room-client connections
 type BaseRT struct {
 	games children.ChildrenWithID[gamenode.GameRT]
+
+	roomsClients children.ChildrenWithID[roomnode.RoomClient]
 }
 
 func NewBaseRT() *BaseRT {
 	return &BaseRT{
 		games: children.MakeChildrenWithID[gamenode.GameRT](),
+
+		roomsClients: children.MakeChildrenWithID[roomnode.RoomClient](),
 	}
 }
 
@@ -56,14 +60,23 @@ func (baseRT *BaseRT) Run() {
 
 	for {
 		select {
-		// Games
 		case game := <-baseRT.games.ToConnect():
+			// When server asked to connect new game
 			baseRT.connectGame(game)
 			log.Println("<BaseRT +Game>:", len(baseRT.games.IDMap))
 
 		case game := <-baseRT.games.ToDisconnect():
+			// When server asked to disconnect a game
 			baseRT.disconnectGame(game)
 			log.Println("<BaseRT -Game>:", len(baseRT.games.IDMap))
+
+		case client := <-baseRT.roomsClients.ToConnect():
+			// When new WS connection needs to be created
+			baseRT.protectRoomClient(client)
+
+		case client := <-baseRT.roomsClients.ToDisconnect():
+			// When client is done
+			baseRT.deleteRoomClient(client)
 		}
 	}
 }
@@ -92,7 +105,7 @@ func (baseRT *BaseRT) ConnectNewRoom(ctx context.Context, gameID int) (*roomnode
 	case <-room.ConnectedToGame():
 		return room, nil
 	case <-ctx.Done():
-		room.Flow.Stop()
+		go room.Flow.Stop()
 		return nil, ErrCreateRoom
 	}
 }
@@ -110,4 +123,18 @@ func (baseRT *BaseRT) connectGame(game *gamenode.GameRT) {
 // disconnect gameRT from BaseRT
 func (baseRT *BaseRT) disconnectGame(game *gamenode.GameRT) {
 	delete(baseRT.games.IDMap, game.GetID())
+}
+
+// if there is already client with such ID - stop them. Put a new one
+func (baseRT *BaseRT) protectRoomClient(client *roomnode.RoomClient) {
+	oldClient, ok := baseRT.roomsClients.IDMap[client.GetID()]
+	if ok {
+		oldClient.StopWithMessage("This user has just joined another room")
+	}
+	baseRT.roomsClients.IDMap[client.GetID()] = client
+}
+
+// if there is already client with such ID - stop them. Put a new one
+func (baseRT *BaseRT) deleteRoomClient(client *roomnode.RoomClient) {
+	delete(baseRT.roomsClients.IDMap, client.GetID())
 }

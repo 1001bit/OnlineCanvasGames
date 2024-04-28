@@ -28,8 +28,12 @@ func (baseRT *BaseRT) ConnectToRoom(conn *websocket.Conn, gameID, roomID, userID
 	// RUN RoomClient
 	go func() {
 		roomRT.Clients.ConnectChild(client)
+		baseRT.roomsClients.ConnectChild(client)
+
 		client.Run(roomRT)
+
 		roomRT.Clients.DisconnectChild(client)
+		baseRT.roomsClients.DisconnectChild(client)
 	}()
 
 	return nil
