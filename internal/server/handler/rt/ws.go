@@ -1,12 +1,12 @@
-package basenode
+package rt
 
 import (
 	"net/http"
 	"strconv"
 
 	"github.com/1001bit/OnlineCanvasGames/internal/auth"
-	roomnode "github.com/1001bit/OnlineCanvasGames/internal/server/handler/realtime/nodes/room"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
+	basenode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/base"
 	"github.com/gorilla/websocket"
 )
 
@@ -25,35 +25,24 @@ func closeConnWithMessage(conn *websocket.Conn, text string) {
 	})
 }
 
-// Handle WS endpoint
-func (baseRT *BaseRT) HandleRoomWS(w http.ResponseWriter, r *http.Request) {
+func HandleRoomWS(w http.ResponseWriter, r *http.Request, baseRT *basenode.BaseRT) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	// Get game from path
+	// Get params from path
+	// GameID
 	gameID, err := strconv.Atoi(r.PathValue("gameid"))
 	if err != nil {
 		closeConnWithMessage(conn, "Wrong game id!")
 		return
 	}
-	gameRT, ok := baseRT.games.IDMap[gameID]
-	if !ok {
-		closeConnWithMessage(conn, "Wrong game id!")
-		return
-	}
 
-	// Get room from path
+	// RoomID
 	roomID, err := strconv.Atoi(r.PathValue("roomid"))
 	if err != nil {
-		closeConnWithMessage(conn, "Wrong room id!")
-		return
-	}
-
-	roomRT, ok := gameRT.Rooms.IDMap[roomID]
-	if !ok {
 		closeConnWithMessage(conn, "Wrong room id!")
 		return
 	}
@@ -64,7 +53,6 @@ func (baseRT *BaseRT) HandleRoomWS(w http.ResponseWriter, r *http.Request) {
 		closeConnWithMessage(conn, "Unauthorized!")
 		return
 	}
-	user := roomnode.RoomClientUser{}
 
 	// ID
 	userIDfloat, ok := claims["userID"].(float64) // for some reason, in JWT it's stored as float64
@@ -72,22 +60,25 @@ func (baseRT *BaseRT) HandleRoomWS(w http.ResponseWriter, r *http.Request) {
 		closeConnWithMessage(conn, "Unauthorized!")
 		return
 	}
-	user.ID = int(userIDfloat)
 
 	// Name
-	user.Name, ok = claims["username"].(string)
+	userName, ok := claims["username"].(string)
 	if !ok {
 		closeConnWithMessage(conn, "Unauthorized!")
 		return
 	}
 
-	// Create client and start client
-	client := roomnode.NewRoomClient(conn, user)
-
-	// RUN RoomClient
-	go func() {
-		roomRT.Clients.ConnectChild(client)
-		client.Run(roomRT)
-		roomRT.Clients.DisconnectChild(client)
-	}()
+	err = baseRT.ConnectToRoom(conn, gameID, roomID, int(userIDfloat), userName)
+	switch err {
+	case nil:
+		// No error
+	case basenode.ErrNoGame:
+		closeConnWithMessage(conn, "Wrong game id!")
+		return
+	case basenode.ErrNoRoom:
+		closeConnWithMessage(conn, "Wrong room id!")
+		return
+	default:
+		return
+	}
 }

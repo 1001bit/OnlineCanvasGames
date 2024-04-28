@@ -7,8 +7,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/realtime/runflow"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/runflow"
 )
 
 // Layer of RT which is responsible for handling connection with GameRT SSE

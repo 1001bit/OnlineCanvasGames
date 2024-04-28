@@ -5,9 +5,10 @@ import (
 
 	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/api"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/page"
-	basenode "github.com/1001bit/OnlineCanvasGames/internal/server/handler/realtime/nodes/base"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/rt"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/storage"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/middleware"
+	basenode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/base"
 
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
@@ -37,8 +38,12 @@ func NewRouter() (http.Handler, error) {
 	router.Route("/rt", func(rs chi.Router) {
 		rs.Use(middleware.AuthJSON)
 
-		rs.Get("/sse/game/{gameid}", baseRT.HandleGameSSE)
-		rs.Get("/ws/game/{gameid}/room/{roomid}", baseRT.HandleRoomWS)
+		rs.Get("/sse/game/{gameid}", func(w http.ResponseWriter, r *http.Request) {
+			rt.HandleGameSSE(w, r, baseRT)
+		})
+		rs.Get("/ws/game/{gameid}/room/{roomid}", func(w http.ResponseWriter, r *http.Request) {
+			rt.HandleRoomWS(w, r, baseRT)
+		})
 	})
 
 	// API

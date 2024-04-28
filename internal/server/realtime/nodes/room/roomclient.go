@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/realtime/runflow"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/runflow"
 	"github.com/gorilla/websocket"
 )
 

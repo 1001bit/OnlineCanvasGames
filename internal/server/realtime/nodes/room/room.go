@@ -6,9 +6,9 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/realtime/children"
-	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/realtime/runflow"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/children"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/runflow"
 )
 
 var ErrNoClients = errors.New("no clients in the room")

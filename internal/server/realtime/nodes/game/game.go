@@ -4,10 +4,10 @@ import (
 	"errors"
 	"log"
 
-	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/realtime/children"
-	roomnode "github.com/1001bit/OnlineCanvasGames/internal/server/handler/realtime/nodes/room"
-	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/realtime/runflow"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/children"
+	roomnode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/room"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/runflow"
 )
 
 var ErrNoRooms = errors.New("no rooms in the game")

@@ -7,13 +7,14 @@ import (
 	"time"
 
 	gamemodel "github.com/1001bit/OnlineCanvasGames/internal/model/game"
-	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/realtime/children"
-	gamenode "github.com/1001bit/OnlineCanvasGames/internal/server/handler/realtime/nodes/game"
-	roomnode "github.com/1001bit/OnlineCanvasGames/internal/server/handler/realtime/nodes/room"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/children"
+	gamenode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/game"
+	roomnode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/room"
 )
 
 var (
 	ErrNoGame     = errors.New("game does not exist")
+	ErrNoRoom     = errors.New("room does not exist")
 	ErrCreateRoom = errors.New("could not create a room")
 )
 
