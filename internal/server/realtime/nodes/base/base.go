@@ -136,5 +136,10 @@ func (baseRT *BaseRT) protectRoomClient(client *roomnode.RoomClient) {
 
 // if there is already client with such ID - stop them. Put a new one
 func (baseRT *BaseRT) deleteRoomClient(client *roomnode.RoomClient) {
+	// can delete only exact client, not just with the same id
+	if baseRT.roomsClients.IDMap[client.GetID()] != client {
+		return
+	}
+
 	delete(baseRT.roomsClients.IDMap, client.GetID())
 }

@@ -69,16 +69,13 @@ func HandleRoomWS(w http.ResponseWriter, r *http.Request, baseRT *basenode.BaseR
 	}
 
 	err = baseRT.ConnectToRoom(conn, gameID, roomID, int(userIDfloat), userName)
-	switch err {
-	case nil:
-		// No error
-	case basenode.ErrNoGame:
-		closeConnWithMessage(conn, "Wrong game id!")
-		return
-	case basenode.ErrNoRoom:
-		closeConnWithMessage(conn, "Wrong room id!")
-		return
-	default:
+	if err != nil {
+		switch err {
+		case basenode.ErrNoGame:
+			closeConnWithMessage(conn, "Wrong game id!")
+		case basenode.ErrNoRoom:
+			closeConnWithMessage(conn, "Wrong room id!")
+		}
 		return
 	}
 }

@@ -24,13 +24,14 @@ func HandleProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user, err := usermodel.GetByID(r.Context(), id)
-	switch err {
-	case nil:
-		// no error
-	case context.DeadlineExceeded:
-		HandleServerOverload(w, r)
-	default:
-		HandleNotFound(w, r)
+	if err != nil {
+		switch err {
+		case context.DeadlineExceeded:
+			HandleServerOverload(w, r)
+		default:
+			HandleNotFound(w, r)
+		}
+		return
 	}
 
 	data.Username = user.Name
