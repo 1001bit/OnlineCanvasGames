@@ -21,6 +21,10 @@ type RoomReadMessage struct {
 	message *message.JSON
 }
 
+type GameNodeRequester interface {
+	RequestUpdatingRoomsJSON()
+}
+
 // Layer of RT which is responsible for handling WS clients
 type RoomNode struct {
 	Flow runflow.RunFlow
@@ -52,8 +56,7 @@ func NewRoomNode() *RoomNode {
 	}
 }
 
-// TODO: Try to get rid of this
-func (roomNode *RoomNode) Run(requestUpdatingRoomsJSON func()) {
+func (roomNode *RoomNode) Run(requester GameNodeRequester) {
 	log.Println("<RoomNode Run>")
 
 	defer func() {
@@ -71,7 +74,7 @@ func (roomNode *RoomNode) Run(requestUpdatingRoomsJSON func()) {
 			roomNode.connectClient(client)
 
 			// Request updaing GameNode's RoomsJSON
-			go requestUpdatingRoomsJSON()
+			go requester.RequestUpdatingRoomsJSON()
 
 			log.Println("<RoomNode +Client>:", len(roomNode.Clients.ChildMap))
 
@@ -80,7 +83,7 @@ func (roomNode *RoomNode) Run(requestUpdatingRoomsJSON func()) {
 			roomNode.disconnectClient(client, stopTimer)
 
 			// Request updaing GameNode's RoomsJSON
-			go requestUpdatingRoomsJSON()
+			go requester.RequestUpdatingRoomsJSON()
 
 			log.Println("<RoomNode -Client>:", len(roomNode.Clients.ChildMap))
 

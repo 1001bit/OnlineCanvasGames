@@ -96,7 +96,7 @@ func (baseNode *BaseNode) ConnectNewRoom(ctx context.Context, gameID int) (*room
 	// RUN roomNode
 	go func() {
 		gameNode.Rooms.ConnectChild(room)
-		room.Run(gameNode.RequestUpdatingRoomsJSON)
+		room.Run(gameNode)
 		gameNode.Rooms.DisconnectChild(room)
 	}()
 
