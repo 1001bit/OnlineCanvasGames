@@ -11,16 +11,16 @@ import (
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/runflow"
 )
 
-// Layer of RT which is responsible for handling connection with GameRT SSE
-type GameRTClient struct {
+// Layer of RT which is responsible for handling connection with GameNode SSE
+type GameClient struct {
 	Flow runflow.RunFlow
 
 	writer    http.ResponseWriter
 	writeChan chan *message.JSON
 }
 
-func NewGameRTClient(writer http.ResponseWriter) *GameRTClient {
-	return &GameRTClient{
+func NewGameClient(writer http.ResponseWriter) *GameClient {
+	return &GameClient{
 		Flow: runflow.MakeRunFlow(),
 
 		writer:    writer,
@@ -29,12 +29,12 @@ func NewGameRTClient(writer http.ResponseWriter) *GameRTClient {
 }
 
 // Constantly wait for message from writeChan and write it to writer
-func (client *GameRTClient) Run(ctx context.Context) {
-	log.Println("<GameRTClient Run>")
+func (client *GameClient) Run(ctx context.Context) {
+	log.Println("<GameClient Run>")
 
 	defer func() {
 		client.Flow.CloseDone()
-		log.Println("<GameRTClient Done>")
+		log.Println("<GameClient Done>")
 	}()
 
 	for {
@@ -42,7 +42,7 @@ func (client *GameRTClient) Run(ctx context.Context) {
 		case msg := <-client.writeChan:
 			// Write message to writer if server told to do so
 			client.writeMessage(msg)
-			log.Println("<GameRTClient Write Message>")
+			log.Println("<GameClient Write Message>")
 
 		case <-client.Flow.Stopped():
 			// When server asked to stop client
@@ -55,10 +55,10 @@ func (client *GameRTClient) Run(ctx context.Context) {
 	}
 }
 
-func (client *GameRTClient) writeMessage(msg *message.JSON) {
+func (client *GameClient) writeMessage(msg *message.JSON) {
 	msgByte, err := json.Marshal(msg)
 	if err != nil {
-		log.Println("error marshaling GameRTClient message:", err)
+		log.Println("error marshaling GameClient message:", err)
 		return
 	}
 

@@ -19,88 +19,88 @@ var (
 )
 
 // Basic layer of RT which is responsible for handling Games and room-client connections
-type BaseRT struct {
-	games children.ChildrenWithID[gamenode.GameRT]
+type BaseNode struct {
+	games children.ChildrenWithID[gamenode.GameNode]
 
 	roomsClients children.ChildrenWithID[roomnode.RoomClient]
 }
 
-func NewBaseRT() *BaseRT {
-	return &BaseRT{
-		games: children.MakeChildrenWithID[gamenode.GameRT](),
+func NewBaseNode() *BaseNode {
+	return &BaseNode{
+		games: children.MakeChildrenWithID[gamenode.GameNode](),
 
 		roomsClients: children.MakeChildrenWithID[roomnode.RoomClient](),
 	}
 }
 
-// get all the games from database and put then into BaseRT
-func (baseRT *BaseRT) InitGames() error {
+// get all the games from database and put then into BaseNode
+func (baseNode *BaseNode) InitGames() error {
 	games, err := gamemodel.GetAll(context.Background())
 	if err != nil {
 		return err
 	}
 
 	for _, game := range games {
-		gameRT := gamenode.NewGameRT(game.ID)
+		gameNode := gamenode.NewGameNode(game.ID)
 
-		// RUN gameRT
+		// RUN gameNode
 		go func() {
-			baseRT.games.ConnectChild(gameRT)
-			gameRT.Run()
-			baseRT.games.DisconnectChild(gameRT)
+			baseNode.games.ConnectChild(gameNode)
+			gameNode.Run()
+			baseNode.games.DisconnectChild(gameNode)
 		}()
 	}
 
 	return nil
 }
 
-func (baseRT *BaseRT) Run() {
-	log.Println("<BaseRT Run>")
-	defer log.Println("<BaseRT Done>")
+func (baseNode *BaseNode) Run() {
+	log.Println("<BaseNode Run>")
+	defer log.Println("<BaseNode Done>")
 
 	for {
 		select {
-		case game := <-baseRT.games.ToConnect():
+		case game := <-baseNode.games.ToConnect():
 			// When server asked to connect new game
-			baseRT.connectGame(game)
-			log.Println("<BaseRT +Game>:", len(baseRT.games.IDMap))
+			baseNode.connectGame(game)
+			log.Println("<BaseNode +Game>:", len(baseNode.games.IDMap))
 
-		case game := <-baseRT.games.ToDisconnect():
+		case game := <-baseNode.games.ToDisconnect():
 			// When server asked to disconnect a game
-			baseRT.disconnectGame(game)
-			log.Println("<BaseRT -Game>:", len(baseRT.games.IDMap))
+			baseNode.disconnectGame(game)
+			log.Println("<BaseNode -Game>:", len(baseNode.games.IDMap))
 
-		case client := <-baseRT.roomsClients.ToConnect():
+		case client := <-baseNode.roomsClients.ToConnect():
 			// When new WS connection needs to be created
-			baseRT.protectRoomClient(client)
+			baseNode.protectRoomClient(client)
 
-		case client := <-baseRT.roomsClients.ToDisconnect():
+		case client := <-baseNode.roomsClients.ToDisconnect():
 			// When client is done
-			baseRT.deleteRoomClient(client)
+			baseNode.deleteRoomClient(client)
 		}
 	}
 }
 
-// create new room and connect it to BaseRT
-func (baseRT *BaseRT) ConnectNewRoom(ctx context.Context, gameID int) (*roomnode.RoomRT, error) {
+// create new room and connect it to BaseNode
+func (baseNode *BaseNode) ConnectNewRoom(ctx context.Context, gameID int) (*roomnode.RoomNode, error) {
 	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
 	defer cancel()
 
-	gameRT, ok := baseRT.games.IDMap[gameID]
+	gameNode, ok := baseNode.games.IDMap[gameID]
 	if !ok {
 		return nil, ErrNoGame
 	}
 
-	room := roomnode.NewRoomRT()
+	room := roomnode.NewRoomNode()
 
-	// RUN roomRT
+	// RUN roomNode
 	go func() {
-		gameRT.Rooms.ConnectChild(room)
-		room.Run(gameRT.RequestUpdatingRoomsJSON)
-		gameRT.Rooms.DisconnectChild(room)
+		gameNode.Rooms.ConnectChild(room)
+		room.Run(gameNode.RequestUpdatingRoomsJSON)
+		gameNode.Rooms.DisconnectChild(room)
 	}()
 
-	// wait until room connected to BaseRT
+	// wait until room connected to BaseNode
 	select {
 	case <-room.ConnectedToGame():
 		return room, nil
@@ -110,36 +110,36 @@ func (baseRT *BaseRT) ConnectNewRoom(ctx context.Context, gameID int) (*roomnode
 	}
 }
 
-func (baseRT *BaseRT) GetGameByID(id int) (*gamenode.GameRT, bool) {
-	game, ok := baseRT.games.IDMap[id]
+func (baseNode *BaseNode) GetGameByID(id int) (*gamenode.GameNode, bool) {
+	game, ok := baseNode.games.IDMap[id]
 	return game, ok
 }
 
-// connect gameRT to BaseRT
-func (baseRT *BaseRT) connectGame(game *gamenode.GameRT) {
-	baseRT.games.IDMap[game.GetID()] = game
+// connect gameNode to BaseNode
+func (baseNode *BaseNode) connectGame(game *gamenode.GameNode) {
+	baseNode.games.IDMap[game.GetID()] = game
 }
 
-// disconnect gameRT from BaseRT
-func (baseRT *BaseRT) disconnectGame(game *gamenode.GameRT) {
-	delete(baseRT.games.IDMap, game.GetID())
+// disconnect gameNode from BaseNode
+func (baseNode *BaseNode) disconnectGame(game *gamenode.GameNode) {
+	delete(baseNode.games.IDMap, game.GetID())
 }
 
 // if there is already client with such ID - stop them. Put a new one
-func (baseRT *BaseRT) protectRoomClient(client *roomnode.RoomClient) {
-	oldClient, ok := baseRT.roomsClients.IDMap[client.GetID()]
+func (baseNode *BaseNode) protectRoomClient(client *roomnode.RoomClient) {
+	oldClient, ok := baseNode.roomsClients.IDMap[client.GetID()]
 	if ok {
 		oldClient.StopWithMessage("This user has just joined another room")
 	}
-	baseRT.roomsClients.IDMap[client.GetID()] = client
+	baseNode.roomsClients.IDMap[client.GetID()] = client
 }
 
 // if there is already client with such ID - stop them. Put a new one
-func (baseRT *BaseRT) deleteRoomClient(client *roomnode.RoomClient) {
+func (baseNode *BaseNode) deleteRoomClient(client *roomnode.RoomClient) {
 	// can delete only exact client, not just with the same id
-	if baseRT.roomsClients.IDMap[client.GetID()] != client {
+	if baseNode.roomsClients.IDMap[client.GetID()] != client {
 		return
 	}
 
-	delete(baseRT.roomsClients.IDMap, client.GetID())
+	delete(baseNode.roomsClients.IDMap, client.GetID())
 }

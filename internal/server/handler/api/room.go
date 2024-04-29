@@ -8,14 +8,14 @@ import (
 	basenode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/base"
 )
 
-func HandleRoomPost(w http.ResponseWriter, r *http.Request, baseRT *basenode.BaseRT) {
+func HandleRoomPost(w http.ResponseWriter, r *http.Request, baseNode *basenode.BaseNode) {
 	gameID, err := strconv.Atoi(r.PathValue("gameid"))
 	if err != nil {
 		ServeTextMessage(w, "Bad game id", http.StatusBadRequest)
 		return
 	}
 
-	room, err := baseRT.ConnectNewRoom(r.Context(), gameID)
+	room, err := baseNode.ConnectNewRoom(r.Context(), gameID)
 	if err != nil {
 		ServeTextMessage(w, "Could not create a room!", http.StatusInternalServerError)
 		return

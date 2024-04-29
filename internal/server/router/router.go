@@ -26,10 +26,10 @@ func NewRouter() (http.Handler, error) {
 	router.Handle("/gamescript/*", http.StripPrefix("/gamescript", http.HandlerFunc(storage.HandleGamescript)))
 
 	// Realtime
-	baseRT := basenode.NewBaseRT()
-	go baseRT.Run()
+	baseNode := basenode.NewBaseNode()
+	go baseNode.Run()
 
-	err := baseRT.InitGames()
+	err := baseNode.InitGames()
 	if err != nil {
 		return nil, err
 	}
@@ -39,10 +39,10 @@ func NewRouter() (http.Handler, error) {
 		rs.Use(middleware.AuthJSON)
 
 		rs.Get("/sse/game/{gameid}", func(w http.ResponseWriter, r *http.Request) {
-			rt.HandleGameSSE(w, r, baseRT)
+			rt.HandleGameSSE(w, r, baseNode)
 		})
 		rs.Get("/ws/game/{gameid}/room/{roomid}", func(w http.ResponseWriter, r *http.Request) {
-			rt.HandleRoomWS(w, r, baseRT)
+			rt.HandleRoomWS(w, r, baseNode)
 		})
 	})
 
@@ -53,7 +53,7 @@ func NewRouter() (http.Handler, error) {
 		// Post
 		r.Post("/user", api.HandleUserPost)
 		r.Post("/game/{gameid}/room", func(w http.ResponseWriter, r *http.Request) {
-			api.HandleRoomPost(w, r, baseRT)
+			api.HandleRoomPost(w, r, baseNode)
 		})
 	})
 

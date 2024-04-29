@@ -20,11 +20,11 @@ type RoomJSON struct {
 }
 
 // Layer of RT which is responsible for game hub and containing rooms
-type GameRT struct {
+type GameNode struct {
 	Flow runflow.RunFlow
 
-	Rooms   children.ChildrenWithID[roomnode.RoomRT]
-	Clients children.Children[GameRTClient]
+	Rooms   children.ChildrenWithID[roomnode.RoomNode]
+	Clients children.Children[GameClient]
 
 	roomsJSON           *message.JSON
 	roomsJSONUpdateChan chan struct{}
@@ -34,12 +34,12 @@ type GameRT struct {
 	gameID int
 }
 
-func NewGameRT(id int) *GameRT {
-	return &GameRT{
+func NewGameNode(id int) *GameNode {
+	return &GameNode{
 		Flow: runflow.MakeRunFlow(),
 
-		Rooms:   children.MakeChildrenWithID[roomnode.RoomRT](),
-		Clients: children.MakeChildren[GameRTClient](),
+		Rooms:   children.MakeChildrenWithID[roomnode.RoomNode](),
+		Clients: children.MakeChildren[GameClient](),
 
 		roomsJSON: &message.JSON{
 			Type: "rooms",
@@ -53,117 +53,117 @@ func NewGameRT(id int) *GameRT {
 	}
 }
 
-func (gameRT *GameRT) Run() {
-	log.Println("<GameRT Run>")
+func (gameNode *GameNode) Run() {
+	log.Println("<GameNode Run>")
 
 	defer func() {
-		gameRT.Flow.CloseDone()
+		gameNode.Flow.CloseDone()
 
-		log.Println("<GameRT Done>")
+		log.Println("<GameNode Done>")
 	}()
 
 	for {
 		select {
-		case client := <-gameRT.Clients.ToConnect():
+		case client := <-gameNode.Clients.ToConnect():
 			// When server asked to connect a client
-			gameRT.connectClient(client)
+			gameNode.connectClient(client)
 
 			// send roomsJSON to client on it's join
 			go func() {
-				client.writeChan <- gameRT.roomsJSON
+				client.writeChan <- gameNode.roomsJSON
 			}()
 
-			log.Println("<GameRT +Client>:", len(gameRT.Clients.ChildMap))
+			log.Println("<GameNode +Client>:", len(gameNode.Clients.ChildMap))
 
-		case client := <-gameRT.Clients.ToDisconnect():
+		case client := <-gameNode.Clients.ToDisconnect():
 			// When server asked to disconnect a client
-			gameRT.disconnectClient(client)
-			log.Println("<GameRT -Client>:", len(gameRT.Clients.ChildMap))
+			gameNode.disconnectClient(client)
+			log.Println("<GameNode -Client>:", len(gameNode.Clients.ChildMap))
 
-		case room := <-gameRT.Rooms.ToConnect():
+		case room := <-gameNode.Rooms.ToConnect():
 			// When server asked to connect a room
-			gameRT.connectRoom(room)
-			log.Println("<GameRT +Room>:", len(gameRT.Rooms.IDMap))
+			gameNode.connectRoom(room)
+			log.Println("<GameNode +Room>:", len(gameNode.Rooms.IDMap))
 
-		case room := <-gameRT.Rooms.ToDisconnect():
+		case room := <-gameNode.Rooms.ToDisconnect():
 			// When server asked to disconnect a client
-			gameRT.disconnectRoom(room)
+			gameNode.disconnectRoom(room)
 
 			// update roomsJSON on room delete
-			gameRT.updateRoomsJSON()
+			gameNode.updateRoomsJSON()
 
-			log.Println("<GameRT -Room>:", len(gameRT.Rooms.IDMap))
+			log.Println("<GameNode -Room>:", len(gameNode.Rooms.IDMap))
 
-		case msg := <-gameRT.globalWriteChan:
+		case msg := <-gameNode.globalWriteChan:
 			// Write message to every client if server told to do so
-			gameRT.globalWriteMessage(msg)
-			log.Println("<GameRT Global Message>")
+			gameNode.globalWriteMessage(msg)
+			log.Println("<GameNode Global Message>")
 
-		case <-gameRT.roomsJSONUpdateChan:
+		case <-gameNode.roomsJSONUpdateChan:
 			// When server asked to update roomsJSON
-			gameRT.updateRoomsJSON()
-			log.Println("<GameRT RoomsJSON Update>")
+			gameNode.updateRoomsJSON()
+			log.Println("<GameNode RoomsJSON Update>")
 
-		case <-gameRT.Flow.Stopped():
+		case <-gameNode.Flow.Stopped():
 			// When server asked to stop running
 			return
 		}
 	}
 }
 
-// ask gameRT to update gameRT.roomsJSON
-func (gameRT *GameRT) RequestUpdatingRoomsJSON() {
-	gameRT.roomsJSONUpdateChan <- struct{}{}
+// ask gameNode to update gameNode.roomsJSON
+func (gameNode *GameNode) RequestUpdatingRoomsJSON() {
+	gameNode.roomsJSONUpdateChan <- struct{}{}
 }
 
-func (gameRT *GameRT) GetID() int {
-	return gameRT.gameID
+func (gameNode *GameNode) GetID() int {
+	return gameNode.gameID
 }
 
-// connect GameRT client to GameRT
-func (gameRT *GameRT) connectClient(client *GameRTClient) {
-	gameRT.Clients.ChildMap[client] = true
+// connect GameNode client to GameNode
+func (gameNode *GameNode) connectClient(client *GameClient) {
+	gameNode.Clients.ChildMap[client] = true
 }
 
-// disconnect GameRT client from gameRT
-func (gameRT *GameRT) disconnectClient(client *GameRTClient) {
-	delete(gameRT.Clients.ChildMap, client)
+// disconnect GameNode client from gameNode
+func (gameNode *GameNode) disconnectClient(client *GameClient) {
+	delete(gameNode.Clients.ChildMap, client)
 }
 
-// connect RoomRT to GameRT
-func (gameRT *GameRT) connectRoom(room *roomnode.RoomRT) {
+// connect RoomNode to GameNode
+func (gameNode *GameNode) connectRoom(room *roomnode.RoomNode) {
 	room.SetRandomID()
-	gameRT.Rooms.IDMap[room.GetID()] = room
+	gameNode.Rooms.IDMap[room.GetID()] = room
 
 	room.ConfirmConnectToGame()
 }
 
-// disconnect RoomRT from GameRT
-func (gameRT *GameRT) disconnectRoom(room *roomnode.RoomRT) {
-	delete(gameRT.Rooms.IDMap, room.GetID())
+// disconnect RoomNode from GameNode
+func (gameNode *GameNode) disconnectRoom(room *roomnode.RoomNode) {
+	delete(gameNode.Rooms.IDMap, room.GetID())
 }
 
 // write a message to every client
-func (gameRT *GameRT) globalWriteMessage(msg *message.JSON) {
-	for client := range gameRT.Clients.ChildMap {
+func (gameNode *GameNode) globalWriteMessage(msg *message.JSON) {
+	for client := range gameNode.Clients.ChildMap {
 		client.writeChan <- msg
 	}
 }
 
-// update gameRT.roomsJSON rooms list to send to all the clients of gameRT
-func (gameRT *GameRT) updateRoomsJSON() {
+// update gameNode.roomsJSON rooms list to send to all the clients of gameNode
+func (gameNode *GameNode) updateRoomsJSON() {
 	roomsJSON := make([]RoomJSON, 0)
 
-	for _, roomRT := range gameRT.Rooms.IDMap {
-		<-roomRT.ConnectedToGame()
+	for _, roomNode := range gameNode.Rooms.IDMap {
+		<-roomNode.ConnectedToGame()
 
 		roomsJSON = append(roomsJSON, RoomJSON{
-			Owner:   roomRT.GetOwnerName(),
-			Clients: len(roomRT.Clients.ChildMap),
-			ID:      roomRT.GetID(),
+			Owner:   roomNode.GetOwnerName(),
+			Clients: len(roomNode.Clients.ChildMap),
+			ID:      roomNode.GetID(),
 		})
 	}
 
-	gameRT.roomsJSON.Body = roomsJSON
-	gameRT.globalWriteMessage(gameRT.roomsJSON)
+	gameNode.roomsJSON.Body = roomsJSON
+	gameNode.globalWriteMessage(gameNode.roomsJSON)
 }

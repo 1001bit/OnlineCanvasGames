@@ -6,13 +6,13 @@ import (
 )
 
 // Handle WS endpoint
-func (baseRT *BaseRT) ConnectToRoom(conn *websocket.Conn, gameID, roomID, userID int, userName string) error {
-	gameRT, ok := baseRT.games.IDMap[gameID]
+func (baseNode *BaseNode) ConnectToRoom(conn *websocket.Conn, gameID, roomID, userID int, userName string) error {
+	gameNode, ok := baseNode.games.IDMap[gameID]
 	if !ok {
 		return ErrNoGame
 	}
 
-	roomRT, ok := gameRT.Rooms.IDMap[roomID]
+	roomNode, ok := gameNode.Rooms.IDMap[roomID]
 	if !ok {
 		return ErrNoRoom
 	}
@@ -27,13 +27,13 @@ func (baseRT *BaseRT) ConnectToRoom(conn *websocket.Conn, gameID, roomID, userID
 
 	// RUN RoomClient
 	go func() {
-		roomRT.Clients.ConnectChild(client)
-		baseRT.roomsClients.ConnectChild(client)
+		roomNode.Clients.ConnectChild(client)
+		baseNode.roomsClients.ConnectChild(client)
 
-		client.Run(roomRT)
+		client.Run(roomNode)
 
-		roomRT.Clients.DisconnectChild(client)
-		baseRT.roomsClients.DisconnectChild(client)
+		roomNode.Clients.DisconnectChild(client)
+		baseNode.roomsClients.DisconnectChild(client)
 	}()
 
 	return nil

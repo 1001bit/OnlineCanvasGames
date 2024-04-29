@@ -22,7 +22,7 @@ type RoomReadMessage struct {
 }
 
 // Layer of RT which is responsible for handling WS clients
-type RoomRT struct {
+type RoomNode struct {
 	Flow runflow.RunFlow
 
 	Clients children.Children[RoomClient]
@@ -36,8 +36,8 @@ type RoomRT struct {
 	owner *RoomClient
 }
 
-func NewRoomRT() *RoomRT {
-	return &RoomRT{
+func NewRoomNode() *RoomNode {
+	return &RoomNode{
 		Flow: runflow.MakeRunFlow(),
 
 		Clients: children.MakeChildren[RoomClient](),
@@ -53,104 +53,104 @@ func NewRoomRT() *RoomRT {
 }
 
 // TODO: Try to get rid of this
-func (roomRT *RoomRT) Run(requestUpdatingRoomsJSON func()) {
-	log.Println("<RoomRT Run>")
+func (roomNode *RoomNode) Run(requestUpdatingRoomsJSON func()) {
+	log.Println("<RoomNode Run>")
 
 	defer func() {
-		roomRT.Flow.CloseDone()
+		roomNode.Flow.CloseDone()
 
-		log.Println("<RoomRT Done>")
+		log.Println("<RoomNode Done>")
 	}()
 
 	stopTimer := time.NewTimer(roomStopWait)
 
 	for {
 		select {
-		case client := <-roomRT.Clients.ToConnect():
+		case client := <-roomNode.Clients.ToConnect():
 			// When server asked to connect a client
-			roomRT.connectClient(client)
+			roomNode.connectClient(client)
 
-			// Request updaing GameRT's RoomsJSON
+			// Request updaing GameNode's RoomsJSON
 			go requestUpdatingRoomsJSON()
 
-			log.Println("<RoomRT +Client>:", len(roomRT.Clients.ChildMap))
+			log.Println("<RoomNode +Client>:", len(roomNode.Clients.ChildMap))
 
-		case client := <-roomRT.Clients.ToDisconnect():
+		case client := <-roomNode.Clients.ToDisconnect():
 			// When server asked to disconnect a client
-			roomRT.disconnectClient(client, stopTimer)
+			roomNode.disconnectClient(client, stopTimer)
 
-			// Request updaing GameRT's RoomsJSON
+			// Request updaing GameNode's RoomsJSON
 			go requestUpdatingRoomsJSON()
 
-			log.Println("<RoomRT -Client>:", len(roomRT.Clients.ChildMap))
+			log.Println("<RoomNode -Client>:", len(roomNode.Clients.ChildMap))
 
-		case msg := <-roomRT.readChan:
+		case msg := <-roomNode.readChan:
 			// Handle messages that were read by all the clients of the room
-			roomRT.handleReadMessage(msg)
-			log.Println("<RoomRT Read Message>:", msg)
+			roomNode.handleReadMessage(msg)
+			log.Println("<RoomNode Read Message>:", msg)
 
-		case msg := <-roomRT.globalWriteChan:
+		case msg := <-roomNode.globalWriteChan:
 			// Write message to every client if server told to do so
-			roomRT.globalWriteMessage(msg)
-			log.Println("<RoomRT Global Message>:", msg)
+			roomNode.globalWriteMessage(msg)
+			log.Println("<RoomNode Global Message>:", msg)
 
 		case <-stopTimer.C:
 			// If timer is over, check for clients
-			roomRT.stopIfNoClients()
+			roomNode.stopIfNoClients()
 
-		case <-roomRT.Flow.Stopped():
+		case <-roomNode.Flow.Stopped():
 			// When server asked to stop running
 			return
 		}
 	}
 }
 
-func (roomRT *RoomRT) GetID() int {
-	return roomRT.id
+func (roomNode *RoomNode) GetID() int {
+	return roomNode.id
 }
 
-func (roomRT *RoomRT) SetRandomID() {
-	roomRT.id = int(time.Now().UnixMicro())
+func (roomNode *RoomNode) SetRandomID() {
+	roomNode.id = int(time.Now().UnixMicro())
 }
 
-func (roomRT *RoomRT) GetOwnerName() string {
-	switch roomRT.owner {
+func (roomNode *RoomNode) GetOwnerName() string {
+	switch roomNode.owner {
 	case nil:
 		return "nobody"
 	default:
-		return roomRT.owner.user.Name
+		return roomNode.owner.user.Name
 	}
 }
 
-func (roomRT *RoomRT) ConnectedToGame() <-chan struct{} {
-	return roomRT.connectedToGame
+func (roomNode *RoomNode) ConnectedToGame() <-chan struct{} {
+	return roomNode.connectedToGame
 }
 
-func (roomRT *RoomRT) ConfirmConnectToGame() {
-	close(roomRT.connectedToGame)
+func (roomNode *RoomNode) ConfirmConnectToGame() {
+	close(roomNode.connectedToGame)
 }
 
 // connects client to room and makes it owner if no owner exists
-func (roomRT *RoomRT) connectClient(client *RoomClient) {
-	roomRT.Clients.ChildMap[client] = true
+func (roomNode *RoomNode) connectClient(client *RoomClient) {
+	roomNode.Clients.ChildMap[client] = true
 
 	// change owner if no owner yet
-	if roomRT.owner == nil {
-		roomRT.owner = client
+	if roomNode.owner == nil {
+		roomNode.owner = client
 	}
 }
 
 // disconnects client from room and sets new owner if owner has left (owner is nil if no clients left, room is deleted after that)
-func (roomRT *RoomRT) disconnectClient(client *RoomClient, stopTimer *time.Timer) {
-	if _, ok := roomRT.Clients.ChildMap[client]; !ok {
+func (roomNode *RoomNode) disconnectClient(client *RoomClient, stopTimer *time.Timer) {
+	if _, ok := roomNode.Clients.ChildMap[client]; !ok {
 		return
 	}
 
-	delete(roomRT.Clients.ChildMap, client)
+	delete(roomNode.Clients.ChildMap, client)
 
 	// change owner
-	if roomRT.owner == client {
-		roomRT.owner, _ = roomRT.pickRandomClient()
+	if roomNode.owner == client {
+		roomNode.owner, _ = roomNode.pickRandomClient()
 	}
 
 	// stop room if no clients left after 2 seconds of disconnection
@@ -159,25 +159,25 @@ func (roomRT *RoomRT) disconnectClient(client *RoomClient, stopTimer *time.Timer
 }
 
 // handles message that is read from a client
-func (roomRT *RoomRT) handleReadMessage(msg RoomReadMessage) {
+func (roomNode *RoomNode) handleReadMessage(msg RoomReadMessage) {
 
 }
 
 // write a message to every client
-func (roomRT *RoomRT) globalWriteMessage(msg *message.JSON) {
-	for client := range roomRT.Clients.ChildMap {
+func (roomNode *RoomNode) globalWriteMessage(msg *message.JSON) {
+	for client := range roomNode.Clients.ChildMap {
 		client.writeChan <- msg
 	}
 }
 
 // returns random client
-func (roomRT *RoomRT) pickRandomClient() (*RoomClient, error) {
-	if len(roomRT.Clients.ChildMap) == 0 {
+func (roomNode *RoomNode) pickRandomClient() (*RoomClient, error) {
+	if len(roomNode.Clients.ChildMap) == 0 {
 		return nil, ErrNoClients
 	}
 
-	k := rand.Intn(len(roomRT.Clients.ChildMap))
-	for client := range roomRT.Clients.ChildMap {
+	k := rand.Intn(len(roomNode.Clients.ChildMap))
+	for client := range roomNode.Clients.ChildMap {
 		if k == 0 {
 			return client, nil
 		}
@@ -187,8 +187,8 @@ func (roomRT *RoomRT) pickRandomClient() (*RoomClient, error) {
 }
 
 // stops the room if no clients left
-func (roomRT *RoomRT) stopIfNoClients() {
-	if len(roomRT.Clients.ChildMap) == 0 {
-		go roomRT.Flow.Stop()
+func (roomNode *RoomNode) stopIfNoClients() {
+	if len(roomNode.Clients.ChildMap) == 0 {
+		go roomNode.Flow.Stop()
 	}
 }

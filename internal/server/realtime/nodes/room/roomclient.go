@@ -45,7 +45,7 @@ func NewRoomClient(conn *websocket.Conn, user RoomClientUser) *RoomClient {
 	}
 }
 
-func (client *RoomClient) Run(roomRT *RoomRT) {
+func (client *RoomClient) Run(roomNode *RoomNode) {
 	log.Println("<RoomClient Run>")
 
 	// ticker that indicates the need to send ping message
@@ -73,7 +73,7 @@ func (client *RoomClient) Run(roomRT *RoomRT) {
 
 		case msg := <-client.readChan:
 			// Handle messages that were read in readPump
-			client.handleReadMessage(msg, roomRT)
+			client.handleReadMessage(msg, roomNode)
 
 		case <-client.Flow.Stopped():
 			// when server asked to stop running
@@ -165,9 +165,9 @@ func (client *RoomClient) writeMessage(msg *message.JSON) {
 }
 
 // process read message
-func (client *RoomClient) handleReadMessage(msg *message.JSON, roomRT *RoomRT) {
+func (client *RoomClient) handleReadMessage(msg *message.JSON, roomNode *RoomNode) {
 	// simply tell room about read message
-	roomRT.readChan <- RoomReadMessage{
+	roomNode.readChan <- RoomReadMessage{
 		client:  client,
 		message: msg,
 	}

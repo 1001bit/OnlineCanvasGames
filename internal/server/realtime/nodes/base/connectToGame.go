@@ -8,19 +8,19 @@ import (
 )
 
 // handle SSE endpoint
-func (baseRT *BaseRT) ConnectToGame(ctx context.Context, w http.ResponseWriter, gameID int) error {
-	gameRT, ok := baseRT.games.IDMap[gameID]
+func (baseNode *BaseNode) ConnectToGame(ctx context.Context, w http.ResponseWriter, gameID int) error {
+	gameNode, ok := baseNode.games.IDMap[gameID]
 	if !ok {
 		return ErrNoGame
 	}
 
-	client := gamenode.NewGameRTClient(w)
+	client := gamenode.NewGameClient(w)
 
-	// RUN GameRTClient
+	// RUN GameClient
 	go func() {
-		gameRT.Clients.ConnectChild(client)
+		gameNode.Clients.ConnectChild(client)
 		client.Run(ctx)
-		gameRT.Clients.DisconnectChild(client)
+		gameNode.Clients.DisconnectChild(client)
 	}()
 
 	<-client.Flow.Done()

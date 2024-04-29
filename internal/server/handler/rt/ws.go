@@ -25,7 +25,7 @@ func closeConnWithMessage(conn *websocket.Conn, text string) {
 	})
 }
 
-func HandleRoomWS(w http.ResponseWriter, r *http.Request, baseRT *basenode.BaseRT) {
+func HandleRoomWS(w http.ResponseWriter, r *http.Request, baseNode *basenode.BaseNode) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -68,7 +68,7 @@ func HandleRoomWS(w http.ResponseWriter, r *http.Request, baseRT *basenode.BaseR
 		return
 	}
 
-	err = baseRT.ConnectToRoom(conn, gameID, roomID, int(userIDfloat), userName)
+	err = baseNode.ConnectToRoom(conn, gameID, roomID, int(userIDfloat), userName)
 	if err != nil {
 		switch err {
 		case basenode.ErrNoGame:

@@ -7,7 +7,7 @@ import (
 	basenode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/base"
 )
 
-func HandleGameSSE(w http.ResponseWriter, r *http.Request, baseRT *basenode.BaseRT) {
+func HandleGameSSE(w http.ResponseWriter, r *http.Request, baseNode *basenode.BaseNode) {
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
@@ -20,7 +20,7 @@ func HandleGameSSE(w http.ResponseWriter, r *http.Request, baseRT *basenode.Base
 		return
 	}
 
-	err = baseRT.ConnectToGame(r.Context(), w, gameID)
+	err = baseNode.ConnectToGame(r.Context(), w, gameID)
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
