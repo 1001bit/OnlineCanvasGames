@@ -19,6 +19,8 @@
     - [X] Room connect
     - [X] Random room returner api
 
+- [ ] Terminal mini-app for showing running RT nodes
+
 - [ ] Room Page
     - [X] WS Room connection
     - [X] Make RT nodes independent from each other
