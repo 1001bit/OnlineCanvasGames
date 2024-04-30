@@ -8,6 +8,7 @@ import (
 	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/children"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/roomclient"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/rtclient"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/runflow"
 )
 
@@ -23,7 +24,7 @@ type RoomNode struct {
 
 	Clients children.Children[roomclient.RoomClient]
 
-	readChan        chan roomclient.MessageWithSender
+	readChan        chan rtclient.MessageWithClient
 	globalWriteChan chan *message.JSON
 
 	connectedToGame chan struct{}
@@ -38,7 +39,7 @@ func NewRoomNode() *RoomNode {
 
 		Clients: children.MakeChildren[roomclient.RoomClient](),
 
-		readChan:        make(chan roomclient.MessageWithSender),
+		readChan:        make(chan rtclient.MessageWithClient),
 		globalWriteChan: make(chan *message.JSON),
 
 		connectedToGame: make(chan struct{}),
@@ -129,7 +130,7 @@ func (roomNode *RoomNode) disconnectClient(client *roomclient.RoomClient, stopTi
 }
 
 // handles message that is read from a client
-func (roomNode *RoomNode) handleReadMessage(msg roomclient.MessageWithSender) {
+func (roomNode *RoomNode) handleReadMessage(msg rtclient.MessageWithClient) {
 
 }
 

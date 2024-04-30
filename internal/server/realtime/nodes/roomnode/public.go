@@ -3,7 +3,7 @@ package roomnode
 import (
 	"time"
 
-	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/roomclient"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/rtclient"
 )
 
 func (roomNode *RoomNode) GetID() int {
@@ -31,6 +31,6 @@ func (roomNode *RoomNode) ConfirmConnectToGame() {
 	close(roomNode.connectedToGame)
 }
 
-func (roomNode *RoomNode) ReadMessage(message roomclient.MessageWithSender) {
+func (roomNode *RoomNode) ReadMessage(message rtclient.MessageWithClient) {
 	roomNode.readChan <- message
 }

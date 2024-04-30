@@ -2,6 +2,7 @@ package basenode
 
 import (
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/roomclient"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/rtclient"
 	"github.com/gorilla/websocket"
 )
 
@@ -17,7 +18,7 @@ func (baseNode *BaseNode) ConnectToRoom(conn *websocket.Conn, gameID, roomID, us
 		return ErrNoRoom
 	}
 
-	user := roomclient.RoomClientUser{
+	user := rtclient.User{
 		ID:   userID,
 		Name: userName,
 	}

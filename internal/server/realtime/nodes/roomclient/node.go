@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/rtclient"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/runflow"
 	"github.com/gorilla/websocket"
 )
@@ -17,20 +18,8 @@ const (
 	pingPeriod = pongWait * 9 / 10
 )
 
-type RoomClientUser struct {
-	ID   int
-	Name string
-}
-
-// Struct that contains message and a client who was the message read from
-// TODO: Make message package for RT which will contain client interface and message
-type MessageWithSender struct {
-	sender  *RoomClient
-	message *message.JSON
-}
-
 type RoomNodeReader interface {
-	ReadMessage(message MessageWithSender)
+	ReadMessage(message rtclient.MessageWithClient)
 }
 
 // Layer of RT which is responsible for handling connection WS
@@ -38,13 +27,13 @@ type RoomClient struct {
 	Flow runflow.RunFlow
 
 	conn *websocket.Conn
-	user RoomClientUser
+	user rtclient.User
 
 	writeChan chan *message.JSON
 	readChan  chan *message.JSON
 }
 
-func NewRoomClient(conn *websocket.Conn, user RoomClientUser) *RoomClient {
+func NewRoomClient(conn *websocket.Conn, user rtclient.User) *RoomClient {
 	return &RoomClient{
 		Flow: runflow.MakeRunFlow(),
 
@@ -178,8 +167,8 @@ func (client *RoomClient) writeMessageToConn(msg *message.JSON) {
 // process read message
 func (client *RoomClient) handleReadMessage(msg *message.JSON, roomNodeReader RoomNodeReader) {
 	// simply tell room about read message
-	go roomNodeReader.ReadMessage(MessageWithSender{
-		sender:  client,
-		message: msg,
+	go roomNodeReader.ReadMessage(rtclient.MessageWithClient{
+		Client:  client,
+		Message: msg,
 	})
 }
