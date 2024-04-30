@@ -1,7 +1,6 @@
 package roomnode
 
 import (
-	"errors"
 	"log"
 	"math/rand"
 	"time"
@@ -12,8 +11,6 @@ import (
 )
 
 const roomStopWait = 5 * time.Second
-
-var ErrNoClients = errors.New("no clients in the room")
 
 // Struct that contains message and a client who was the message read from
 type RoomReadMessage struct {
@@ -106,31 +103,6 @@ func (roomNode *RoomNode) Run(requester GameNodeRequester) {
 			return
 		}
 	}
-}
-
-func (roomNode *RoomNode) GetID() int {
-	return roomNode.id
-}
-
-func (roomNode *RoomNode) SetRandomID() {
-	roomNode.id = int(time.Now().UnixMicro())
-}
-
-func (roomNode *RoomNode) GetOwnerName() string {
-	switch roomNode.owner {
-	case nil:
-		return "nobody"
-	default:
-		return roomNode.owner.user.Name
-	}
-}
-
-func (roomNode *RoomNode) ConnectedToGame() <-chan struct{} {
-	return roomNode.connectedToGame
-}
-
-func (roomNode *RoomNode) ConfirmConnectToGame() {
-	close(roomNode.connectedToGame)
 }
 
 // connects client to room and makes it owner if no owner exists

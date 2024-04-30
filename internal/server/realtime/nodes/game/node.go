@@ -1,7 +1,6 @@
 package gamenode
 
 import (
-	"errors"
 	"log"
 
 	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
@@ -9,8 +8,6 @@ import (
 	roomnode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/room"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/runflow"
 )
-
-var ErrNoRooms = errors.New("no rooms in the game")
 
 // Room that will be sent to client
 type RoomJSON struct {
@@ -109,15 +106,6 @@ func (gameNode *GameNode) Run() {
 			return
 		}
 	}
-}
-
-// ask gameNode to update gameNode.roomsJSON
-func (gameNode *GameNode) RequestUpdatingRoomsJSON() {
-	gameNode.roomsJSONUpdateChan <- struct{}{}
-}
-
-func (gameNode *GameNode) GetID() int {
-	return gameNode.gameID
 }
 
 // connect GameNode client to GameNode

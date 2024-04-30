@@ -23,7 +23,10 @@ func (baseNode *BaseNode) ConnectToGame(ctx context.Context, w http.ResponseWrit
 		gameNode.Clients.DisconnectChild(client)
 	}()
 
-	<-client.Flow.Done()
+	select {
+	case <-client.Flow.Done():
+	case <-ctx.Done():
+	}
 
 	return nil
 }
