@@ -15,6 +15,8 @@ type BaseNode struct {
 	games children.ChildrenWithID[gamenode.GameNode]
 
 	roomsClients children.ChildrenWithID[roomclient.RoomClient]
+
+	gamesJSON []gamemodel.Game
 }
 
 func NewBaseNode() *BaseNode {
@@ -22,6 +24,8 @@ func NewBaseNode() *BaseNode {
 		games: children.MakeChildrenWithID[gamenode.GameNode](),
 
 		roomsClients: children.MakeChildrenWithID[roomclient.RoomClient](),
+
+		gamesJSON: make([]gamemodel.Game, 0),
 	}
 }
 
@@ -33,7 +37,7 @@ func (baseNode *BaseNode) InitGames() error {
 	}
 
 	for _, game := range games {
-		gameNode := gamenode.NewGameNode(game.ID)
+		gameNode := gamenode.NewGameNode(game)
 
 		// RUN gameNode
 		go func() {
@@ -41,6 +45,9 @@ func (baseNode *BaseNode) InitGames() error {
 			gameNode.Run()
 			baseNode.games.DisconnectChild(gameNode)
 		}()
+
+		// add game to gamesJson
+		baseNode.gamesJSON = append(baseNode.gamesJSON, game)
 	}
 
 	return nil
@@ -75,12 +82,12 @@ func (baseNode *BaseNode) Run() {
 
 // connect gameNode to BaseNode
 func (baseNode *BaseNode) connectGame(game *gamenode.GameNode) {
-	baseNode.games.IDMap[game.GetID()] = game
+	baseNode.games.IDMap[game.GetGame().ID] = game
 }
 
 // disconnect gameNode from BaseNode
 func (baseNode *BaseNode) disconnectGame(game *gamenode.GameNode) {
-	delete(baseNode.games.IDMap, game.GetID())
+	delete(baseNode.games.IDMap, game.GetGame().ID)
 }
 
 // if there is already client with such ID - stop them. Put a new one

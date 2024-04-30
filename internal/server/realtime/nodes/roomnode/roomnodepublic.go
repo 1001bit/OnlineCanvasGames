@@ -6,12 +6,12 @@ import (
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/rtclient"
 )
 
-func (roomNode *RoomNode) GetID() int {
-	return roomNode.id
-}
-
 func (roomNode *RoomNode) SetRandomID() {
 	roomNode.id = int(time.Now().UnixMicro())
+}
+
+func (roomNode *RoomNode) GetID() int {
+	return roomNode.id
 }
 
 func (roomNode *RoomNode) GetOwnerName() string {

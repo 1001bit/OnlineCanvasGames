@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	gamemodel "github.com/1001bit/OnlineCanvasGames/internal/model/game"
 	gamenode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/gamenode"
 	roomnode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/roomnode"
 )
@@ -40,4 +41,8 @@ func (baseNode *BaseNode) ConnectNewRoom(ctx context.Context, gameID int) (*room
 func (baseNode *BaseNode) GetGameByID(id int) (*gamenode.GameNode, bool) {
 	game, ok := baseNode.games.IDMap[id]
 	return game, ok
+}
+
+func (baseNode *BaseNode) GetGamesJSON() []gamemodel.Game {
+	return baseNode.gamesJSON
 }

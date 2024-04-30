@@ -3,6 +3,7 @@ package gamenode
 import (
 	"log"
 
+	gamemodel "github.com/1001bit/OnlineCanvasGames/internal/model/game"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/children"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/gameclient"
@@ -24,30 +25,27 @@ type GameNode struct {
 	Rooms   children.ChildrenWithID[roomnode.RoomNode]
 	Clients children.Children[gameclient.GameClient]
 
-	roomsJSON           *message.JSON
+	roomsJSON           []RoomJSON
 	roomsJSONUpdateChan chan struct{}
 
 	globalWriteChan chan *message.JSON
 
-	gameID int
+	game gamemodel.Game
 }
 
-func NewGameNode(id int) *GameNode {
+func NewGameNode(game gamemodel.Game) *GameNode {
 	return &GameNode{
 		Flow: runflow.MakeRunFlow(),
 
 		Rooms:   children.MakeChildrenWithID[roomnode.RoomNode](),
 		Clients: children.MakeChildren[gameclient.GameClient](),
 
-		roomsJSON: &message.JSON{
-			Type: "rooms",
-			Body: make([]RoomJSON, 0),
-		},
+		roomsJSON:           make([]RoomJSON, 0),
 		roomsJSONUpdateChan: make(chan struct{}),
 
 		globalWriteChan: make(chan *message.JSON),
 
-		gameID: id,
+		game: game,
 	}
 }
 
@@ -67,7 +65,10 @@ func (gameNode *GameNode) Run() {
 			gameNode.connectClient(client)
 
 			// send roomsJSON to client on it's join
-			go client.WriteMessage(gameNode.roomsJSON)
+			go client.WriteMessage(&message.JSON{
+				Type: "rooms",
+				Body: gameNode.roomsJSON,
+			})
 
 			log.Println("<GameNode +Client>:", len(gameNode.Clients.ChildMap))
 
@@ -139,18 +140,18 @@ func (gameNode *GameNode) globalWriteMessage(msg *message.JSON) {
 
 // update gameNode.roomsJSON rooms list to send to all the clients of gameNode
 func (gameNode *GameNode) updateRoomsJSON() {
-	roomsJSON := make([]RoomJSON, 0)
-
 	for _, roomNode := range gameNode.Rooms.IDMap {
 		<-roomNode.ConnectedToGame()
 
-		roomsJSON = append(roomsJSON, RoomJSON{
+		gameNode.roomsJSON = append(gameNode.roomsJSON, RoomJSON{
 			Owner:   roomNode.GetOwnerName(),
 			Clients: len(roomNode.Clients.ChildMap),
 			ID:      roomNode.GetID(),
 		})
 	}
 
-	gameNode.roomsJSON.Body = roomsJSON
-	gameNode.globalWriteMessage(gameNode.roomsJSON)
+	gameNode.globalWriteMessage(&message.JSON{
+		Type: "rooms",
+		Body: gameNode.roomsJSON,
+	})
 }

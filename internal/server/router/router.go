@@ -62,7 +62,9 @@ func NewRouter() (http.Handler, error) {
 		r.Use(middleware.TypeHTML)
 
 		// Get
-		r.Get("/", page.HandleHome)
+		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+			page.HandleHome(w, r, baseNode)
+		})
 		r.Get("/auth", page.HandleAuth)
 		r.Get("/profile/{id}", page.HandleProfile)
 		// Secure

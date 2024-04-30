@@ -19,8 +19,9 @@
     - [X] Room connect
     - [X] Random room returner api
 
+- [X] Receiving games from BaseNode cache instead of querying database each home page load
+- [ ] Maybe add functionality to update GamesJSON inside BaseNode
 - [ ] Admin page for showing running RT nodes
-- [ ] Receiving home games from BaseNode cache instead of db
 
 - [ ] Room Page
     - [X] WS Room connection
