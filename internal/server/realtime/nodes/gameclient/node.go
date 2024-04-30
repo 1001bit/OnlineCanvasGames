@@ -1,4 +1,4 @@
-package gamenode
+package gameclient
 
 import (
 	"context"
@@ -41,7 +41,7 @@ func (client *GameClient) Run(ctx context.Context) {
 		select {
 		case msg := <-client.writeChan:
 			// Write message to writer if server told to do so
-			client.writeMessage(msg)
+			client.writeMessageToWriter(msg)
 			log.Println("<GameClient Write Message>")
 
 		case <-client.Flow.Stopped():
@@ -55,7 +55,7 @@ func (client *GameClient) Run(ctx context.Context) {
 	}
 }
 
-func (client *GameClient) writeMessage(msg *message.JSON) {
+func (client *GameClient) writeMessageToWriter(msg *message.JSON) {
 	msgByte, err := json.Marshal(msg)
 	if err != nil {
 		log.Println("error marshaling GameClient message:", err)

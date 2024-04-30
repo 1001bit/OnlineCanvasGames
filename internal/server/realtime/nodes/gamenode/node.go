@@ -5,7 +5,8 @@ import (
 
 	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/children"
-	roomnode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/room"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/gameclient"
+	roomnode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/roomnode"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/runflow"
 )
 
@@ -21,7 +22,7 @@ type GameNode struct {
 	Flow runflow.RunFlow
 
 	Rooms   children.ChildrenWithID[roomnode.RoomNode]
-	Clients children.Children[GameClient]
+	Clients children.Children[gameclient.GameClient]
 
 	roomsJSON           *message.JSON
 	roomsJSONUpdateChan chan struct{}
@@ -36,7 +37,7 @@ func NewGameNode(id int) *GameNode {
 		Flow: runflow.MakeRunFlow(),
 
 		Rooms:   children.MakeChildrenWithID[roomnode.RoomNode](),
-		Clients: children.MakeChildren[GameClient](),
+		Clients: children.MakeChildren[gameclient.GameClient](),
 
 		roomsJSON: &message.JSON{
 			Type: "rooms",
@@ -66,9 +67,7 @@ func (gameNode *GameNode) Run() {
 			gameNode.connectClient(client)
 
 			// send roomsJSON to client on it's join
-			go func() {
-				client.writeChan <- gameNode.roomsJSON
-			}()
+			go client.WriteMessage(gameNode.roomsJSON)
 
 			log.Println("<GameNode +Client>:", len(gameNode.Clients.ChildMap))
 
@@ -109,12 +108,12 @@ func (gameNode *GameNode) Run() {
 }
 
 // connect GameNode client to GameNode
-func (gameNode *GameNode) connectClient(client *GameClient) {
+func (gameNode *GameNode) connectClient(client *gameclient.GameClient) {
 	gameNode.Clients.ChildMap[client] = true
 }
 
 // disconnect GameNode client from gameNode
-func (gameNode *GameNode) disconnectClient(client *GameClient) {
+func (gameNode *GameNode) disconnectClient(client *gameclient.GameClient) {
 	delete(gameNode.Clients.ChildMap, client)
 }
 
@@ -134,7 +133,7 @@ func (gameNode *GameNode) disconnectRoom(room *roomnode.RoomNode) {
 // write a message to every client
 func (gameNode *GameNode) globalWriteMessage(msg *message.JSON) {
 	for client := range gameNode.Clients.ChildMap {
-		client.writeChan <- msg
+		client.WriteMessage(msg)
 	}
 }
 

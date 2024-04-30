@@ -6,22 +6,22 @@ import (
 
 	gamemodel "github.com/1001bit/OnlineCanvasGames/internal/model/game"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/children"
-	gamenode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/game"
-	roomnode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/room"
+	gamenode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/gamenode"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/roomclient"
 )
 
 // Basic layer of RT which is responsible for handling Games and room-client connections
 type BaseNode struct {
 	games children.ChildrenWithID[gamenode.GameNode]
 
-	roomsClients children.ChildrenWithID[roomnode.RoomClient]
+	roomsClients children.ChildrenWithID[roomclient.RoomClient]
 }
 
 func NewBaseNode() *BaseNode {
 	return &BaseNode{
 		games: children.MakeChildrenWithID[gamenode.GameNode](),
 
-		roomsClients: children.MakeChildrenWithID[roomnode.RoomClient](),
+		roomsClients: children.MakeChildrenWithID[roomclient.RoomClient](),
 	}
 }
 
@@ -84,7 +84,7 @@ func (baseNode *BaseNode) disconnectGame(game *gamenode.GameNode) {
 }
 
 // if there is already client with such ID - stop them. Put a new one
-func (baseNode *BaseNode) protectRoomClient(client *roomnode.RoomClient) {
+func (baseNode *BaseNode) protectRoomClient(client *roomclient.RoomClient) {
 	oldClient, ok := baseNode.roomsClients.IDMap[client.GetID()]
 	if ok {
 		oldClient.StopWithMessage("This user has just joined another room")
@@ -93,7 +93,7 @@ func (baseNode *BaseNode) protectRoomClient(client *roomnode.RoomClient) {
 }
 
 // if there is already client with such ID - stop them. Put a new one
-func (baseNode *BaseNode) deleteRoomClient(client *roomnode.RoomClient) {
+func (baseNode *BaseNode) deleteRoomClient(client *roomclient.RoomClient) {
 	// can delete only exact client, not just with the same id
 	if baseNode.roomsClients.IDMap[client.GetID()] != client {
 		return

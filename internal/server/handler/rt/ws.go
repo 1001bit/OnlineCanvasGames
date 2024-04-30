@@ -6,7 +6,7 @@ import (
 
 	"github.com/1001bit/OnlineCanvasGames/internal/auth"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
-	basenode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/base"
+	basenode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/basenode"
 	"github.com/gorilla/websocket"
 )
 

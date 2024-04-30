@@ -1,6 +1,10 @@
 package roomnode
 
-import "time"
+import (
+	"time"
+
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/roomclient"
+)
 
 func (roomNode *RoomNode) GetID() int {
 	return roomNode.id
@@ -15,7 +19,7 @@ func (roomNode *RoomNode) GetOwnerName() string {
 	case nil:
 		return "nobody"
 	default:
-		return roomNode.owner.user.Name
+		return roomNode.owner.GetUser().Name
 	}
 }
 
@@ -25,4 +29,8 @@ func (roomNode *RoomNode) ConnectedToGame() <-chan struct{} {
 
 func (roomNode *RoomNode) ConfirmConnectToGame() {
 	close(roomNode.connectedToGame)
+}
+
+func (roomNode *RoomNode) ReadMessage(message roomclient.MessageWithSender) {
+	roomNode.readChan <- message
 }

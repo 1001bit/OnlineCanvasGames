@@ -19,7 +19,8 @@
     - [X] Room connect
     - [X] Random room returner api
 
-- [ ] Terminal mini-app for showing running RT nodes
+- [ ] Admin page for showing running RT nodes
+- [ ] Receiving home games from BaseNode cache instead of db
 
 - [ ] Room Page
     - [X] WS Room connection

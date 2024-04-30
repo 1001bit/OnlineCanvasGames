@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	basenode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/base"
+	basenode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/basenode"
 )
 
 func HandleGameSSE(w http.ResponseWriter, r *http.Request, baseNode *basenode.BaseNode) {

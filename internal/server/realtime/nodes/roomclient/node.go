@@ -1,4 +1,4 @@
-package roomnode
+package roomclient
 
 import (
 	"io"
@@ -20,6 +20,17 @@ const (
 type RoomClientUser struct {
 	ID   int
 	Name string
+}
+
+// Struct that contains message and a client who was the message read from
+// TODO: Make message package for RT which will contain client interface and message
+type MessageWithSender struct {
+	sender  *RoomClient
+	message *message.JSON
+}
+
+type RoomNodeReader interface {
+	ReadMessage(message MessageWithSender)
 }
 
 // Layer of RT which is responsible for handling connection WS
@@ -45,7 +56,7 @@ func NewRoomClient(conn *websocket.Conn, user RoomClientUser) *RoomClient {
 	}
 }
 
-func (client *RoomClient) Run(roomNode *RoomNode) {
+func (client *RoomClient) Run(roomNodeReader RoomNodeReader) {
 	log.Println("<RoomClient Run>")
 
 	// ticker that indicates the need to send ping message
@@ -69,11 +80,11 @@ func (client *RoomClient) Run(roomNode *RoomNode) {
 
 		case msg := <-client.writeChan:
 			// Write message to conn if server told to do so
-			client.writeMessage(msg)
+			client.writeMessageToConn(msg)
 
 		case msg := <-client.readChan:
 			// Handle messages that were read in readPump
-			client.handleReadMessage(msg, roomNode)
+			client.handleReadMessage(msg, roomNodeReader)
 
 		case <-client.Flow.Stopped():
 			// when server asked to stop running
@@ -154,7 +165,7 @@ func (client *RoomClient) pingConn() {
 }
 
 // write message to connection
-func (client *RoomClient) writeMessage(msg *message.JSON) {
+func (client *RoomClient) writeMessageToConn(msg *message.JSON) {
 	client.conn.SetWriteDeadline(time.Now().Add(writeWait)) // if WriteMessage can't send message in writeWait period, client is disconnected
 
 	err := client.conn.WriteJSON(msg)
@@ -165,10 +176,10 @@ func (client *RoomClient) writeMessage(msg *message.JSON) {
 }
 
 // process read message
-func (client *RoomClient) handleReadMessage(msg *message.JSON, roomNode *RoomNode) {
+func (client *RoomClient) handleReadMessage(msg *message.JSON, roomNodeReader RoomNodeReader) {
 	// simply tell room about read message
-	roomNode.readChan <- RoomReadMessage{
-		client:  client,
+	go roomNodeReader.ReadMessage(MessageWithSender{
+		sender:  client,
 		message: msg,
-	}
+	})
 }

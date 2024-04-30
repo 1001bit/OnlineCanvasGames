@@ -8,7 +8,7 @@ import (
 	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/rt"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/storage"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/middleware"
-	basenode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/base"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/basenode"
 
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"

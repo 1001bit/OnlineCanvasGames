@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	gamenode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/game"
-	roomnode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/room"
+	gamenode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/gamenode"
+	roomnode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/roomnode"
 )
 
 // create new room and connect it to BaseNode

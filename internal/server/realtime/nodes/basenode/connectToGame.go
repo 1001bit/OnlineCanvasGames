@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	gamenode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/game"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/gameclient"
 )
 
 // handle SSE endpoint
@@ -14,7 +14,7 @@ func (baseNode *BaseNode) ConnectToGame(ctx context.Context, w http.ResponseWrit
 		return ErrNoGame
 	}
 
-	client := gamenode.NewGameClient(w)
+	client := gameclient.NewGameClient(w)
 
 	// RUN GameClient
 	go func() {
