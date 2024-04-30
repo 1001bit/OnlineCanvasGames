@@ -140,6 +140,7 @@ func (gameNode *GameNode) globalWriteMessage(msg *message.JSON) {
 
 // update gameNode.roomsJSON rooms list to send to all the clients of gameNode
 func (gameNode *GameNode) updateRoomsJSON() {
+	gameNode.roomsJSON = make([]RoomJSON, 0)
 	for _, roomNode := range gameNode.Rooms.IDMap {
 		<-roomNode.ConnectedToGame()
 

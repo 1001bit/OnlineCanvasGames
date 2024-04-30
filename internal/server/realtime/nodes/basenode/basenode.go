@@ -36,6 +36,7 @@ func (baseNode *BaseNode) InitGames() error {
 		return err
 	}
 
+	baseNode.gamesJSON = make([]gamemodel.Game, 0)
 	for _, game := range games {
 		gameNode := gamenode.NewGameNode(game)
 
