@@ -5,10 +5,10 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/children"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/roomclient"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/rtclient"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/rterror"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/runflow"
 )
 
@@ -22,12 +22,11 @@ type GameNodeRequester interface {
 type RoomNode struct {
 	Flow runflow.RunFlow
 
-	Clients children.Children[roomclient.RoomClient]
+	Clients children.ChildrenWithID[roomclient.RoomClient]
 
-	readChan        chan rtclient.MessageWithClient
-	globalWriteChan chan *message.JSON
+	readChan chan rtclient.MessageWithClient
 
-	connectedToGame chan struct{}
+	connectedToGameChan chan struct{}
 
 	id    int
 	owner *roomclient.RoomClient
@@ -37,12 +36,11 @@ func NewRoomNode() *RoomNode {
 	return &RoomNode{
 		Flow: runflow.MakeRunFlow(),
 
-		Clients: children.MakeChildren[roomclient.RoomClient](),
+		Clients: children.MakeChildrenWithID[roomclient.RoomClient](),
 
-		readChan:        make(chan rtclient.MessageWithClient),
-		globalWriteChan: make(chan *message.JSON),
+		readChan: make(chan rtclient.MessageWithClient),
 
-		connectedToGame: make(chan struct{}),
+		connectedToGameChan: make(chan struct{}),
 
 		id:    0,
 		owner: nil,
@@ -69,7 +67,7 @@ func (roomNode *RoomNode) Run(requester GameNodeRequester) {
 			// Request updaing GameNode's RoomsJSON
 			go requester.RequestUpdatingRoomsJSON()
 
-			log.Println("<RoomNode +Client>:", len(roomNode.Clients.ChildMap))
+			log.Println("<RoomNode +Client>:", len(roomNode.Clients.IDMap))
 
 		case client := <-roomNode.Clients.ToDisconnect():
 			// When server asked to disconnect a client
@@ -78,17 +76,12 @@ func (roomNode *RoomNode) Run(requester GameNodeRequester) {
 			// Request updaing GameNode's RoomsJSON
 			go requester.RequestUpdatingRoomsJSON()
 
-			log.Println("<RoomNode -Client>:", len(roomNode.Clients.ChildMap))
+			log.Println("<RoomNode -Client>:", len(roomNode.Clients.IDMap))
 
 		case msg := <-roomNode.readChan:
 			// Handle messages that were read by all the clients of the room
 			roomNode.handleReadMessage(msg)
 			log.Println("<RoomNode Read Message>:", msg)
-
-		case msg := <-roomNode.globalWriteChan:
-			// Write message to every client if server told to do so
-			roomNode.globalWriteMessage(msg)
-			log.Println("<RoomNode Global Message>:", msg)
 
 		case <-stopTimer.C:
 			// If timer is over, check for clients
@@ -103,7 +96,7 @@ func (roomNode *RoomNode) Run(requester GameNodeRequester) {
 
 // connects client to room and makes it owner if no owner exists
 func (roomNode *RoomNode) connectClient(client *roomclient.RoomClient) {
-	roomNode.Clients.ChildMap[client] = true
+	roomNode.Clients.IDMap[client.GetUser().ID] = client
 
 	// change owner if no owner yet
 	if roomNode.owner == nil {
@@ -113,11 +106,11 @@ func (roomNode *RoomNode) connectClient(client *roomclient.RoomClient) {
 
 // disconnects client from room and sets new owner if owner has left (owner is nil if no clients left, room is deleted after that)
 func (roomNode *RoomNode) disconnectClient(client *roomclient.RoomClient, stopTimer *time.Timer) {
-	if _, ok := roomNode.Clients.ChildMap[client]; !ok {
+	if roomNode.Clients.IDMap[client.GetUser().ID] != client {
 		return
 	}
 
-	delete(roomNode.Clients.ChildMap, client)
+	delete(roomNode.Clients.IDMap, client.GetUser().ID)
 
 	// change owner
 	if roomNode.owner == client {
@@ -134,32 +127,25 @@ func (roomNode *RoomNode) handleReadMessage(msg rtclient.MessageWithClient) {
 
 }
 
-// write a message to every client
-func (roomNode *RoomNode) globalWriteMessage(msg *message.JSON) {
-	for client := range roomNode.Clients.ChildMap {
-		go client.WriteMessage(msg)
-	}
-}
-
 // returns random client
 func (roomNode *RoomNode) pickRandomClient() (*roomclient.RoomClient, error) {
-	if len(roomNode.Clients.ChildMap) == 0 {
-		return nil, ErrNoClients
+	if len(roomNode.Clients.IDMap) == 0 {
+		return nil, rterror.ErrNoClients
 	}
 
-	k := rand.Intn(len(roomNode.Clients.ChildMap))
-	for client := range roomNode.Clients.ChildMap {
+	k := rand.Intn(len(roomNode.Clients.IDMap))
+	for _, client := range roomNode.Clients.IDMap {
 		if k == 0 {
 			return client, nil
 		}
 		k--
 	}
-	return nil, ErrNoClients
+	return nil, rterror.ErrNoClients
 }
 
 // stops the room if no clients left
 func (roomNode *RoomNode) stopIfNoClients() {
-	if len(roomNode.Clients.ChildMap) == 0 {
+	if len(roomNode.Clients.IDMap) == 0 {
 		go roomNode.Flow.Stop()
 	}
 }

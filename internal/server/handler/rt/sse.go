@@ -24,6 +24,5 @@ func HandleGameSSE(w http.ResponseWriter, r *http.Request, baseNode *basenode.Ba
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		return
 	}
 }

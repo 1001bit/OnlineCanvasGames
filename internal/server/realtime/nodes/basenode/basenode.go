@@ -93,19 +93,19 @@ func (baseNode *BaseNode) disconnectGame(game *gamenode.GameNode) {
 
 // if there is already client with such ID - stop them. Put a new one
 func (baseNode *BaseNode) protectRoomClient(client *roomclient.RoomClient) {
-	oldClient, ok := baseNode.roomsClients.IDMap[client.GetID()]
+	oldClient, ok := baseNode.roomsClients.IDMap[client.GetUser().ID]
 	if ok {
 		oldClient.StopWithMessage("This user has just joined another room")
 	}
-	baseNode.roomsClients.IDMap[client.GetID()] = client
+	baseNode.roomsClients.IDMap[client.GetUser().ID] = client
 }
 
 // if there is already client with such ID - stop them. Put a new one
 func (baseNode *BaseNode) deleteRoomClient(client *roomclient.RoomClient) {
 	// can delete only exact client, not just with the same id
-	if baseNode.roomsClients.IDMap[client.GetID()] != client {
+	if baseNode.roomsClients.IDMap[client.GetUser().ID] != client {
 		return
 	}
 
-	delete(baseNode.roomsClients.IDMap, client.GetID())
+	delete(baseNode.roomsClients.IDMap, client.GetUser().ID)
 }

@@ -7,6 +7,7 @@ import (
 	gamemodel "github.com/1001bit/OnlineCanvasGames/internal/model/game"
 	gamenode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/gamenode"
 	roomnode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/roomnode"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/rterror"
 )
 
 // create new room and connect it to BaseNode
@@ -16,7 +17,7 @@ func (baseNode *BaseNode) ConnectNewRoom(ctx context.Context, gameID int) (*room
 
 	gameNode, ok := baseNode.games.IDMap[gameID]
 	if !ok {
-		return nil, ErrNoGame
+		return nil, rterror.ErrNoGame
 	}
 
 	room := roomnode.NewRoomNode()
@@ -34,7 +35,7 @@ func (baseNode *BaseNode) ConnectNewRoom(ctx context.Context, gameID int) (*room
 		return room, nil
 	case <-ctx.Done():
 		go room.Flow.Stop()
-		return nil, ErrCreateRoom
+		return nil, rterror.ErrCreateRoom
 	}
 }
 

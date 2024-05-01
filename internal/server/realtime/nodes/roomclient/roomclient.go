@@ -82,19 +82,6 @@ func (client *RoomClient) Run(roomNodeReader RoomNodeReader) {
 	}
 }
 
-// send message to client and close after
-func (client *RoomClient) StopWithMessage(text string) {
-	client.writeChan <- &message.JSON{
-		Type: "message",
-		Body: text,
-	}
-	go client.Flow.Stop()
-}
-
-func (client *RoomClient) GetID() int {
-	return client.user.ID
-}
-
 // constantly read messages from connection
 func (client *RoomClient) readPump() {
 	log.Println("<RoomClient ReadPump>")

@@ -28,8 +28,6 @@ type GameNode struct {
 	roomsJSON           []RoomJSON
 	roomsJSONUpdateChan chan struct{}
 
-	globalWriteChan chan *message.JSON
-
 	game gamemodel.Game
 }
 
@@ -42,8 +40,6 @@ func NewGameNode(game gamemodel.Game) *GameNode {
 
 		roomsJSON:           make([]RoomJSON, 0),
 		roomsJSONUpdateChan: make(chan struct{}),
-
-		globalWriteChan: make(chan *message.JSON),
 
 		game: game,
 	}
@@ -91,11 +87,6 @@ func (gameNode *GameNode) Run() {
 
 			log.Println("<GameNode -Room>:", len(gameNode.Rooms.IDMap))
 
-		case msg := <-gameNode.globalWriteChan:
-			// Write message to every client if server told to do so
-			gameNode.globalWriteMessage(msg)
-			log.Println("<GameNode Global Message>")
-
 		case <-gameNode.roomsJSONUpdateChan:
 			// When server asked to update roomsJSON
 			gameNode.updateRoomsJSON()
@@ -131,13 +122,6 @@ func (gameNode *GameNode) disconnectRoom(room *roomnode.RoomNode) {
 	delete(gameNode.Rooms.IDMap, room.GetID())
 }
 
-// write a message to every client
-func (gameNode *GameNode) globalWriteMessage(msg *message.JSON) {
-	for client := range gameNode.Clients.ChildMap {
-		client.WriteMessage(msg)
-	}
-}
-
 // update gameNode.roomsJSON rooms list to send to all the clients of gameNode
 func (gameNode *GameNode) updateRoomsJSON() {
 	gameNode.roomsJSON = make([]RoomJSON, 0)
@@ -146,12 +130,12 @@ func (gameNode *GameNode) updateRoomsJSON() {
 
 		gameNode.roomsJSON = append(gameNode.roomsJSON, RoomJSON{
 			Owner:   roomNode.GetOwnerName(),
-			Clients: len(roomNode.Clients.ChildMap),
+			Clients: len(roomNode.Clients.IDMap),
 			ID:      roomNode.GetID(),
 		})
 	}
 
-	gameNode.globalWriteMessage(&message.JSON{
+	gameNode.GlobalWriteMessage(&message.JSON{
 		Type: "rooms",
 		Body: gameNode.roomsJSON,
 	})

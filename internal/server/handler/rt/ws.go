@@ -7,6 +7,7 @@ import (
 	"github.com/1001bit/OnlineCanvasGames/internal/auth"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
 	basenode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/basenode"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/rterror"
 	"github.com/gorilla/websocket"
 )
 
@@ -69,13 +70,11 @@ func HandleRoomWS(w http.ResponseWriter, r *http.Request, baseNode *basenode.Bas
 	}
 
 	err = baseNode.ConnectToRoom(conn, gameID, roomID, int(userIDfloat), userName)
-	if err != nil {
-		switch err {
-		case basenode.ErrNoGame:
-			closeConnWithMessage(conn, "Wrong game id!")
-		case basenode.ErrNoRoom:
-			closeConnWithMessage(conn, "Wrong room id!")
-		}
-		return
+	switch err {
+	case rterror.ErrNoGame:
+		closeConnWithMessage(conn, "Wrong game id!")
+	case rterror.ErrNoRoom:
+		closeConnWithMessage(conn, "Wrong room id!")
+	default:
 	}
 }

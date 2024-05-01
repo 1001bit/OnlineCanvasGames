@@ -3,6 +3,7 @@ package basenode
 import (
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/roomclient"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/rtclient"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/rterror"
 	"github.com/gorilla/websocket"
 )
 
@@ -10,12 +11,12 @@ import (
 func (baseNode *BaseNode) ConnectToRoom(conn *websocket.Conn, gameID, roomID, userID int, userName string) error {
 	gameNode, ok := baseNode.games.IDMap[gameID]
 	if !ok {
-		return ErrNoGame
+		return rterror.ErrNoGame
 	}
 
 	roomNode, ok := gameNode.Rooms.IDMap[roomID]
 	if !ok {
-		return ErrNoRoom
+		return rterror.ErrNoRoom
 	}
 
 	user := rtclient.User{

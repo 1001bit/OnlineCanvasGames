@@ -5,5 +5,10 @@ import (
 )
 
 func (client *GameClient) WriteMessage(msg *message.JSON) {
-	client.writeChan <- msg
+	select {
+	case client.writeChan <- msg:
+		// write message to chan
+	default:
+		client.Flow.Stop()
+	}
 }

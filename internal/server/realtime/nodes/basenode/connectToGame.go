@@ -5,13 +5,14 @@ import (
 	"net/http"
 
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/gameclient"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/rterror"
 )
 
 // handle SSE endpoint
 func (baseNode *BaseNode) ConnectToGame(ctx context.Context, w http.ResponseWriter, gameID int) error {
 	gameNode, ok := baseNode.games.IDMap[gameID]
 	if !ok {
-		return ErrNoGame
+		return rterror.ErrNoGame
 	}
 
 	client := gameclient.NewGameClient(w)
