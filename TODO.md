@@ -20,7 +20,9 @@
     - [X] Random room returner api
 
 - [X] Receiving games from BaseNode cache instead of querying database each home page load
-- [ ] Maybe add functionality to update GamesJSON inside BaseNode
+- [ ] Updating GamesJSON inside BaseNode
+- [ ] Encoding RoomsJSON once when updating and then send to client
+- [ ] Split Nodes' run select statement into several
 - [ ] Admin page for showing running RT nodes
 
 - [ ] Room Page
