@@ -8,10 +8,13 @@ import (
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/children"
 	gamenode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/gamenode"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/roomclient"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/runflow"
 )
 
 // Basic layer of RT which is responsible for handling Games and room-client connections
 type BaseNode struct {
+	Flow runflow.RunFlow
+
 	games children.ChildrenWithID[gamenode.GameNode]
 
 	roomsClients children.ChildrenWithID[roomclient.RoomClient]
@@ -21,6 +24,8 @@ type BaseNode struct {
 
 func NewBaseNode() *BaseNode {
 	return &BaseNode{
+		Flow: runflow.MakeRunFlow(),
+
 		games: children.MakeChildrenWithID[gamenode.GameNode](),
 
 		roomsClients: children.MakeChildrenWithID[roomclient.RoomClient](),
@@ -55,57 +60,13 @@ func (baseNode *BaseNode) InitGames() error {
 }
 
 func (baseNode *BaseNode) Run() {
-	log.Println("<BaseNode Run>")
-	defer log.Println("<BaseNode Done>")
+	defer baseNode.Flow.CloseDone()
 
-	for {
-		select {
-		case game := <-baseNode.games.ToConnect():
-			// When server asked to connect new game
-			baseNode.connectGame(game)
-			log.Println("<BaseNode +Game>:", len(baseNode.games.IDMap))
+	log.Println("-<BaseNode Run>")
+	defer log.Println("-<BaseNode Run Done>")
 
-		case game := <-baseNode.games.ToDisconnect():
-			// When server asked to disconnect a game
-			baseNode.disconnectGame(game)
-			log.Println("<BaseNode -Game>:", len(baseNode.games.IDMap))
+	go baseNode.gamesFlow()
+	go baseNode.clientsFlow()
 
-		case client := <-baseNode.roomsClients.ToConnect():
-			// When new WS connection needs to be created
-			baseNode.protectRoomClient(client)
-
-		case client := <-baseNode.roomsClients.ToDisconnect():
-			// When client is done
-			baseNode.deleteRoomClient(client)
-		}
-	}
-}
-
-// connect gameNode to BaseNode
-func (baseNode *BaseNode) connectGame(game *gamenode.GameNode) {
-	baseNode.games.IDMap[game.GetGame().ID] = game
-}
-
-// disconnect gameNode from BaseNode
-func (baseNode *BaseNode) disconnectGame(game *gamenode.GameNode) {
-	delete(baseNode.games.IDMap, game.GetGame().ID)
-}
-
-// if there is already client with such ID - stop them. Put a new one
-func (baseNode *BaseNode) protectRoomClient(client *roomclient.RoomClient) {
-	oldClient, ok := baseNode.roomsClients.IDMap[client.GetUser().ID]
-	if ok {
-		oldClient.StopWithMessage("This user has just joined another room")
-	}
-	baseNode.roomsClients.IDMap[client.GetUser().ID] = client
-}
-
-// if there is already client with such ID - stop them. Put a new one
-func (baseNode *BaseNode) deleteRoomClient(client *roomclient.RoomClient) {
-	// can delete only exact client, not just with the same id
-	if baseNode.roomsClients.IDMap[client.GetUser().ID] != client {
-		return
-	}
-
-	delete(baseNode.roomsClients.IDMap, client.GetUser().ID)
+	<-baseNode.Flow.Stopped()
 }

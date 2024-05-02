@@ -14,23 +14,16 @@ func (client *RoomClient) WriteMessage(msg *message.JSON) {
 	}
 }
 
-func (client *RoomClient) GetUser() rtclient.User {
-	return client.user
-}
-
-// send message to client and stop client
-func (client *RoomClient) StopWithMessage(text string) {
+// send message to client that is going to stop client
+func (client *RoomClient) WriteCloseMessage(text string) {
 	newMessage := &message.JSON{
-		Type: "message",
+		Type: CloseMsgType,
 		Body: text,
 	}
 
-	select {
-	case client.writeChan <- newMessage:
-		// write message to chan
-	default:
-		// just continue
-	}
+	client.WriteMessage(newMessage)
+}
 
-	go client.Flow.Stop()
+func (client *RoomClient) GetUser() rtclient.User {
+	return client.user
 }

@@ -54,7 +54,7 @@ class GameWebSocket {
 
         msg = JSON.parse(msg)
 
-        if (msg.type == "message"){
+        if (msg.type == "close"){
             this.closeWithMessage(msg.body)
         }
     }

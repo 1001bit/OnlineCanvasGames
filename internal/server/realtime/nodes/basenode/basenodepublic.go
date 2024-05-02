@@ -33,6 +33,11 @@ func (baseNode *BaseNode) ConnectNewRoom(ctx context.Context, gameID int) (*room
 	select {
 	case <-room.ConnectedToGame():
 		return room, nil
+
+	case <-baseNode.Flow.Done():
+		go room.Flow.Stop()
+		return nil, rterror.ErrCreateRoom
+
 	case <-ctx.Done():
 		go room.Flow.Stop()
 		return nil, rterror.ErrCreateRoom

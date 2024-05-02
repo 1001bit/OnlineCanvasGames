@@ -2,8 +2,6 @@ package gameclient
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -30,38 +28,20 @@ func NewGameClient(writer http.ResponseWriter) *GameClient {
 
 // Constantly wait for message from writeChan and write it to writer
 func (client *GameClient) Run(ctx context.Context) {
-	log.Println("<GameClient Run>")
+	defer client.Flow.CloseDone()
 
-	defer func() {
-		client.Flow.CloseDone()
-		log.Println("<GameClient Done>")
-	}()
+	log.Println("-<GameClient Run>")
+	defer log.Println("-<GameClient Run Done>")
 
-	for {
-		select {
-		case msg := <-client.writeChan:
-			// Write message to writer if server told to do so
-			client.writeMessageToWriter(msg)
-			log.Println("<GameClient Write Message>")
+	go client.writeFlow()
 
-		case <-client.Flow.Stopped():
-			// When server asked to stop client
-			return
+	select {
+	case <-client.Flow.Stopped():
+		// When server asked to stop client
+		return
 
-		case <-ctx.Done():
-			// When http request is done
-			return
-		}
-	}
-}
-
-func (client *GameClient) writeMessageToWriter(msg *message.JSON) {
-	msgByte, err := json.Marshal(msg)
-	if err != nil {
-		log.Println("error marshaling GameClient message:", err)
+	case <-ctx.Done():
+		// When http request is done
 		return
 	}
-
-	fmt.Fprintf(client.writer, "data: %s\n\n", msgByte)
-	client.writer.(http.Flusher).Flush()
 }

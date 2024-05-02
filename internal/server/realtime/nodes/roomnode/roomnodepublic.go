@@ -33,12 +33,7 @@ func (roomNode *RoomNode) ConfirmConnectToGame() {
 }
 
 func (roomNode *RoomNode) ReadMessage(message rtclient.MessageWithClient) {
-	select {
-	case roomNode.readChan <- message:
-		// put message in the read chan
-	default:
-		roomNode.Flow.Stop()
-	}
+	// TODO: Handle read message here
 }
 
 // write a message to every client

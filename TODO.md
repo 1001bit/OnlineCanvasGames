@@ -20,11 +20,8 @@
     - [X] Random room returner api
 
 - [X] Receiving games from BaseNode cache instead of querying database each home page load
+- [X] Split Nodes' run select statement into several goroutines (flows)
 - [ ] Updating GamesJSON inside BaseNode
-- [ ] Encoding RoomsJSON once when updating and then send to client
-    - [ ] Make clients' writeChan a channel of bytes, make WriteBytes and WriteMessage methods for clients
-    - [ ] Generate RoomBytes on rooms update, send RoomBytes globally via WriteBytes 
-- [ ] Split Nodes' run select statement into several goroutines
 - [ ] Admin page for showing running RT nodes
 
 - [ ] Room Page
