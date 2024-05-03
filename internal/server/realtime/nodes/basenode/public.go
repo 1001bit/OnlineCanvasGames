@@ -5,9 +5,9 @@ import (
 	"time"
 
 	gamemodel "github.com/1001bit/OnlineCanvasGames/internal/model/game"
-	gamenode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/gamenode"
-	roomnode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/roomnode"
-	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/rterror"
+	rterror "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/error"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/gamenode"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/roomnode"
 )
 
 // create new room and connect it to BaseNode

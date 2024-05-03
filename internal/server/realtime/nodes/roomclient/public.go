@@ -2,7 +2,7 @@ package roomclient
 
 import (
 	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
-	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/rtclient"
+	rtclient "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/client"
 )
 
 func (client *RoomClient) WriteMessage(msg *message.JSON) {

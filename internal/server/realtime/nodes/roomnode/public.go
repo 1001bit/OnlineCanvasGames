@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
-	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/rtclient"
+	rtclient "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/client"
 )
 
 func (roomNode *RoomNode) SetRandomID() {

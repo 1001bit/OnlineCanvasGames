@@ -16,13 +16,13 @@ func (gameNode *GameNode) RequestUpdatingRoomsJSON() {
 
 }
 
-func (gameNode *GameNode) GetGame() gamemodel.Game {
-	return gameNode.game
-}
-
 // write a message to every client
 func (gameNode *GameNode) GlobalWriteMessage(msg *message.JSON) {
 	for client := range gameNode.Clients.ChildMap {
 		go client.WriteMessage(msg)
 	}
+}
+
+func (gameNode *GameNode) GetGame() gamemodel.Game {
+	return gameNode.game
 }

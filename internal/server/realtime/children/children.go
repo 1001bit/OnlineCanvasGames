@@ -1,31 +1,25 @@
 package children
 
 type Children[T any] struct {
-	ChildMap       map[*T]bool
-	connectChan    chan *T
-	disconnectChan chan *T
+	Channels[T]
+	ChildMap map[*T]bool
 }
 
 func MakeChildren[T any]() Children[T] {
 	return Children[T]{
-		ChildMap:       make(map[*T]bool),
-		connectChan:    make(chan *T),
-		disconnectChan: make(chan *T),
+		ChildMap: make(map[*T]bool),
+		Channels: MakeChannels[T](),
 	}
 }
 
-func (children *Children[T]) DisconnectChild(child *T) {
-	children.disconnectChan <- child
+type ChildrenWithID[T any] struct {
+	Channels[T]
+	IDMap map[int]*T
 }
 
-func (children *Children[T]) ConnectChild(child *T) {
-	children.connectChan <- child
-}
-
-func (children *Children[T]) ToConnect() <-chan *T {
-	return children.connectChan
-}
-
-func (children *Children[T]) ToDisconnect() <-chan *T {
-	return children.disconnectChan
+func MakeChildrenWithID[T any]() ChildrenWithID[T] {
+	return ChildrenWithID[T]{
+		IDMap:    make(map[int]*T),
+		Channels: MakeChannels[T](),
+	}
 }

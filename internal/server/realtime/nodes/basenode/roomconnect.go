@@ -1,9 +1,9 @@
 package basenode
 
 import (
+	rtclient "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/client"
+	rterror "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/error"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/roomclient"
-	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/rtclient"
-	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/rterror"
 	"github.com/gorilla/websocket"
 )
 

@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 
+	rterror "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/error"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/gameclient"
-	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/rterror"
 )
 
 // handle SSE endpoint

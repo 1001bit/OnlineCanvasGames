@@ -5,8 +5,8 @@ import (
 	"math/rand"
 	"time"
 
+	rterror "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/error"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/roomclient"
-	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/rterror"
 )
 
 type GameNodeRequester interface {

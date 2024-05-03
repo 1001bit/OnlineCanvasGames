@@ -6,8 +6,8 @@ import (
 
 	"github.com/1001bit/OnlineCanvasGames/internal/auth"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
+	rterror "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/error"
 	basenode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/basenode"
-	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/rterror"
 	"github.com/gorilla/websocket"
 )
 
