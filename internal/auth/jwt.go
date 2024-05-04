@@ -9,10 +9,14 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-const JWTLifeTime = time.Hour * 24
+const (
+	JWTExp         = time.Hour * 24
+	CookieLifeTime = time.Hour * 24 * 30
+)
 
 var (
 	ErrBadToken = errors.New("invalid token")
+	ErrExpToken = errors.New("expired token")
 	secret      = []byte("")
 )
 
@@ -20,22 +24,23 @@ func InitJWTSecret() {
 	secret = []byte(env.GetEnvVal("JWT_SECRET"))
 }
 
-func CreateJWT(userID int, username string) (string, error) {
-	token := jwt.NewWithClaims(
-		jwt.SigningMethodHS256,
-		jwt.MapClaims{
-			"userID":   userID,
-			"username": username,
-			"exp":      time.Now().Add(JWTLifeTime).Unix(),
-		},
-	)
-
-	tokenStr, err := token.SignedString(secret)
+func GenerateJWTCookie(userID int, username string) (*http.Cookie, error) {
+	token, err := createJWT(userID, username)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return tokenStr, nil
+	cookie := &http.Cookie{
+		Name:     "jwt",
+		Value:    token,
+		Path:     "/",
+		MaxAge:   int(CookieLifeTime.Seconds()),
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	}
+
+	return cookie, nil
 }
 
 func JWTClaimsByRequest(r *http.Request) (jwt.MapClaims, error) {
@@ -49,6 +54,47 @@ func JWTClaimsByRequest(r *http.Request) (jwt.MapClaims, error) {
 	claims, err := jwtClaimsByString(cookie.Value)
 	if err != nil {
 		return nil, err
+	}
+
+	return claims, nil
+}
+
+func createJWT(userID int, username string) (string, error) {
+	token := jwt.NewWithClaims(
+		jwt.SigningMethodHS256,
+		jwt.MapClaims{
+			"userID":   userID,
+			"username": username,
+			"exp":      time.Now().Add(JWTExp).Unix(),
+		},
+	)
+
+	tokenStr, err := token.SignedString(secret)
+	if err != nil {
+		return "", err
+	}
+
+	return tokenStr, nil
+}
+
+func jwtClaimsByString(tokenString string) (jwt.MapClaims, error) {
+	token, err := jwtByString(tokenString)
+	if err != nil {
+		return nil, err
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return nil, ErrBadToken
+	}
+
+	expTime, err := claims.GetExpirationTime()
+	if err != nil {
+		return nil, err
+	}
+
+	if expTime.Before(time.Now()) {
+		return nil, ErrExpToken
 	}
 
 	return claims, nil
@@ -68,23 +114,4 @@ func jwtByString(tokenString string) (*jwt.Token, error) {
 	}
 
 	return token, nil
-}
-
-func jwtClaimsByString(tokenString string) (jwt.MapClaims, error) {
-	token, err := jwtByString(tokenString)
-	if err != nil {
-		return nil, err
-	}
-
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
-		return nil, ErrBadToken
-	}
-
-	expTime, err := claims.GetExpirationTime()
-	if err != nil || expTime.Before(time.Now()) {
-		return nil, ErrBadToken
-	}
-
-	return claims, nil
 }
