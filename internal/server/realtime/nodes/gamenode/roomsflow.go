@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
-	roomnode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/roomnode"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/roomnode"
 )
 
 func (gameNode *GameNode) roomsFlow() {

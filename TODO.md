@@ -22,13 +22,24 @@
 - [X] Receiving games from BaseNode cache instead of querying database each home page load
 - [X] Split Nodes' run select statement into several goroutines (flows)
 - [ ] Updating GamesJSON inside BaseNode
-- [ ] Admin page for showing running RT nodes
+- [ ] Put context where needed
 
-- [ ] Room Page
+- [X] Room Page
     - [X] WS Room connection
     - [X] Make RT nodes independent from each other
     - [X] Split WS/SSE handlers and basenode package
     - [X] Make WS connection safer by not allowing single user joining twice
-    - [ ] Different rooms for different games
+    - [X] Different rooms for different games
 
-- [ ] Multiplayer clicker game
+- [ ] Admin page
+    - [ ] UI
+    - [ ] SSE
+    - [ ] RT nodes control
+    - [ ] Users control
+    - [ ] Games control
+
+- [X] Multiplayer clicker game
+
+- [ ] Game engine
+    - [ ] Backend
+    - [ ] Frontend

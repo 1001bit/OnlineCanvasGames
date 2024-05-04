@@ -26,6 +26,9 @@ func (roomNode *RoomNode) clientsFlow(requester GameNodeRequester, stopTimer *ti
 			// Request updaing GameNode's RoomsJSON
 			go requester.RequestUpdatingRoomsJSON()
 
+			// Notify the roomplay about new client
+			go roomNode.roomplay.JoinClient(client.GetUser().ID)
+
 			log.Println("<RoomNode +Client>:", len(roomNode.Clients.IDMap))
 
 		case client := <-roomNode.Clients.ToDisconnect():

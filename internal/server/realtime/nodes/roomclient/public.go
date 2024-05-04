@@ -9,8 +9,8 @@ func (client *RoomClient) WriteMessage(msg *message.JSON) {
 	select {
 	case client.writeChan <- msg:
 		// write message to writeChan
-	default:
-		client.Flow.Stop()
+	case <-client.Flow.Done():
+		// client is done
 	}
 }
 

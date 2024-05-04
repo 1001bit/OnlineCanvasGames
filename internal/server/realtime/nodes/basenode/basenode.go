@@ -6,7 +6,7 @@ import (
 
 	gamemodel "github.com/1001bit/OnlineCanvasGames/internal/model/game"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/children"
-	gamenode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/gamenode"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/gamenode"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/roomclient"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/runflow"
 )

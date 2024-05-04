@@ -20,7 +20,7 @@ func (baseNode *BaseNode) ConnectNewRoom(ctx context.Context, gameID int) (*room
 		return nil, rterror.ErrNoGame
 	}
 
-	room := roomnode.NewRoomNode()
+	room := roomnode.NewRoomNode(gameID)
 
 	// RUN roomNode
 	go func() {

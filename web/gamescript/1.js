@@ -14,6 +14,13 @@ canvas.canvas.addEventListener("click", e => {
     let {x, y} = canvas.getMousePosition(e)
     
     if (button.rect.containsPoint(x, y)){
-        console.log(1)
+        websocket.sendMessage("click", 0)
     }
 })
+
+// on server message
+websocket.handleGameMessage = function(msg){
+    if(msg.type == "clicks"){
+        text.setString(`${msg.body} clicks`)
+    }
+}

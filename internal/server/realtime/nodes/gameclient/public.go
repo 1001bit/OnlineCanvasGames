@@ -8,7 +8,7 @@ func (client *GameClient) WriteMessage(msg *message.JSON) {
 	select {
 	case client.writeChan <- msg:
 		// write message to chan
-	default:
-		client.Flow.Stop()
+	case <-client.Flow.Done():
+		// client is done
 	}
 }

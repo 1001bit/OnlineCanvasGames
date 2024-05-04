@@ -13,4 +13,14 @@ type RoomWriter interface {
 type RoomPlay interface {
 	Run(doneChan <-chan struct{}, writer RoomWriter)
 	HandleReadMessage(msg rtclient.MessageWithClient)
+	JoinClient(userID int)
+}
+
+func NewRoomPlayByID(gameID int) RoomPlay {
+	switch gameID {
+	case 1:
+		return NewClickerRP()
+	default:
+		return nil
+	}
 }

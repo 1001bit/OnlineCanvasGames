@@ -7,7 +7,8 @@ import (
 	"github.com/1001bit/OnlineCanvasGames/internal/auth"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
 	rterror "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/error"
-	basenode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/basenode"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/basenode"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/roomclient"
 	"github.com/gorilla/websocket"
 )
 
@@ -21,7 +22,7 @@ var upgrader = websocket.Upgrader{
 
 func closeConnWithMessage(conn *websocket.Conn, text string) {
 	conn.WriteJSON(message.JSON{
-		Type: "message",
+		Type: roomclient.CloseMsgType,
 		Body: text,
 	})
 }
@@ -71,10 +72,13 @@ func HandleRoomWS(w http.ResponseWriter, r *http.Request, baseNode *basenode.Bas
 
 	err = baseNode.ConnectToRoom(conn, gameID, roomID, int(userIDfloat), userName)
 	switch err {
+	case nil:
+		// no error
 	case rterror.ErrNoGame:
 		closeConnWithMessage(conn, "Wrong game id!")
 	case rterror.ErrNoRoom:
 		closeConnWithMessage(conn, "Wrong room id!")
 	default:
+		closeConnWithMessage(conn, "Unexpected error!")
 	}
 }

@@ -41,6 +41,7 @@ func (client *RoomClient) pingConn() {
 	err := client.conn.WriteMessage(websocket.PingMessage, nil)
 	// if couldn't write message - disconnect
 	if err != nil {
+		log.Println("stop on ping")
 		go client.Flow.Stop()
 	}
 }
@@ -52,6 +53,7 @@ func (client *RoomClient) writeMessageToConn(msg *message.JSON) {
 	err := client.conn.WriteJSON(msg)
 	// if couldn't write message - disconnect
 	if err != nil || msg.Type == CloseMsgType {
+		log.Println("stop on write message to conn err")
 		go client.Flow.Stop()
 	}
 }

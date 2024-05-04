@@ -3,7 +3,7 @@ package basenode
 import (
 	"log"
 
-	gamenode "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/gamenode"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/gamenode"
 )
 
 func (baseNode *BaseNode) gamesFlow() {

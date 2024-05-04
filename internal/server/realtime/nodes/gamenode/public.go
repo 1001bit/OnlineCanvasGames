@@ -10,8 +10,8 @@ func (gameNode *GameNode) RequestUpdatingRoomsJSON() {
 	select {
 	case gameNode.roomsJSONUpdateChan <- struct{}{}:
 		// Send request to update roomsJSON
-	default:
-		gameNode.Flow.Stop()
+	case <-gameNode.Flow.Done():
+		// gamenode is done
 	}
 
 }

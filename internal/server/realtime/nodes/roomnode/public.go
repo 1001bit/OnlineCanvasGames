@@ -32,8 +32,8 @@ func (roomNode *RoomNode) ConfirmConnectToGame() {
 	close(roomNode.connectedToGameChan)
 }
 
-func (roomNode *RoomNode) ReadMessage(message rtclient.MessageWithClient) {
-	// TODO: Handle read message here
+func (roomNode *RoomNode) ReadMessage(msg rtclient.MessageWithClient) {
+	roomNode.roomplay.HandleReadMessage(msg)
 }
 
 // write a message to every client

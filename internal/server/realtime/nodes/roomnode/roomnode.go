@@ -6,6 +6,7 @@ import (
 
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/children"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/roomclient"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/roomplay"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/runflow"
 )
 
@@ -19,17 +20,21 @@ type RoomNode struct {
 
 	connectedToGameChan chan struct{}
 
+	roomplay roomplay.RoomPlay
+
 	id    int
 	owner *roomclient.RoomClient
 }
 
-func NewRoomNode() *RoomNode {
+func NewRoomNode(gameID int) *RoomNode {
 	return &RoomNode{
 		Flow: runflow.MakeRunFlow(),
 
 		Clients: children.MakeChildrenWithID[roomclient.RoomClient](),
 
 		connectedToGameChan: make(chan struct{}),
+
+		roomplay: roomplay.NewRoomPlayByID(gameID),
 
 		id:    0,
 		owner: nil,
@@ -46,6 +51,7 @@ func (roomNode *RoomNode) Run(requester GameNodeRequester) {
 	defer stopTimer.Stop()
 
 	go roomNode.clientsFlow(requester, stopTimer)
+	go roomNode.roomplay.Run(roomNode.Flow.Done(), roomNode)
 
 	for {
 		select {
