@@ -19,17 +19,14 @@
     - [X] Room connect
     - [X] Random room returner api
 
-- [X] Receiving games from BaseNode cache instead of querying database each home page load
-- [X] Split Nodes' run select statement into several goroutines (flows)
-- [ ] Updating GamesJSON inside BaseNode
-- [ ] Put context where needed
-
-- [X] Room Page
+- [ ] Room Page
     - [X] WS Room connection
     - [X] Make RT nodes independent from each other
     - [X] Split WS/SSE handlers and basenode package
     - [X] Make WS connection safer by not allowing single user joining twice
     - [X] Different rooms for different games
+    - [X] Basic multiplayer clicker game
+    - [ ] UI
 
 - [ ] Admin page
     - [ ] UI
@@ -38,7 +35,13 @@
     - [ ] Users control
     - [ ] Games control
 
-- [X] Multiplayer clicker game
+- [X] Receiving games from BaseNode cache instead of querying database each home page load
+- [X] Split Nodes' run select statement into several goroutines (flows)
+- [ ] Updating GamesJSON inside BaseNode
+- [ ] Put context where needed
+- [ ] Logout functionality
+- [ ] Profile editing functionality
+- [ ] Longer JWT expiration date, JWT date for checking user existance in database
 
 - [ ] Game engine
     - [ ] Backend
