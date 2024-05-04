@@ -53,15 +53,20 @@ func (gameNode *GameNode) disconnectRoom(room *roomnode.RoomNode) {
 
 // update gameNode.roomsJSON rooms list to send to all the clients of gameNode
 func (gameNode *GameNode) updateRoomsJSON() {
-	gameNode.roomsJSON = make([]RoomJSON, 0)
+	gameNode.roomsJSON = make([]RoomJSON, len(gameNode.Rooms.IDMap))
+
+	i := 0
+
 	for _, roomNode := range gameNode.Rooms.IDMap {
 		<-roomNode.ConnectedToGame()
 
-		gameNode.roomsJSON = append(gameNode.roomsJSON, RoomJSON{
+		gameNode.roomsJSON[i] = RoomJSON{
 			Owner:   roomNode.GetOwnerName(),
 			Clients: len(roomNode.Clients.IDMap),
 			ID:      roomNode.GetID(),
-		})
+		}
+
+		i += 1
 	}
 
 	go gameNode.GlobalWriteMessage(&message.JSON{

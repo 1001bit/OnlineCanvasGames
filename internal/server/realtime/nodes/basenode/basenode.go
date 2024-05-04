@@ -41,8 +41,8 @@ func (baseNode *BaseNode) InitGames() error {
 		return err
 	}
 
-	baseNode.gamesJSON = make([]gamemodel.Game, 0)
-	for _, game := range games {
+	baseNode.gamesJSON = make([]gamemodel.Game, len(games))
+	for i, game := range games {
 		gameNode := gamenode.NewGameNode(game)
 
 		// RUN gameNode
@@ -53,7 +53,7 @@ func (baseNode *BaseNode) InitGames() error {
 		}()
 
 		// add game to gamesJson
-		baseNode.gamesJSON = append(baseNode.gamesJSON, game)
+		baseNode.gamesJSON[i] = game
 	}
 
 	return nil

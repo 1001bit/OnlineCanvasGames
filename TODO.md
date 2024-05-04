@@ -37,7 +37,6 @@
 
 - [X] Receiving games from BaseNode cache instead of querying database each home page load
 - [X] Split Nodes' run select statement into several goroutines (flows)
-- [ ] Updating GamesJSON inside BaseNode
 - [ ] Put context where needed
 - [ ] Logout functionality
 - [ ] Profile editing functionality
