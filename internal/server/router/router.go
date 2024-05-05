@@ -18,6 +18,7 @@ func NewRouter() (http.Handler, error) {
 	router := chi.NewRouter()
 	router.Use(chimw.Logger)
 	router.Use(chimw.RedirectSlashes)
+	router.Use(middleware.InjectJWTClaims)
 
 	// Storage
 	router.Handle("/static/*", http.StripPrefix("/static", http.HandlerFunc(storage.HandleStatic)))

@@ -61,7 +61,12 @@ func HandleUserPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// set token cookie
-	cookie, err := auth.GenerateJWTCookie(user.ID, user.Name)
+	claims := auth.Claims{
+		UserID:   user.ID,
+		Username: user.Name,
+	}
+
+	cookie, err := auth.CookieFromClaims(claims)
 	if err != nil {
 		ServeTextMessage(w, "Something went wrong", http.StatusInternalServerError)
 		log.Println("jwt creation err:", err)

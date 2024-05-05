@@ -50,27 +50,13 @@ func HandleRoomWS(w http.ResponseWriter, r *http.Request, baseNode *basenode.Bas
 	}
 
 	// Get user from JWT
-	claims, err := auth.JWTClaimsByRequest(r)
-	if err != nil {
-		closeConnWithMessage(conn, "Unauthorized!")
-		return
-	}
-
-	// ID
-	userIDfloat, ok := claims["userID"].(float64) // for some reason, in JWT it's stored as float64
+	claims, ok := r.Context().Value(auth.ClaimsKey).(auth.Claims)
 	if !ok {
 		closeConnWithMessage(conn, "Unauthorized!")
 		return
 	}
 
-	// Name
-	userName, ok := claims["username"].(string)
-	if !ok {
-		closeConnWithMessage(conn, "Unauthorized!")
-		return
-	}
-
-	err = baseNode.ConnectToRoom(conn, gameID, roomID, int(userIDfloat), userName)
+	err = baseNode.ConnectToRoom(conn, gameID, roomID, claims.UserID, claims.Username)
 	switch err {
 	case nil:
 		// no error

@@ -37,7 +37,7 @@
 
 - [X] Receiving games from BaseNode cache instead of querying database each home page load
 - [X] Split Nodes' run select statement into several goroutines (flows)
-- [X] Update JWT token on expiry
+- [ ] Update JWT token on expiry
 - [ ] Put context where needed
 - [ ] Logout functionality
 - [ ] Profile editing functionality

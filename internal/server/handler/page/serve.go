@@ -1,7 +1,6 @@
 package page
 
 import (
-	"fmt"
 	"html/template"
 	"net/http"
 
@@ -10,7 +9,7 @@ import (
 
 type HeaderData struct {
 	Username string
-	UserID   string
+	UserID   int
 }
 
 type TemplateData struct {
@@ -25,10 +24,10 @@ func serveTemplate(file string, data any, w http.ResponseWriter, r *http.Request
 		Data: data,
 	}
 
-	claims, err := auth.JWTClaimsByRequest(r)
-	if err == nil {
-		tmplData.Header.UserID = fmt.Sprint(claims["userID"])
-		tmplData.Header.Username = fmt.Sprint(claims["username"])
+	claims, ok := r.Context().Value(auth.ClaimsKey).(auth.Claims)
+	if ok {
+		tmplData.Header.UserID = claims.UserID
+		tmplData.Header.Username = claims.Username
 	}
 
 	templates.ExecuteTemplate(w, file, tmplData)
