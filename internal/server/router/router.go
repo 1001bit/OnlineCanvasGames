@@ -68,6 +68,8 @@ func NewRouter() (http.Handler, error) {
 		})
 		r.Get("/auth", page.HandleAuth)
 		r.Get("/profile/{id}", page.HandleProfile)
+		r.Get("/logout", page.HandleLogout)
+
 		// Secure
 		r.Group(func(rs chi.Router) {
 			rs.Use(middleware.AuthHTML)

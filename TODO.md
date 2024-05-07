@@ -8,8 +8,6 @@
 
 - [X] Home page
 
-- [X] Profile page
-
 - [X] Game Page
     - [X] Room divs 
     - [X] New room creater api/ws
@@ -35,12 +33,16 @@
     - [ ] Users control
     - [ ] Games control
 
+- [ ] Profile page
+    - [X] Basic info
+    - [X] Logout endpoint
+    - [ ] Description
+    - [ ] Page edit
+
 - [X] Receiving games from BaseNode cache instead of querying database each home page load
 - [X] Split Nodes' run select statement into several goroutines (flows)
 - [ ] Update JWT token on expiry
 - [ ] Put context where needed
-- [ ] Logout functionality
-- [ ] Profile editing functionality
 
 - [ ] Game engine
     - [ ] Backend
