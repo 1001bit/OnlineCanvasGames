@@ -36,14 +36,15 @@ func NewBaseNode() *BaseNode {
 
 // get all the games from database and put then into BaseNode
 func (baseNode *BaseNode) InitGames() error {
-	games, err := gamemodel.GetAll(context.Background())
+	var err error
+
+	baseNode.gamesJSON, err = gamemodel.GetAll(context.Background())
 	if err != nil {
 		return err
 	}
 
-	baseNode.gamesJSON = make([]gamemodel.Game, len(games))
-	for i, game := range games {
-		gameNode := gamenode.NewGameNode(game)
+	for i := range baseNode.gamesJSON {
+		gameNode := gamenode.NewGameNode(baseNode.gamesJSON[i])
 
 		// RUN gameNode
 		go func() {
@@ -51,9 +52,6 @@ func (baseNode *BaseNode) InitGames() error {
 			gameNode.Run()
 			baseNode.games.DisconnectChild(gameNode)
 		}()
-
-		// add game to gamesJson
-		baseNode.gamesJSON[i] = game
 	}
 
 	return nil
