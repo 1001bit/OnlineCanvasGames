@@ -1,11 +1,19 @@
 package auth
 
-import "context"
+import (
+	"context"
+	"errors"
 
-type claimsKeyType string
+	"github.com/1001bit/OnlineCanvasGames/internal/auth/accesstoken"
+)
 
-var ClaimsKey claimsKeyType = "claims"
+var ErrNoClaims = errors.New("no claims found in context")
 
-func ContextWithClaims(ctx context.Context, claims Claims) context.Context {
-	return context.WithValue(ctx, ClaimsKey, claims)
+func GetContextClaims(ctx context.Context) (accesstoken.Claims, error) {
+	claims, ok := ctx.Value(accesstoken.ClaimsKey).(accesstoken.Claims)
+	if !ok || claims.UserID == 0 {
+		return accesstoken.Claims{}, ErrNoClaims
+	}
+
+	return claims, nil
 }

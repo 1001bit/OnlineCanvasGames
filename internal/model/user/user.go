@@ -100,18 +100,3 @@ func Insert(ctx context.Context, username, password string) (*User, error) {
 
 	return newUser, nil
 }
-
-func IDExists(ctx context.Context, userID int) bool {
-	ctx, cancel := context.WithTimeout(ctx, maxQueryTime)
-	defer cancel()
-
-	// check existance
-	exists := false
-
-	err := database.DB.QueryRowContext(ctx, "SELECT EXISTS(SELECT 1 FROM users WHERE id = $1)", userID).Scan(&exists)
-	if err != nil {
-		return false
-	}
-
-	return exists
-}

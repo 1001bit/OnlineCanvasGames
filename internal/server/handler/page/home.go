@@ -16,8 +16,8 @@ type HomeData struct {
 func HandleHome(w http.ResponseWriter, r *http.Request, baseNode *basenode.BaseNode) {
 	data := HomeData{}
 
-	claims, ok := r.Context().Value(auth.ClaimsKey).(auth.Claims)
-	if ok {
+	claims, err := auth.GetContextClaims(r.Context())
+	if err == nil {
 		data.Username = claims.Username
 	}
 

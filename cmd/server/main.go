@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/1001bit/OnlineCanvasGames/internal/auth"
+	"github.com/1001bit/OnlineCanvasGames/internal/auth/basetoken"
 	"github.com/1001bit/OnlineCanvasGames/internal/database"
 	"github.com/1001bit/OnlineCanvasGames/internal/env"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/router"
@@ -13,7 +13,7 @@ import (
 
 func init() {
 	env.InitEnv()
-	auth.InitJWTSecret()
+	basetoken.InitJWTSecret()
 }
 
 func main() {

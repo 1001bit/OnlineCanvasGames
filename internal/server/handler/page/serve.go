@@ -24,8 +24,8 @@ func serveTemplate(file string, data any, w http.ResponseWriter, r *http.Request
 		Data: data,
 	}
 
-	claims, ok := r.Context().Value(auth.ClaimsKey).(auth.Claims)
-	if ok {
+	claims, err := auth.GetContextClaims(r.Context())
+	if err == nil {
 		tmplData.Header.UserID = claims.UserID
 		tmplData.Header.Username = claims.Username
 	}
