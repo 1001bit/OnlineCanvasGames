@@ -5,13 +5,15 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/1001bit/OnlineCanvasGames/internal/auth"
 	"github.com/1001bit/OnlineCanvasGames/internal/database"
 	usermodel "github.com/1001bit/OnlineCanvasGames/internal/model/user"
 )
 
 type ProfileData struct {
-	Username string
-	Date     string
+	OwnerName string
+	UserName  string
+	Date      string
 }
 
 func HandleProfile(w http.ResponseWriter, r *http.Request) {
@@ -34,12 +36,15 @@ func HandleProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data.Username = user.Name
+	data.OwnerName = user.Name
 	data.Date, err = database.FormatPostgresDate(user.Date)
 	if err != nil {
 		HandleServerError(w, r)
 		return
 	}
+
+	claims, _ := auth.GetContextClaims(r.Context())
+	data.UserName = claims.Username
 
 	serveTemplate("profile.html", data, w, r)
 }

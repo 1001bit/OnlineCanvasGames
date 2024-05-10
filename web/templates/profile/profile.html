@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ .Data.Username }}</title>
+    <title>{{ .Data.OwnerName }}</title>
     <link rel="stylesheet" href="/static/global/global.css">
     <link rel="stylesheet" href="/static/profile/profile.css">
 </head>
@@ -11,8 +11,14 @@
     {{ template "header" .Header }}
     <main>
 
-    <h1>{{ .Data.Username }}'s profile</h1>
+    <h1>{{ .Data.OwnerName }}'s profile</h1>
     <h2>Member since {{ .Data.Date }}</h2>
+
+    {{ if eq .Data.OwnerName .Data.UserName }}
+        <a href="/logout">
+            <button class="style-button small physical">Logout</button>
+        </a>
+    {{ end }}
 
     </main>
 </body>

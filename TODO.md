@@ -5,26 +5,32 @@
 - [X] Open access to some pages for unauthorized users
 - [X] Header
 - [X] Favicon
+- [X] Refresh token
 
 - [X] Home page
+    - [X] Use from BaseNode gamesJSON instead of database table for games list
 
 - [X] Game Page
-    - [X] Room divs 
-    - [X] New room creater api/ws
-        - [X] Base
-        - [X] Security
-    - [X] Dynamic rooms list
-    - [X] Room connect
-    - [X] Random room returner api
+    - [X] Rooms list
+    - [X] Room creater api
+    - [X] Room connect (random/direct)
+
+- [X] Profile page
+    - [X] Basic info
+    - [X] Logout button
 
 - [ ] Room Page
     - [X] WS Room connection
     - [X] Make RT nodes independent from each other
+    - [X] Split Nodes' run select statement into several goroutines (flows)
     - [X] Split WS/SSE handlers and basenode package
     - [X] Make WS connection safer by not allowing single user joining twice
     - [X] Different rooms for different games
     - [X] Basic multiplayer clicker game
     - [ ] UI
+    - [ ] Game engine
+        - [ ] Backend
+        - [ ] Frontend
 
 - [ ] Admin page
     - [ ] UI
@@ -32,17 +38,3 @@
     - [ ] RT nodes control
     - [ ] Users control
     - [ ] Games control
-
-- [ ] Profile page
-    - [X] Basic info
-    - [X] Logout endpoint
-    - [ ] Description
-    - [ ] Page edit
-
-- [X] Receiving games from BaseNode cache instead of querying database each home page load
-- [X] Split Nodes' run select statement into several goroutines (flows)
-- [X] Refresh token
-
-- [ ] Game engine
-    - [ ] Backend
-    - [ ] Frontend
