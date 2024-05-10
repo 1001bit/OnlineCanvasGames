@@ -17,10 +17,22 @@
 
     </main>
     
+    <!-- JQuery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <script src="/static/room/canvas.js"></script>
+
+    <!-- Graphics -->
+    <script src="/static/canvas/canvas.js"></script>
+    <script src="/static/canvas/rect.js"></script>
+    <script src="/static/canvas/rgb.js"></script>
+    <script src="/static/canvas/text.js"></script>
+
+    <!-- Websocket -->
     <script src="/static/room/websocket.js"></script>
+
+    <!-- Room -->
 	<script src="/static/room/room.js"></script>
+    
+    <!-- Game Script -->
     <script src="/gamescript/{{ .Data.Game.ID }}.js"></script>
 </body>
 </html>
