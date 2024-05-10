@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -30,8 +29,7 @@ func main() {
 		log.Fatal("err creating router:", err)
 	}
 
-	port := 8080
-	addr := fmt.Sprintf("localhost:%d", port)
+	addr := env.GetEnvVal("ADDR")
 
 	log.Println("Listening on", addr)
 	log.Fatal(http.ListenAndServe(addr, router))
