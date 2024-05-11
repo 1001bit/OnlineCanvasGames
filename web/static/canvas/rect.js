@@ -30,32 +30,31 @@ class Rect {
     }
 }
 
-class RectangleShape {
-    rect
-    color
+class KinematicRect extends Rect {
+    prev
+    curr
 
-    constructor(width, height){
-        this.rect = new Rect()
-        this.rect.setSize(width, height)
-        this.rect.setPosition(0, 0)
+    constructor(){
+        super()
+        this.prev = new Rect()
+        this.prev.setPosition(this.left, this.top)
+        this.prev.setSize(this.width, this.height)
 
-        this.setColor(RGB(255, 255, 255))
+        this.curr = new Rect()
+        this.curr.setPosition(this.left, this.top)
+        this.curr.setSize(this.width, this.height)
     }
 
-    setPosition(left, top){
-        this.rect.setPosition(left, top)
+    setCurrentPosition(left, top, teleport){
+        this.curr.setPosition(left, top)
+
+        if (teleport) {
+            this.setPosition(left, top)
+            this.prev.setPosition(left, top)
+        }
     }
 
-    setSize(width, height){
-        this.rect.setSize(width, height)
+    updatePrevPos(){
+        this.prev.setPosition(this.curr.left, this.curr.top)
     }
-
-    setColor(fillColor){
-        this.color = fillColor
-    }
-
-    draw(ctx){
-        ctx.fillStyle = this.color
-        ctx.fillRect(this.rect.left, this.rect.top, this.rect.width, this.rect.height)
-    }
-}
+} 
