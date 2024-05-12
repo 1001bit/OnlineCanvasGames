@@ -6,11 +6,9 @@ canvas.setBackgroundColor(RGB(50, 150, 50))
 
 button = new RectangleShape(300, 200)
 button.setColor(RGB(150, 20, 20))
-button.setPosition((window.innerWidth - button.rect.width)/2, (window.innerHeight - button.rect.height)/2)
 canvas.insertNewDrawable(button, false)
 
 text = new Text("0 clicks", 48)
-text.setPosition(button.rect.left + 10, button.rect.top + 10)
 canvas.insertNewDrawable(text)
 
 // button click
@@ -35,4 +33,6 @@ canvas.insertNewDrawable(rect, true)
 canvas.update = () => {
     let [x, y] = canvas.getMousePos()
     rect.rect.setCurrentPosition(x, y, false)
+    button.setPosition((window.innerWidth - button.rect.width)/2, (window.innerHeight - button.rect.height)/2)
+    text.setPosition(button.rect.left + 10, button.rect.top + 10)
 }
