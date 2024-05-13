@@ -12,25 +12,26 @@ class GameCanvas {
     backgroundColor
 
     updateRate
-    updateInterval
     accumulator
 
-    drawRate
-    drawInterval
-    lastDraw
+    tickRate
+    tickInterval
+    lastTick
 
     mousePos
+
+    gameUpdate = () => {}
 
     constructor(canvasID) {
         this.canvas = document.getElementById(canvasID)
         this.ctx = this.canvas.getContext("2d")
         this.drawables = []
         this.accumulator = 0
-        this.lastDraw = Date.now()
+        this.lastTick = Date.now()
         this.kinematicRects = []
 
-        this.updateRate = 30
-        this.drawRate = 60
+        this.updateRate = 20
+        this.tickRate = 60
 
         this.mousePos = [0, 0]
 
@@ -47,18 +48,15 @@ class GameCanvas {
         this.setCanvasVisibility(true)
         this.resize()
 
-        clearInterval(this.drawInterval)
-        this.drawInterval = setInterval(() => this.draw(), 1000/this.drawRate)
-
-        clearInterval(this.updateInterval)
-        this.updateInterval = setInterval(() => this.update(), 1000/this.updateRate)
+        clearInterval(this.tickInterval)
+        this.tickInterval = setInterval(() => this.tick(), 1000/this.tickRate)
     }
 
     stop(){
         $("header").show()
         this.setCanvasVisibility(false)
 
-        clearInterval(this.interval)
+        clearInterval(this.tickInterval)
     }
 
     setCanvasVisibility(visibility){
@@ -73,43 +71,45 @@ class GameCanvas {
         this.draw()
     }
 
-    insertNewDrawable(drawable, hasKinematicRect){
+    insertNewDrawable(drawable){
         this.drawables.push(drawable)
 
-        if (hasKinematicRect){
+        if (drawable.rect.isKinematic()){
             this.kinematicRects.push(drawable.rect)
         }
     }
 
-    interpolateKinematics(){
+    tick(){
         let now = Date.now()
-        let dt = now - this.lastDraw
-        this.lastDraw = now
+        let dt = now - this.lastTick
+        this.lastTick = now
 
-        this.accumulator += dt
-        while(this.accumulator >= 1000/this.updateRate){
-            this.updateKinematics()
-            this.accumulator -= 1000/this.updateRate
-        }
-
-        let alpha = this.accumulator / (1000/this.updateRate)
-
-        this.kinematicRects.forEach(rect => {
-            let posX = lerp(rect.prev.left, rect.curr.left, alpha) 
-            let posY = lerp(rect.prev.top, rect.curr.top, alpha)
-            rect.setPosition(posX, posY)
-        })
+        this.update(dt)
+        this.draw()
     }
 
-    updateKinematics(){
+    update(dt){
+        this.accumulator += dt
+
+        while(this.accumulator >= 1000/this.updateRate){
+            this.accumulator -= 1000/this.updateRate
+
+            this.kinematicRects.forEach(rect => {
+                rect.updatePrevPos()
+            })
+            this.gameUpdate()
+        }
+
+        this.interpolateKinematics(this.accumulator / (1000/this.updateRate))
+    }
+
+    interpolateKinematics(alpha){
         this.kinematicRects.forEach(rect => {
-            rect.updatePrevPos()
+            rect.interpolate(alpha)
         })
     }
 
     draw(){
-        this.interpolateKinematics()
-
         this.clear()
         this.drawables.forEach(drawable => {
             drawable.draw(this.ctx)
@@ -124,8 +124,6 @@ class GameCanvas {
         ctx.fillStyle = this.backgroundColor
         ctx.fillRect(0, 0, canvas.width, canvas.height)
     }
-
-    update = () => {}
 
     setBackgroundColor(color){
         this.backgroundColor = color

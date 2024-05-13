@@ -4,20 +4,19 @@ class Text {
     font
     size
 
-    x
-    y
+    rect
 
     constructor(string, size){
         this.setString(string)
         this.setColor(RGB(255, 255, 255))
         this.setFont("serif")
         this.setSize(size)
-        this.setPosition(0, 0)
+        
+        this.rect = new Rect()
     }
 
     setPosition(x, y){
-        this.x = x
-        this.y = y
+        this.rect.setPosition(x, y)
     }
 
     setString(string){
@@ -40,6 +39,6 @@ class Text {
         ctx.fillStyle = this.color
         ctx.font = `${this.size}px ${this.font}`
         // adding size to y because text's origin is located on the bottom
-        ctx.fillText(this.string, this.x, this.y + this.size) 
+        ctx.fillText(this.string, this.rect.left, this.rect.top + this.size) 
     }
 }

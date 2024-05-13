@@ -1,3 +1,7 @@
+function lerp(a, b, alpha){
+    return a + alpha * (b - a)
+}
+
 class Rect {
     left
     top
@@ -28,6 +32,10 @@ class Rect {
         }
         return false
     }
+
+    isKinematic(){
+        return false
+    }
 }
 
 class KinematicRect extends Rect {
@@ -56,5 +64,15 @@ class KinematicRect extends Rect {
 
     updatePrevPos(){
         this.prev.setPosition(this.curr.left, this.curr.top)
+    }
+
+    interpolate(alpha){
+        let posX = lerp(this.prev.left, this.curr.left, alpha) 
+        let posY = lerp(this.prev.top, this.curr.top, alpha)
+        this.setPosition(posX, posY)
+    }
+
+    isKinematic(){
+        return true
     }
 } 
