@@ -53,7 +53,7 @@ class KinematicRect extends Rect {
         this.curr.setSize(this.width, this.height)
     }
 
-    setCurrentPosition(left, top, teleport){
+    setCurrentPos(left, top, teleport){
         this.curr.setPosition(left, top)
 
         if (teleport) {

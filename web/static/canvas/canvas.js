@@ -6,7 +6,10 @@ class GameCanvas {
     canvas
     ctx
 
-    drawables
+    levelDrawables
+    guiDrawables
+    camera
+
     kinematicRects
 
     backgroundColor
@@ -25,19 +28,25 @@ class GameCanvas {
     constructor(canvasID) {
         this.canvas = document.getElementById(canvasID)
         this.ctx = this.canvas.getContext("2d")
-        this.drawables = []
-        this.accumulator = 0
-        this.lastTick = Date.now()
-        this.kinematicRects = []
+        
+        this.levelDrawableLayers = new DrawableLayers(2)
+        this.guiDrawableLayers = new DrawableLayers(2)
+        this.camera = new KinematicRect()
 
-        this.updateRate = 20
-        this.tickRate = 60
-
-        this.mousePos = [0, 0]
+        this.kinematicRects = [this.camera]
 
         this.setBackgroundColor(RGB(0, 0, 0))
 
+        this.updateRate = 20
+        this.accumulator = 0
+
+        this.tickRate = 60
+        this.lastTick = Date.now()
+
+        this.mousePos = [0, 0]
+
         window.addEventListener('resize', () => this.resize(), false);
+
         $(document).mousemove(e => {
             this.updateMousePos(e)
         })
@@ -71,8 +80,20 @@ class GameCanvas {
         this.draw()
     }
 
-    insertNewDrawable(drawable){
-        this.drawables.push(drawable)
+    setCameraPos(x, y){
+        this.camera.setCurrentPos(x, y)
+    }
+
+    insertLevelDrawable(drawable, layer){
+        this.levelDrawableLayers.insertDrawable(drawable, layer)
+
+        if (drawable.rect.isKinematic()){
+            this.kinematicRects.push(drawable.rect)
+        }
+    }
+
+    insertGuiDrawable(drawable, layer){
+        this.guiDrawableLayers.insertDrawable(drawable, layer)
 
         if (drawable.rect.isKinematic()){
             this.kinematicRects.push(drawable.rect)
@@ -110,10 +131,18 @@ class GameCanvas {
     }
 
     draw(){
+        const ctx = this.ctx
+
         this.clear()
-        this.drawables.forEach(drawable => {
-            drawable.draw(this.ctx)
-        })
+
+        ctx.save()
+        ctx.translate(-this.camera.left, -this.camera.top) // for some reason, it has to be a negatile value
+
+        this.levelDrawableLayers.draw(ctx)
+
+        ctx.restore()
+
+        this.guiDrawableLayers.draw(ctx)
     }
 
     clear(){
@@ -136,7 +165,14 @@ class GameCanvas {
         this.mousePos = [x, y]
     }
 
-    getMousePos(){
+    getGuiMousePos(){
         return this.mousePos
+    }
+
+    getLevelMousePos(){
+        let [mx, my] = this.mousePos
+        let [vx, vy] = [this.camera.left, this.camera.top]
+
+        return [vx + mx, vy + my]
     }
 }
