@@ -34,7 +34,6 @@ class GameWebSocket {
             return
         }
         this.connected = true
-        this.canvas.start()
 
         console.log("websocket open")
     }

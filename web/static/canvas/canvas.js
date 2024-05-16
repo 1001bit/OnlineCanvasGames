@@ -3,26 +3,6 @@ function lerp(a, b, alpha){
 }
 
 class GameCanvas {
-    canvas
-    ctx
-
-    levelDrawables
-    guiDrawables
-    camera
-
-    kinematicRects
-
-    backgroundColor
-
-    updateRate
-    accumulator
-
-    tickRate
-    tickInterval
-    lastTick
-
-    mousePos
-
     gameUpdate = () => {}
 
     constructor(canvasID) {
@@ -41,9 +21,12 @@ class GameCanvas {
         this.accumulator = 0
 
         this.tickRate = 60
-        this.lastTick = Date.now()
+        this.tickInterval = setInterval(() => this.tick(), 1000/this.tickRate)
+        this.timer = new DeltaTimer()
 
         this.mousePos = [0, 0]
+
+        this.setCanvasVisibility(true)
 
         window.addEventListener('resize', () => this.resize(), false);
 
@@ -52,24 +35,20 @@ class GameCanvas {
         })
     }
 
-    start(){
-        $("header").hide()
-        this.setCanvasVisibility(true)
-        this.resize()
-
-        clearInterval(this.tickInterval)
-        this.tickInterval = setInterval(() => this.tick(), 1000/this.tickRate)
-    }
-
     stop(){
-        $("header").show()
         this.setCanvasVisibility(false)
-
         clearInterval(this.tickInterval)
     }
 
     setCanvasVisibility(visibility){
-        this.canvas.style.display = visibility ? "block" : "none"
+        if (visibility){
+            this.canvas.style.display = "block"
+            $("header").hide()
+            this.resize()
+            return
+        }
+        this.canvas.style.display = "none"
+        $("header").show()
     }
 
     resize(){
@@ -101,9 +80,7 @@ class GameCanvas {
     }
 
     tick(){
-        let now = Date.now()
-        let dt = now - this.lastTick
-        this.lastTick = now
+        let dt = this.timer.getDeltaTime()
 
         this.update(dt)
         this.draw()
