@@ -28,6 +28,7 @@
     - [X] Different rooms for different games
     - [X] Basic multiplayer clicker game
     - [ ] UI
+        - [ ] Split canvas and gui (DOM-based) under game class
     - [ ] Game engine
         - [ ] Backend
         - [ ] Frontend
