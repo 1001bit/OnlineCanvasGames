@@ -1,6 +1,4 @@
 class Rooms {
-    roomList
-
     constructor(roomListID){
         this.roomList = $(`#${roomListID}`)
     }

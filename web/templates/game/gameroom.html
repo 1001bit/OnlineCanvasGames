@@ -10,29 +10,28 @@
 <body>
     {{ template "header" .Header }}
     <main data-room-id="{{ .Data.RoomID }}" data-game-id="{{ .Data.Game.ID }}">
-    
-        <p id="message"></p>
 
         <canvas id="canvas"></canvas>
+        <div id="gui">
+            <h2 id="message"></h1>
+        </div>
 
     </main>
     
     <!-- JQuery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 
-    <!-- Graphics -->
-    <script src="/static/canvas/deltaTimer.js"></script>
-    <script src="/static/canvas/level.js"></script>
-    <script src="/static/canvas/gui.js"></script>
-    <script src="/static/canvas/canvas.js"></script>
-    <script src="/static/canvas/drawableLayers.js"></script>
-    <script src="/static/canvas/rect.js"></script>
-    <script src="/static/canvas/rectangleShape.js"></script>
-    <script src="/static/canvas/rgb.js"></script>
-    <script src="/static/canvas/text.js"></script>
-
-    <!-- Websocket -->
-    <script src="/static/room/websocket.js"></script>
+    <!-- Game -->
+    <script src="/static/game/canvas.js"></script>
+    <script src="/static/game/deltaTimer.js"></script>
+    <script src="/static/game/drawableLayers.js"></script>
+    <script src="/static/game/game.js"></script>
+    <script src="/static/game/gui.js"></script>
+    <script src="/static/game/rect.js"></script>
+    <script src="/static/game/rectangleShape.js"></script>
+    <script src="/static/game/rgb.js"></script>
+    <script src="/static/game/text.js"></script>
+    <script src="/static/game/websocket.js"></script>
 
     <!-- Room -->
 	<script src="/static/room/room.js"></script>

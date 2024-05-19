@@ -1,25 +1,25 @@
-canvas.setBackgroundColor(RGB(50, 150, 50))
+game.setCanvasProperties(2, RGB(60, 60, 60))
 
 button = new RectangleShape(300, 200, false)
-button.setColor(RGB(150, 20, 20))
-canvas.level.insertDrawable(button, 1)
+button.setColor(RGB(150, 150, 40))
+game.insertDrawable(button, 1)
 
 text = new Text("0 clicks", 48)
-canvas.level.insertDrawable(text, 1)
+game.insertDrawable(text, 1)
 
 // button click
-canvas.canvas.addEventListener("click", e => {
-    let [x, y] = canvas.getLevelMousePos()
+game.canvas.canvas.addEventListener("click", e => {
+    let [x, y] = game.getLevelMousePos()
     
     if (button.rect.containsPoint(x, y)){
-        websocket.sendMessage("click", 0)
+        game.sendMessage("click", 0)
     }
 })
 
 // on server message
-websocket.handleGameMessage = function(msg){
-    if(msg.type == "clicks"){
-        text.setString(`${msg.body} clicks`)
+game.handleGameMessage = (type, body) => {
+    if(type == "clicks"){
+        text.setString(`${body} clicks`)
     }
 }
 

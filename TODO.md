@@ -27,11 +27,13 @@
     - [X] Make WS connection safer by not allowing single user joining twice
     - [X] Different rooms for different games
     - [X] Basic multiplayer clicker game
-    - [ ] UI
-        - [ ] Split canvas and gui (DOM-based) under game class
     - [ ] Game engine
-        - [ ] Backend
         - [ ] Frontend
+            - [ ] Interpolation
+            - [ ] UI
+                - [X] Split canvas and gui (DOM-based) under game class
+                - [ ] UI elements
+        - [ ] Backend
 
 - [ ] Admin page
     - [ ] UI

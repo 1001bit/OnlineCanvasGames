@@ -1,13 +1,10 @@
 class GameSSE {
-    eventSource
-    rooms
-
     constructor(rooms){
         this.rooms = rooms
     }
 
     openConnection(gameID){
-        let protocol = location.protocol == "https:" ? "https:" : "http:" 
+        const protocol = location.protocol == "https:" ? "https:" : "http:" 
 
         this.eventSource = new EventSource(`${protocol}//${document.location.host}/rt/sse/game/${gameID}`)
         const sse = this.eventSource

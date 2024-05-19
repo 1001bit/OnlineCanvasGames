@@ -1,6 +1,4 @@
-class DrawableLayers {
-    layers
-
+class DrawablesLayers {
     constructor(layersCount) {
         this.layers = []
         for (let i = 0; i < layersCount; i++){

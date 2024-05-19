@@ -9,17 +9,17 @@ class GameCanvas {
         this.canvas = document.getElementById(canvasID)
         this.ctx = this.canvas.getContext("2d")
         
-        this.gui = new Gui(2)
-        this.level = new Level(2)
-
-        this.setBackgroundColor(RGB(0, 0, 0))
+        this.drawablesLayers = new DrawablesLayers(1)
+        this.camera = new KinematicRect()
+        this.kinematicRects = [this.camera]
 
         this.mousePos = [0, 0]
 
-        this.tickRate = 60
-        this.tickInterval = setInterval(() => this.tick(), 1000/this.tickRate)
+        this.drawRate = 60
+        this.drawInterval = setInterval(() => this.draw(), 1000/this.drawRate)
 
-        this.setCanvasVisibility(true)
+        $("header").hide()
+        this.resize()
 
         window.addEventListener('resize', () => this.resize(), false);
 
@@ -29,18 +29,9 @@ class GameCanvas {
     }
 
     stop(){
-        this.setCanvasVisibility(false)
-        clearInterval(this.tickInterval)
-    }
-
-    setCanvasVisibility(visibility){
-        if (visibility){
-            this.canvas.style.display = "block"
-            $("header").hide()
-            this.resize()
-            return
-        }
-        this.canvas.style.display = "none"
+        clearInterval(this.drawInterval)
+        this.setBackgroundColor(RGB(0, 0, 0))
+        this.clear()
         $("header").show()
     }
 
@@ -49,24 +40,28 @@ class GameCanvas {
 
         canvas.width = window.innerWidth
         canvas.height = window.innerHeight - canvas.getBoundingClientRect().top
-        this.draw()
     }
 
     setCameraPos(x, y){
         this.camera.setCurrentPos(x, y)
     }
 
-    tick(){
-        this.draw()
-    }
-
     draw(){
         const ctx = this.ctx
-
         this.clear()
 
-        this.level.draw(ctx)
-        this.gui.draw(ctx)
+        ctx.save()
+        ctx.translate(-this.camera.left, -this.camera.top) // for some reason, it has to be a negative value
+
+        // there is no need for interpolation
+        this.kinematicRects.forEach(rect => {
+            rect.updatePrevPos()
+        })
+        this.interpolateKinematics(1)
+
+        this.drawablesLayers.draw(ctx)
+
+        ctx.restore()
     }
 
     clear(){
@@ -82,6 +77,17 @@ class GameCanvas {
         this.backgroundColor = color
     }
 
+    setLayersCount(layers){
+        this.drawablesLayers = new DrawablesLayers(layers)
+    }
+
+    insertDrawable(drawable, layer){
+        this.drawablesLayers.insertDrawable(drawable, layer)
+        if (drawable.rect.isKinematic()){
+            this.kinematicRects.push(drawable.rect)
+        }
+    }
+
     updateMousePos(e){
         let rect = this.canvas.getBoundingClientRect()
         let x = e.clientX - rect.left
@@ -95,8 +101,14 @@ class GameCanvas {
 
     getLevelMousePos(){
         let [mx, my] = this.mousePos
-        let [vx, vy] = this.level.getCameraPos()
+        let [vx, vy] = [this.camera.left, this.camera.top]
 
         return [vx + mx, vy + my]
+    }
+
+    interpolateKinematics(alpha){
+        this.kinematicRects.forEach(rect => {
+            rect.interpolate(alpha)
+        })
     }
 }

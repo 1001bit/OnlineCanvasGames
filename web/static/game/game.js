@@ -1,38 +1,59 @@
-const rooms = new Rooms("rooms")
-const sse = new GameSSE(rooms)
-let gameID = 0
+class Game {
+    constructor(){
+        this.gui = new Gui()
+        this.canvas = new GameCanvas("canvas")
+        this.websocket = new GameWebSocket()
 
-$("main").ready(() => {
-    gameID = $("main").data("game-id")
-    sse.openConnection(gameID)
-})
+        this.websocket.handleClose = () => {
+            this.close("Connection closed!")
+        }
 
-$("#random").click(joinRandomRoom)
-$("#create").click(createRoom)
+        this.websocket.handleError = () => {
+            this.close("Something went wrong!")
+        }
 
-function joinRandomRoom(){
-    const roomList = rooms.roomList.find(".room")
-    if (roomList.length == 0){
-        $("#random").text("No rooms yet!")
-        return
+        this.websocket.handleMessage = (msg) => {
+            this.handleMessage(msg)
+        }
     }
-    const room = roomList[Math.floor(Math.random() * roomList.length)]
-    window.location.href = $(room).find(".join").attr("href")
-}
 
-function createRoom(){
-    fetch(`/api/game/${gameID}/room`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-    })
-    .then (response => {
-        if(response.status != 200){
-            response.json().then(data => $("#create").text(data.body))
+    handleGameMessage = (type, body) => {} 
+
+    setCanvasProperties(layers, bgColor){
+        this.canvas.setBackgroundColor(bgColor)
+        this.canvas.setLayersCount(layers)
+    }
+
+    getMousePos(){
+        return this.canvas.getMousePos()
+    }
+
+    getLevelMousePos(){
+        return this.canvas.getLevelMousePos()
+    }
+
+    insertDrawable(drawable, layer){
+        this.canvas.insertDrawable(drawable, layer)
+    }
+
+    openConnection(roomID, gameID){
+        this.websocket.openConnection(roomID, gameID)
+    }
+
+    handleMessage(msg){
+        if (msg.type == "close"){
+            this.close(msg.body)
             return
         }
-        
-        response.json().then(data => window.location.href = `/game/${gameID}/room/${data.body}`)
-    })
+        this.handleGameMessage(msg.type, msg.body)
+    }
+
+    sendMessage(type, body){
+        this.websocket.sendMessage(type, body)
+    }
+
+    close(text){
+        this.canvas.stop()
+        this.gui.showMessage(text)
+    }
 }

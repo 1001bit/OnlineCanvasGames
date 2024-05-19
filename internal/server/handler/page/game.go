@@ -36,5 +36,5 @@ func HandleGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	serveTemplate("game.html", data, w, r)
+	serveTemplate("gamehub.html", data, w, r)
 }
