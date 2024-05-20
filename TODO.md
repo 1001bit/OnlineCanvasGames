@@ -8,7 +8,7 @@
 - [X] Refresh token
 
 - [X] Home page
-    - [X] Use from BaseNode gamesJSON instead of database table for games list
+    - [X] Use BaseNode's gamesJSON instead of database table for games list
 
 - [X] Game Page
     - [X] Rooms list
