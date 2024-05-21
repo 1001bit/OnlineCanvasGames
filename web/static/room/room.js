@@ -6,4 +6,7 @@ $("main").ready(() => {
     const roomID = $("main").data("room-id")
 
     game.openConnection(roomID, gameID)
+
+    $("#navigation").hide()
+    $("main").css("margin-top", 10)
 })

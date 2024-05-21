@@ -18,7 +18,6 @@ class GameCanvas {
         this.drawRate = 60
         this.drawInterval = setInterval(() => this.draw(), 1000/this.drawRate)
 
-        $("header").hide()
         this.resize()
 
         window.addEventListener('resize', () => this.resize(), false);
@@ -32,7 +31,6 @@ class GameCanvas {
         clearInterval(this.drawInterval)
         this.setBackgroundColor(RGB(0, 0, 0))
         this.clear()
-        $("header").show()
     }
 
     resize(){

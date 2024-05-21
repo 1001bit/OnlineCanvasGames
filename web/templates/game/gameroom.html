@@ -8,12 +8,14 @@
     <title>{{ .Data.Game.Title }}</title>
 </head>
 <body>
-    {{ template "header" .Header }}
+    {{ template "navigation" .Navigation }}
     <main data-room-id="{{ .Data.RoomID }}" data-game-id="{{ .Data.Game.ID }}">
 
         <canvas id="canvas"></canvas>
         <div id="gui">
-            <h2 id="message"></h1>
+            <h2 id="message"></h2>
+            <div class="separator"> </div>
+            <button class="style-button small">↓</button>
         </div>
 
     </main>

@@ -11,7 +11,7 @@
     --button-shadow-color: #0c0a02;
 
     /* values */
-    --header-height: 32px;
+    --navigation-height: 32px;
 }
 
 body {
@@ -27,9 +27,9 @@ main {
     margin-inline: 16px;
 }
 
-/* HEADER */
+/* NAV BAR */
 
-header {
+#navigation {
     position: fixed;
     top: 0;
     left: 0;
@@ -39,17 +39,17 @@ header {
     padding-block: 8px;
     background: var(--second-dark-color);
     box-shadow: 0 0 5px black;
-    max-height: var(--header-height);
+    max-height: var(--navigation-height);
     display: flex;
     z-index: 999;
 }
 
-header button {
+#navigation button {
     margin-inline: 12px;
 }
 
-header + main {
-    margin-top: calc(var(--header-height) + 24px);
+#navigation + main {
+    margin-top: calc(var(--navigation-height) + 24px);
 }
 
 .separator {

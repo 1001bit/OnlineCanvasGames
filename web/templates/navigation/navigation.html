@@ -1,5 +1,5 @@
-{{ define "header" }}
-<header>
+{{ define "navigation" }}
+<div id="navigation">
     <a href="/"><button class="style-button small">Home</button></a>
 
     <div class="separator"> </div>
@@ -9,5 +9,5 @@
     {{ else }}
         <a href="/profile/{{ .UserID }}"><button class="style-button small">{{ .Username }}</button></a>
     {{ end }}
-</header>
+</div>
 {{ end }}
