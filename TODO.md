@@ -33,7 +33,7 @@
             - [ ] UI
                 - [X] Split canvas and gui (DOM-based) under game class
                 - [ ] UI elements
-                    - [ ] Show nav bar button
+                    - [ ] "Show nav bar" button
         - [ ] Backend
 
 - [ ] Admin page
