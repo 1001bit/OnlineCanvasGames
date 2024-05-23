@@ -24,7 +24,7 @@
     - [X] Make RT nodes independent from each other
     - [X] Split Nodes' run select statement into several goroutines (flows)
     - [X] Split WS/SSE handlers and basenode package
-    - [X] Make WS connection safer by not allowing single user joining twice
+    - [X] Make WS connection safer by not allowing a user joining twice
     - [X] Different rooms for different games
     - [X] Basic multiplayer clicker game
     - [ ] Game engine
