@@ -1,15 +1,22 @@
 class Game {
     constructor(){
+        this.websocket = new GameWebSocket()
         this.gui = new Gui()
         this.canvas = new GameCanvas("canvas")
-        this.websocket = new GameWebSocket()
 
+        this.initWebsocket()
+        this.initGui()
+    }
+
+    handleGameMessage = (type, body) => {} 
+
+    initWebsocket(){
         this.websocket.handleClose = () => {
-            this.close("Connection closed!")
+            this.stop("Connection closed!")
         }
 
         this.websocket.handleError = () => {
-            this.close("Something went wrong!")
+            this.stop("Something went wrong!")
         }
 
         this.websocket.handleMessage = (msg) => {
@@ -17,7 +24,9 @@ class Game {
         }
     }
 
-    handleGameMessage = (type, body) => {} 
+    initGui(){
+        this.gui.resizeCanvas = this.canvas.resize
+    }
 
     setCanvasProperties(layers, bgColor){
         this.canvas.setBackgroundColor(bgColor)
@@ -42,7 +51,7 @@ class Game {
 
     handleMessage(msg){
         if (msg.type == "close"){
-            this.close(msg.body)
+            this.stop(msg.body)
             return
         }
         this.handleGameMessage(msg.type, msg.body)
@@ -52,7 +61,7 @@ class Game {
         this.websocket.sendMessage(type, body)
     }
 
-    close(text){
+    stop(text){
         this.canvas.stop()
         this.gui.showMessage(text)
     }

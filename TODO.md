@@ -28,13 +28,14 @@
     - [X] Different rooms for different games
     - [X] Basic multiplayer clicker game
     - [ ] Game engine
-        - [ ] Frontend
-            - [ ] Interpolation
-            - [ ] UI
+        - [X] Frontend
+            - [X] UI
                 - [X] Split canvas and gui (DOM-based) under game class
-                - [ ] UI elements
-                    - [ ] "Show nav bar" button
+                - [X] UI elements
+                    - [X] Server Message
+                    - [X] "Show nav bar" button
         - [ ] Backend
+        - [ ] Interpolation between frontend and backend states
 
 - [ ] Admin page
     - [ ] UI

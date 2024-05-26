@@ -11,7 +11,7 @@
     --button-shadow-color: #0c0a02;
 
     /* values */
-    --navigation-height: 32px;
+    --navigation-height: 48px;
 }
 
 body {
@@ -24,6 +24,7 @@ body {
 }
 
 main {
+    margin-top: var(--navigation-height);
     margin-inline: 16px;
 }
 
@@ -46,10 +47,6 @@ main {
 
 #navigation button {
     margin-inline: 12px;
-}
-
-#navigation + main {
-    margin-top: calc(var(--navigation-height) + 24px);
 }
 
 .separator {

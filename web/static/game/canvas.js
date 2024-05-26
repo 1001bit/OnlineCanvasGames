@@ -33,11 +33,12 @@ class GameCanvas {
         this.clear()
     }
 
-    resize(){
+    resize = () => {
         const canvas = this.canvas
 
         canvas.width = window.innerWidth
         canvas.height = window.innerHeight - canvas.getBoundingClientRect().top
+        this.draw()
     }
 
     setCameraPos(x, y){
