@@ -20,7 +20,7 @@
     - [X] Logout button
 
 - [ ] Room Page
-    - [X] WS Room connection
+    - [X] WebSocket Room connection
     - [X] Make RT nodes independent from each other
     - [X] Split Nodes' run select statement into several goroutines (flows)
     - [X] Split WS/SSE handlers and basenode package
