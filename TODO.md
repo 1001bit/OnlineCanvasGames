@@ -27,15 +27,13 @@
     - [X] Make WS connection safer by not allowing a user joining twice
     - [X] Different rooms for different games
     - [X] Basic multiplayer clicker game
-    - [ ] Game engine
-        - [X] Frontend
-            - [X] UI
-                - [X] Split canvas and gui (DOM-based) under game class
-                - [X] UI elements
-                    - [X] Server Message
-                    - [X] "Show nav bar" button
-        - [ ] Backend
-        - [ ] Interpolation between frontend and backend states
+    - [X] UI elements
+        - [X] Server Message
+        - [X] "Show nav bar" button
+    - [ ] Multiplayer platformer game
+        - [ ] Server -> client resource loader
+        - [ ] Client -> server input sender
+
 
 - [ ] Admin page
     - [ ] UI
