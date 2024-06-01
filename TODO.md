@@ -31,8 +31,15 @@
         - [X] Server Message
         - [X] "Show nav bar" button
     - [ ] Multiplayer platformer game
-        - [ ] Server -> client resource loader
-        - [ ] Client -> server input sender
+        - [ ] Server
+            - [ ] Storage for static data (images, level), that won't change during gameplay
+            - [ ] Storage for dynamic data
+            - [ ] Fixed timestep for game update and state send
+            - [ ] Sending data to client
+        - [ ] Client
+            - [ ] Storages for static and dynamic data
+            - [ ] Dynamic data update and interpolate based on set timestep time
+            - [ ] Sending input to server
 
 
 - [ ] Admin page
