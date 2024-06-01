@@ -64,5 +64,6 @@ class Game {
     stop(text){
         this.canvas.stop()
         this.gui.showMessage(text)
+        this.gui.setNavBarVisibility(true)
     }
 }

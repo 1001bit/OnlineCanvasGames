@@ -13,20 +13,23 @@ class Gui{
         $("#message").text(text)
     }
 
-    onclick(){
-        if(this.navvisible){
-            $("#navigation").hide()
-            $("#gui").css("top", 10)
-            $("#show-nav").text("↓")
-        } else {
+    setNavBarVisibility(visibility){
+        this.navvisible = visibility
+
+        if(visibility){
             $("#navigation").show()
             $("#gui").removeAttr("style")
             $("#show-nav").text("↑")
+            return
         }
+        $("#navigation").hide()
+        $("#gui").css("top", 10)
+        $("#show-nav").text("↓")
+    }
 
+    onclick(){
         this.navvisible = !this.navvisible
-
-        this.resizeCanvas()
+        this.setNavBarVisibility(this.navvisible) 
     }
 
     resizeCanvas = () => {}

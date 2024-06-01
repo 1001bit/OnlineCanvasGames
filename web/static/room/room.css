@@ -14,3 +14,7 @@
     z-index: 1;
     user-select: none;
 }
+
+#show-nav {
+    height: fit-content;
+}

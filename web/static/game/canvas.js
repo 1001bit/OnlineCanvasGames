@@ -8,6 +8,7 @@ class GameCanvas {
     constructor(canvasID) {
         this.canvas = document.getElementById(canvasID)
         this.ctx = this.canvas.getContext("2d")
+        this.active = true
         
         this.drawablesLayers = new DrawablesLayers(1)
         this.camera = new KinematicRect()
@@ -29,8 +30,9 @@ class GameCanvas {
 
     stop(){
         clearInterval(this.drawInterval)
-        this.setBackgroundColor(RGB(0, 0, 0))
         this.clear()
+        this.active = false
+        this.canvas.remove()
     }
 
     resize = () => {
@@ -38,7 +40,10 @@ class GameCanvas {
 
         canvas.width = window.innerWidth
         canvas.height = window.innerHeight - canvas.getBoundingClientRect().top
-        this.draw()
+
+        if(this.active){
+            this.draw()
+        }
     }
 
     setCameraPos(x, y){
