@@ -7,11 +7,15 @@ game.insertDrawable(button, 1)
 text = new Text("0 clicks", 48)
 game.insertDrawable(text, 1)
 
+let clicks = 0
+
 // button click
 game.canvas.canvas.addEventListener("click", e => {
     let [x, y] = game.getLevelMousePos()
     
     if (button.rect.containsPoint(x, y)){
+        clicks += 1
+        text.setString(`${clicks} clicks`)
         game.sendMessage("click", 0)
     }
 })
@@ -19,7 +23,8 @@ game.canvas.canvas.addEventListener("click", e => {
 // on server message
 game.handleGameMessage = (type, body) => {
     if(type == "clicks"){
-        text.setString(`${body} clicks`)
+        clicks = body
+        text.setString(`${clicks} clicks`)
     }
 }
 
