@@ -14,13 +14,8 @@ class GameSSE {
         sse.onmessage = (e) => {this.handleMessage(e.data)}
     }
 
-    handleOpen(){
-        console.log("sse open")
-    }
-
-    handleClose(){
-        console.log("sse close")
-    }
+    handleOpen(){}
+    handleClose(){}
 
     handleMessage(msg){
         msg = JSON.parse(msg)

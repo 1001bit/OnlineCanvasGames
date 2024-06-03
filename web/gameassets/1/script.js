@@ -1,22 +1,30 @@
-game.setCanvasProperties(2, RGB(60, 60, 60))
+const gameID = $("main").data("game-id")
+const roomID = $("main").data("room-id")
+
+const game = new Game(gameID, roomID)
+
+game.canvas.setLayersCount(2)
+game.canvas.setBackgroundColor(RGB(60, 60, 60))
 
 button = new RectangleShape(300, 200, false)
 button.setColor(RGB(150, 150, 40))
-game.insertDrawable(button, 1)
+button.setPosition((window.innerWidth - button.rect.size.x)/2, (window.innerHeight - button.rect.size.y)/2)
+game.canvas.drawablesLayers.insertDrawable(button, 0)
 
 text = new Text("0 clicks", 48)
-game.insertDrawable(text, 1)
+text.setPosition(button.rect.position.x + 10, button.rect.position.y + 10)
+game.canvas.drawablesLayers.insertDrawable(text, 1)
 
 let clicks = 0
 
 // button click
 game.canvas.canvas.addEventListener("click", e => {
-    let [x, y] = game.getLevelMousePos()
+    let mPos = game.canvas.getLevelMousePos()
     
-    if (button.rect.containsPoint(x, y)){
+    if (button.rect.containsPoint(mPos.x, mPos.y)){
         clicks += 1
         text.setString(`${clicks} clicks`)
-        game.sendMessage("click", 0)
+        game.websocket.sendMessage("click", 0)
     }
 })
 
@@ -27,6 +35,3 @@ game.handleGameMessage = (type, body) => {
         text.setString(`${clicks} clicks`)
     }
 }
-
-button.setPosition((window.innerWidth - button.rect.width)/2, (window.innerHeight - button.rect.height)/2)
-text.setPosition(button.rect.left + 10, button.rect.top + 10)

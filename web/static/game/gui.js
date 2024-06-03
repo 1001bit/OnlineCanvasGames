@@ -31,6 +31,4 @@ class Gui{
         this.navvisible = !this.navvisible
         this.setNavBarVisibility(this.navvisible) 
     }
-
-    resizeCanvas = () => {}
 }

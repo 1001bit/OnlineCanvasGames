@@ -3,18 +3,17 @@ function lerp(a, b, alpha){
 }
 
 class GameCanvas {
-    gameUpdate = () => {}
-
     constructor(canvasID) {
+        this.active = true
+
         this.canvas = document.getElementById(canvasID)
         this.ctx = this.canvas.getContext("2d")
-        this.active = true
         
         this.drawablesLayers = new DrawablesLayers(1)
         this.camera = new KinematicRect()
         this.kinematicRects = [this.camera]
 
-        this.mousePos = [0, 0]
+        this.mousePos = new Vector2(0, 0)
 
         this.drawRate = 60
         this.drawInterval = setInterval(() => this.draw(), 1000/this.drawRate)
@@ -28,22 +27,27 @@ class GameCanvas {
         })
     }
 
+    gameUpdate = () => {}
+
     stop(){
+        this.active = false
+
         clearInterval(this.drawInterval)
         this.clear()
-        this.active = false
         this.canvas.remove()
     }
 
-    resize = () => {
+    resize (){
+        if(!this.active){
+            return
+        }
+
         const canvas = this.canvas
 
         canvas.width = window.innerWidth
         canvas.height = window.innerHeight - canvas.getBoundingClientRect().top
 
-        if(this.active){
-            this.draw()
-        }
+        this.draw()
     }
 
     setCameraPos(x, y){
@@ -57,15 +61,23 @@ class GameCanvas {
         ctx.save()
         ctx.translate(-this.camera.left, -this.camera.top) // for some reason, it has to be a negative value
 
-        // there is no need for interpolation
-        this.kinematicRects.forEach(rect => {
-            rect.updatePrevPos()
-        })
+        // there is no need for interpolation for now, using 1 for alpha
         this.interpolateKinematics(1)
 
         this.drawablesLayers.draw(ctx)
 
         ctx.restore()
+    }
+
+    interpolateKinematics(alpha){
+        // updating prevPos each tick for now
+        this.kinematicRects.forEach(rect => {
+            rect.updatePrevPos()
+        })
+
+        this.kinematicRects.forEach(rect => {
+            rect.interpolate(alpha)
+        })
     }
 
     clear(){
@@ -85,18 +97,11 @@ class GameCanvas {
         this.drawablesLayers = new DrawablesLayers(layers)
     }
 
-    insertDrawable(drawable, layer){
-        this.drawablesLayers.insertDrawable(drawable, layer)
-        if (drawable.rect.isKinematic()){
-            this.kinematicRects.push(drawable.rect)
-        }
-    }
-
     updateMousePos(e){
         let rect = this.canvas.getBoundingClientRect()
         let x = e.clientX - rect.left
         let y = e.clientY - rect.top
-        this.mousePos = [x, y]
+        this.mousePos.setPosition(x, y)
     }
 
     getMousePos(){
@@ -104,15 +109,9 @@ class GameCanvas {
     }
 
     getLevelMousePos(){
-        let [mx, my] = this.mousePos
-        let [vx, vy] = [this.camera.left, this.camera.top]
+        let cameraPos = this.camera.position
+        let mousePos = this.mousePos
 
-        return [vx + mx, vy + my]
-    }
-
-    interpolateKinematics(alpha){
-        this.kinematicRects.forEach(rect => {
-            rect.interpolate(alpha)
-        })
+        return new Vector2(cameraPos.x + mousePos.x, cameraPos.y + mousePos.y)
     }
 }

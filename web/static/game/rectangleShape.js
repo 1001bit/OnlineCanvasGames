@@ -1,13 +1,10 @@
 class RectangleShape {
-    rect
-    color
-
     constructor(width, height, kinematic){
         this.rect = kinematic ? new KinematicRect() : new Rect()
         this.rect.setSize(width, height)
         this.rect.setPosition(0, 0)
 
-        this.setColor(RGB(255, 255, 255))
+        this.color = RGB(255, 255, 255) 
     }
 
     setPosition(left, top){
@@ -18,12 +15,15 @@ class RectangleShape {
         this.rect.setSize(width, height)
     }
 
-    setColor(fillColor){
-        this.color = fillColor
+    setColor(color){
+        this.color = color
     }
 
     draw(ctx){
+        let pos = this.rect.position
+        let size = this.rect.size
+
         ctx.fillStyle = this.color
-        ctx.fillRect(this.rect.left, this.rect.top, this.rect.width, this.rect.height)
+        ctx.fillRect(pos.x, pos.y, size.x, size.y)
     }
 }

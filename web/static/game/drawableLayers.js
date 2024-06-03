@@ -4,8 +4,6 @@ class DrawablesLayers {
         for (let i = 0; i < layersCount; i++){
             this.layers.push([])
         }
-
-        this.viewPos = new KinematicRect()
     }
 
     draw(ctx){

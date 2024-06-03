@@ -3,30 +3,26 @@ function lerp(a, b, alpha){
 }
 
 class Rect {
-    left
-    top
-    width
-    height
-
     constructor(){
-        this.setPosition(0, 0)
-        this.setSize(0, 0)
+        this.position = new Vector2(0, 0)
+        this.size = new Vector2(0, 0)
     }
 
-    setPosition(left, top){
-        this.left = left
-        this.top = top
+    setPosition(x, y){
+        this.position.setPosition(x, y)
     }
 
-    setSize(width, height){
-        this.width = width
-        this.height = height
+    setSize(x, y){
+        this.size.setPosition(x, y)
     }
 
     containsPoint(x, y){
+        let pos = this.position
+        let size = this.size
+
         if(
-        this.left <= x && x <= this.left + this.width &&
-        this.top <= y && y <= this.top + this.height
+        x >= pos.x && x <= pos.x + size.x &&
+        y >= pos.y && y <= pos.y + size.y
         ){
             return true
         }
@@ -39,34 +35,31 @@ class Rect {
 }
 
 class KinematicRect extends Rect {
-    prev
-    curr
-
     constructor(){
         super()
-        this.prev = new Rect()
-        this.prev.setPosition(this.left, this.top)
-
-        this.curr = new Rect()
-        this.curr.setPosition(this.left, this.top)
+        this.previousPos = new Vector2(0, 0)
+        this.targetPos = new Vector2(0, 0)
     }
 
-    setCurrentPos(left, top, teleport){
-        this.curr.setPosition(left, top)
+    setTargetPos(x, y, teleport){
+        this.targetPos.setPosition(x, y)
 
         if (teleport) {
-            this.setPosition(left, top)
-            this.prev.setPosition(left, top)
+            this.setPosition(x, y)
+            this.updatePrevPos()
         }
     }
 
     updatePrevPos(){
-        this.prev.setPosition(this.curr.left, this.curr.top)
+        this.previousPos.setPosition(this.targetPos.x, this.targetPos.y)
     }
 
     interpolate(alpha){
-        let posX = lerp(this.prev.left, this.curr.left, alpha) 
-        let posY = lerp(this.prev.top, this.curr.top, alpha)
+        let prev = this.previousPos
+        let targ = this.targetPos
+
+        let posX = lerp(prev.x, targ.x, alpha) 
+        let posY = lerp(prev.y, targ.y, alpha)
         this.setPosition(posX, posY)
     }
 
