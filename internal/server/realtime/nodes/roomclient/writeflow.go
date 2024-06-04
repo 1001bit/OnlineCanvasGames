@@ -53,7 +53,6 @@ func (client *RoomClient) writeMessageToConn(msg *message.JSON) {
 	err := client.conn.WriteJSON(msg)
 	// if couldn't write message - disconnect
 	if err != nil || msg.Type == CloseMsgType {
-		log.Println("stop on write message to conn err")
 		go client.Flow.Stop()
 	}
 }

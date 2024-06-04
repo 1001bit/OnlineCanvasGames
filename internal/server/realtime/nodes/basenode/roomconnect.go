@@ -29,13 +29,13 @@ func (baseNode *BaseNode) ConnectToRoom(conn *websocket.Conn, gameID, roomID, us
 
 	// RUN RoomClient
 	go func() {
-		roomNode.Clients.ConnectChild(client)
-		baseNode.roomsClients.ConnectChild(client)
+		roomNode.Clients.ConnectChild(client, roomNode.Flow.Done())
+		baseNode.roomsClients.ConnectChild(client, baseNode.Flow.Done())
 
 		client.Run(roomNode)
 
-		roomNode.Clients.DisconnectChild(client)
-		baseNode.roomsClients.DisconnectChild(client)
+		roomNode.Clients.DisconnectChild(client, roomNode.Flow.Done())
+		baseNode.roomsClients.DisconnectChild(client, baseNode.Flow.Done())
 	}()
 
 	return nil

@@ -45,6 +45,10 @@ func (rp *ClickerRP) JoinClient(userID int) {
 	rp.clientChan <- userID
 }
 
+func (rp *ClickerRP) GetMaxClients() int {
+	return 10
+}
+
 func (rp *ClickerRP) newStateMessage() *message.JSON {
 	return &message.JSON{
 		Type: "clicks",

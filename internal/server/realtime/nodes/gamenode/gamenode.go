@@ -14,6 +14,7 @@ import (
 type RoomJSON struct {
 	Owner   string `json:"owner"`
 	Clients int    `json:"clients"`
+	Limit   int    `json:"limit"`
 	ID      int    `json:"id"`
 }
 

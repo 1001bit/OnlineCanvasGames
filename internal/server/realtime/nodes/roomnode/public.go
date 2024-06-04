@@ -11,19 +11,6 @@ func (roomNode *RoomNode) SetRandomID() {
 	roomNode.id = int(time.Now().UnixMicro())
 }
 
-func (roomNode *RoomNode) GetID() int {
-	return roomNode.id
-}
-
-func (roomNode *RoomNode) GetOwnerName() string {
-	switch roomNode.owner {
-	case nil:
-		return "nobody"
-	default:
-		return roomNode.owner.GetUser().Name
-	}
-}
-
 func (roomNode *RoomNode) ConnectedToGame() <-chan struct{} {
 	return roomNode.connectedToGameChan
 }
@@ -50,4 +37,21 @@ func (roomNode *RoomNode) WriteMessageTo(msg *message.JSON, id int) {
 		return
 	}
 	client.WriteMessage(msg)
+}
+
+func (roomNode *RoomNode) GetID() int {
+	return roomNode.id
+}
+
+func (roomNode *RoomNode) GetPlayersLimit() int {
+	return roomNode.roomplay.GetMaxClients()
+}
+
+func (roomNode *RoomNode) GetOwnerName() string {
+	switch roomNode.owner {
+	case nil:
+		return "nobody"
+	default:
+		return roomNode.owner.GetUser().Name
+	}
 }

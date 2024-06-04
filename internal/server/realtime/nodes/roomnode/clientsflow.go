@@ -20,6 +20,11 @@ func (roomNode *RoomNode) clientsFlow(requester GameNodeRequester, stopTimer *ti
 	for {
 		select {
 		case client := <-roomNode.Clients.ToConnect():
+			if len(roomNode.Clients.IDMap) >= roomNode.roomplay.GetMaxClients() {
+				client.WriteCloseMessage("There are too many players in the room")
+				continue
+			}
+
 			// When server asked to connect a client
 			roomNode.connectClient(client)
 

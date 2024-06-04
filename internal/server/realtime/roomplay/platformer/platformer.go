@@ -28,3 +28,7 @@ func (rp *PlatformerRP) HandleReadMessage(msg rtclient.MessageWithClient) {
 func (rp *PlatformerRP) JoinClient(userID int) {
 	rp.clientChan <- userID
 }
+
+func (rp *PlatformerRP) GetMaxClients() int {
+	return 0
+}

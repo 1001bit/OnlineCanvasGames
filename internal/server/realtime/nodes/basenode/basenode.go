@@ -48,9 +48,9 @@ func (baseNode *BaseNode) InitGames() error {
 
 		// RUN gameNode
 		go func() {
-			baseNode.games.ConnectChild(gameNode)
+			baseNode.games.ConnectChild(gameNode, baseNode.Flow.Done())
 			gameNode.Run()
-			baseNode.games.DisconnectChild(gameNode)
+			baseNode.games.DisconnectChild(gameNode, baseNode.Flow.Done())
 		}()
 	}
 

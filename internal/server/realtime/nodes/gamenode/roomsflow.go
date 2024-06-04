@@ -58,11 +58,18 @@ func (gameNode *GameNode) updateRoomsJSON() {
 	i := 0
 
 	for _, roomNode := range gameNode.Rooms.IDMap {
-		<-roomNode.ConnectedToGame()
+		select {
+		case <-roomNode.ConnectedToGame():
+			// if room connected
+		case <-roomNode.Flow.Done():
+			// if room is already done
+			continue
+		}
 
 		gameNode.roomsJSON[i] = RoomJSON{
 			Owner:   roomNode.GetOwnerName(),
 			Clients: len(roomNode.Clients.IDMap),
+			Limit:   roomNode.GetPlayersLimit(),
 			ID:      roomNode.GetID(),
 		}
 

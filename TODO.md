@@ -30,18 +30,17 @@
     - [X] UI elements
         - [X] Server Message
         - [X] "Show nav bar" button
+    - [X] Limit players amount
     - [ ] Multiplayer platformer game
         - [ ] Server
-            - [ ] Assets send
-            - [ ] Level send
-            - [ ] Client data receive
-            - [ ] Game update
-            - [ ] Game state send
+            - [X] Basic "roomplay"
+            - [ ] Data send: Objects, their properties, their assets, their type (static/dynamic), Server-Tick speed
+            - [ ] Game state update and send
+            - [ ] Client Input receive
         - [ ] Client
-            - [ ] Assets storage
-            - [ ] Loading level and assets once at server start
-            - [ ] Game state update
-            - [ ] Interpolation based on server-client timestep duration
+            - [X] Basic page
+            - [ ] Game state update every Server-Tick based on server sent data
+            - [ ] Objects position interpolation every Client-Tick based on Server-Tick amount
             - [ ] Controls binding and sending input to server
 
 

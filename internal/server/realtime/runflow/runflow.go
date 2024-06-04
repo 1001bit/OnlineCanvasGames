@@ -18,7 +18,13 @@ func (rf *RunFlow) Stopped() <-chan struct{} {
 }
 
 func (rf *RunFlow) Stop() {
-	rf.stopChan <- struct{}{}
+	select {
+	case rf.stopChan <- struct{}{}:
+		// Stop flow
+	case <-rf.doneChan:
+		// it's already done
+	}
+
 }
 
 // Done

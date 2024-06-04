@@ -1,5 +1,6 @@
 class Game {
     constructor(gameID, roomID){
+        this.active = true
         this.websocket = new GameWebSocket(gameID, roomID)
         this.gui = new Gui()
         this.canvas = new GameCanvas("canvas")
@@ -32,6 +33,11 @@ class Game {
     }
 
     stopWithText(text){
+        if(!this.active){
+            return
+        }
+        this.active = false
+
         this.canvas.stop()
         this.gui.showMessage(text)
         this.gui.setNavBarVisibility(true)

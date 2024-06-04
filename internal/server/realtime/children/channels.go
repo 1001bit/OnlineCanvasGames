@@ -12,12 +12,22 @@ func MakeChannels[T any]() Channels[T] {
 	}
 }
 
-func (ch *Channels[T]) DisconnectChild(child *T) {
-	ch.disconnectChan <- child
+func (ch *Channels[T]) ConnectChild(child *T, done <-chan struct{}) {
+	select {
+	case ch.connectChan <- child:
+		// connect child
+	case <-done:
+		// done
+	}
 }
 
-func (ch *Channels[T]) ConnectChild(child *T) {
-	ch.connectChan <- child
+func (ch *Channels[T]) DisconnectChild(child *T, done <-chan struct{}) {
+	select {
+	case ch.disconnectChan <- child:
+		// disconnect child
+	case <-done:
+		// done
+	}
 }
 
 func (ch *Channels[T]) ToConnect() <-chan *T {

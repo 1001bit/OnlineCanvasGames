@@ -14,4 +14,5 @@ type RoomPlay interface {
 	Run(doneChan <-chan struct{}, writer RoomWriter)
 	HandleReadMessage(msg rtclient.MessageWithClient)
 	JoinClient(userID int)
+	GetMaxClients() int
 }

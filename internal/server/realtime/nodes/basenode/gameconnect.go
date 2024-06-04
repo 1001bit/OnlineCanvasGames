@@ -19,9 +19,9 @@ func (baseNode *BaseNode) ConnectToGame(ctx context.Context, w http.ResponseWrit
 
 	// RUN GameClient
 	go func() {
-		gameNode.Clients.ConnectChild(client)
+		gameNode.Clients.ConnectChild(client, gameNode.Flow.Done())
 		client.Run(ctx)
-		gameNode.Clients.DisconnectChild(client)
+		gameNode.Clients.DisconnectChild(client, gameNode.Flow.Done())
 	}()
 
 	select {

@@ -24,9 +24,9 @@ func (baseNode *BaseNode) ConnectNewRoom(ctx context.Context, gameID int) (*room
 
 	// RUN roomNode
 	go func() {
-		gameNode.Rooms.ConnectChild(room)
+		gameNode.Rooms.ConnectChild(room, gameNode.Flow.Done())
 		room.Run(gameNode)
-		gameNode.Rooms.DisconnectChild(room)
+		gameNode.Rooms.DisconnectChild(room, gameNode.Flow.Done())
 	}()
 
 	// wait until room connected to BaseNode
