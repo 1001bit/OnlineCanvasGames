@@ -34,7 +34,7 @@ func NewRoomNode(gameID int) *RoomNode {
 
 		connectedToGameChan: make(chan struct{}),
 
-		roomplay: roomplay.NewRoomPlayByID(gameID),
+		roomplay: NewRoomPlayByID(gameID),
 
 		id:    0,
 		owner: nil,

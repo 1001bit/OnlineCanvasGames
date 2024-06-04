@@ -4,7 +4,7 @@ const roomID = $("main").data("room-id")
 const game = new Game(gameID, roomID)
 
 game.canvas.setLayersCount(2)
-game.canvas.setBackgroundColor(RGB(60, 60, 60))
+game.canvas.setBackgroundColor(RGB(60, 70, 70))
 
 button = new RectangleShape(300, 200, false)
 button.setColor(RGB(150, 150, 40))

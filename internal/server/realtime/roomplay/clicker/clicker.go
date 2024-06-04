@@ -1,29 +1,28 @@
-package roomplay
+package clicker
 
 import (
 	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
 	rtclient "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/client"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/roomplay"
 )
 
 type ClickerRP struct {
-	clickChan chan struct{}
-
 	clientChan chan int
 
-	clicks uint
+	clickChan chan struct{}
+	clicks    uint
 }
 
 func NewClickerRP() *ClickerRP {
 	return &ClickerRP{
-		clickChan: make(chan struct{}),
-
 		clientChan: make(chan int),
 
-		clicks: 0,
+		clickChan: make(chan struct{}),
+		clicks:    0,
 	}
 }
 
-func (rp *ClickerRP) Run(doneChan <-chan struct{}, writer RoomWriter) {
+func (rp *ClickerRP) Run(doneChan <-chan struct{}, writer roomplay.RoomWriter) {
 	for {
 		select {
 		case <-rp.clickChan:

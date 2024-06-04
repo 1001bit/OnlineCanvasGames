@@ -15,12 +15,3 @@ type RoomPlay interface {
 	HandleReadMessage(msg rtclient.MessageWithClient)
 	JoinClient(userID int)
 }
-
-func NewRoomPlayByID(gameID int) RoomPlay {
-	switch gameID {
-	case 1:
-		return NewClickerRP()
-	default:
-		return nil
-	}
-}

@@ -23,7 +23,7 @@ class Gui{
             return
         }
         $("#navigation").hide()
-        $("#gui").css("top", 10)
+        $("#gui").css("top", 0)
         $("#show-nav").text("↓")
     }
 
