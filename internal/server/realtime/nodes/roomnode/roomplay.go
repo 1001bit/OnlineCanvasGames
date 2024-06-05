@@ -9,9 +9,9 @@ import (
 func NewGameLogicByID(gameID int) gamelogic.GameLogic {
 	switch gameID {
 	case 1:
-		return clicker.NewClickerRP()
+		return clicker.NewClickerGL()
 	case 2:
-		return platformer.NewPlatformerRP()
+		return platformer.NewPlatformerGL()
 	default:
 		return nil
 	}

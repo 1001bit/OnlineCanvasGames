@@ -8,7 +8,7 @@ import (
 type PlatformerGL struct {
 }
 
-func NewPlatformerRP() *PlatformerGL {
+func NewPlatformerGL() *PlatformerGL {
 	return &PlatformerGL{}
 }
 

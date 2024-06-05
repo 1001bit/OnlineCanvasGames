@@ -10,7 +10,7 @@ type ClickerGL struct {
 	clicks uint
 }
 
-func NewClickerRP() *ClickerGL {
+func NewClickerGL() *ClickerGL {
 	return &ClickerGL{
 		clicks: 0,
 	}
