@@ -1,0 +1,29 @@
+- Data storage
+    - Objects storages: Static (objects, that are not changed during room lifetime), dynamic (players, bullets, destructibles)
+    - Objects types: 
+        - Both (dynamic objects have their unique IDs): 
+            Shapes: RectangleShape, sprite, animatedSprite
+        - Server:
+            Shapes, Colliders
+        - Client:
+            Shapes (dynamic ones have interpolatable KinematicRect instead of static Rect)
+
+- Init
+    - Server: 
+        GameLogic generates a level based on a slice, which is a blueprint of level. 
+        It contains all the objects that are needed to be created and their parameters, then starts ticking
+    - Client: 
+        Gets levelJson message, which is generated upon client join, 
+        reads it and shows on canvas, then starts ticking
+
+- Ticks:
+    - Server: 
+        every ServerTick period updates physics for dynamic objects, 
+        then sends JSON of all of them (or only the ones that are changed) to all the clients 
+        (or sends only the needed objects, that each client needs to know)
+    - Client: 
+        Interpolates all the objects (except player) from last server-confirmed state to current server-confirmed state.
+        Alpha for interpolation is basically ClientAccumulator/ServerTick. Delta time is added to ClientAccumulator. 
+        Then it nullifies on server update.
+        Predicts player position based on input with physics.
+        May also predict objects positions based on physics, if current method won't work.
