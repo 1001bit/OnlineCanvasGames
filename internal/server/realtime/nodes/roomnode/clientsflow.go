@@ -20,7 +20,7 @@ func (roomNode *RoomNode) clientsFlow(requester GameNodeRequester, stopTimer *ti
 	for {
 		select {
 		case client := <-roomNode.Clients.ToConnect():
-			if len(roomNode.Clients.IDMap) >= roomNode.roomplay.GetMaxClients() {
+			if len(roomNode.Clients.IDMap) >= roomNode.gamelogic.GetMaxClients() {
 				client.WriteCloseMessage("There are too many players in the room")
 				continue
 			}
@@ -31,8 +31,8 @@ func (roomNode *RoomNode) clientsFlow(requester GameNodeRequester, stopTimer *ti
 			// Request updaing GameNode's RoomsJSON
 			go requester.RequestUpdatingRoomsJSON()
 
-			// Notify the roomplay about new client
-			go roomNode.roomplay.JoinClient(client.GetUser().ID, roomNode)
+			// Notify the gamelogic about new client
+			go roomNode.gamelogic.JoinClient(client.GetUser().ID, roomNode)
 
 			log.Println("<RoomNode +Client>:", len(roomNode.Clients.IDMap))
 

@@ -20,7 +20,7 @@ func (roomNode *RoomNode) ConfirmConnectToGame() {
 }
 
 func (roomNode *RoomNode) ReadMessage(msg rtclient.MessageWithClient) {
-	roomNode.roomplay.HandleReadMessage(msg, roomNode)
+	roomNode.gamelogic.HandleReadMessage(msg, roomNode)
 }
 
 // write a message to every client
@@ -44,7 +44,7 @@ func (roomNode *RoomNode) GetID() int {
 }
 
 func (roomNode *RoomNode) GetPlayersLimit() int {
-	return roomNode.roomplay.GetMaxClients()
+	return roomNode.gamelogic.GetMaxClients()
 }
 
 func (roomNode *RoomNode) GetOwnerName() string {

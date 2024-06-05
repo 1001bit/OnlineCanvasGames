@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/children"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/gamelogic"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/roomclient"
-	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/roomplay"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/runflow"
 )
 
@@ -20,7 +20,7 @@ type RoomNode struct {
 
 	connectedToGameChan chan struct{}
 
-	roomplay roomplay.RoomPlay
+	gamelogic gamelogic.GameLogic
 
 	id    int
 	owner *roomclient.RoomClient
@@ -34,7 +34,7 @@ func NewRoomNode(gameID int) *RoomNode {
 
 		connectedToGameChan: make(chan struct{}),
 
-		roomplay: NewRoomPlayByID(gameID),
+		gamelogic: NewGameLogicByID(gameID),
 
 		id:    0,
 		owner: nil,
@@ -51,7 +51,7 @@ func (roomNode *RoomNode) Run(requester GameNodeRequester) {
 	defer stopTimer.Stop()
 
 	go roomNode.clientsFlow(requester, stopTimer)
-	go roomNode.roomplay.Run(roomNode.Flow.Done(), roomNode)
+	go roomNode.gamelogic.Run(roomNode.Flow.Done(), roomNode)
 
 	for {
 		select {

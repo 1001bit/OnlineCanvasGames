@@ -1,12 +1,12 @@
 package roomnode
 
 import (
-	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/roomplay"
-	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/roomplay/clicker"
-	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/roomplay/platformer"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/gamelogic"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/gamelogic/clicker"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/gamelogic/platformer"
 )
 
-func NewRoomPlayByID(gameID int) roomplay.RoomPlay {
+func NewGameLogicByID(gameID int) gamelogic.GameLogic {
 	switch gameID {
 	case 1:
 		return clicker.NewClickerRP()

@@ -33,7 +33,7 @@
     - [X] Limit players amount
     - [ ] Multiplayer platformer game
         - [ ] Server
-            - [X] Basic "roomplay"
+            - [X] Basic "gamelogic"
             - [ ] Data send: Objects, their properties, their assets, their type (static/dynamic), Server-Tick speed
             - [ ] Game state update and send
             - [ ] Client Input receive

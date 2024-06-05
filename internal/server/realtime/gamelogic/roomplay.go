@@ -1,4 +1,4 @@
-package roomplay
+package gamelogic
 
 import (
 	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
@@ -10,7 +10,7 @@ type RoomWriter interface {
 	WriteMessageTo(msg *message.JSON, id int)
 }
 
-type RoomPlay interface {
+type GameLogic interface {
 	Run(doneChan <-chan struct{}, writer RoomWriter)
 	HandleReadMessage(msg rtclient.MessageWithClient, writer RoomWriter)
 	JoinClient(userID int, writer RoomWriter)
