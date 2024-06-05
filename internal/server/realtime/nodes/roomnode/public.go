@@ -20,7 +20,7 @@ func (roomNode *RoomNode) ConfirmConnectToGame() {
 }
 
 func (roomNode *RoomNode) ReadMessage(msg rtclient.MessageWithClient) {
-	roomNode.roomplay.HandleReadMessage(msg)
+	roomNode.roomplay.HandleReadMessage(msg, roomNode)
 }
 
 // write a message to every client

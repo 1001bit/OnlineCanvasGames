@@ -7,42 +7,28 @@ import (
 )
 
 type ClickerRP struct {
-	clientChan chan int
-
-	clickChan chan struct{}
-	clicks    uint
+	clicks uint
 }
 
 func NewClickerRP() *ClickerRP {
 	return &ClickerRP{
-		clientChan: make(chan int),
-
-		clickChan: make(chan struct{}),
-		clicks:    0,
+		clicks: 0,
 	}
 }
 
 func (rp *ClickerRP) Run(doneChan <-chan struct{}, writer roomplay.RoomWriter) {
-	for {
-		select {
-		case <-rp.clickChan:
-			writer.GlobalWriteMessage(rp.newStateMessage())
-		case userID := <-rp.clientChan:
-			writer.WriteMessageTo(rp.newStateMessage(), userID)
-		case <-doneChan:
-			return
-		}
-	}
+
 }
 
-func (rp *ClickerRP) HandleReadMessage(msg rtclient.MessageWithClient) {
+func (rp *ClickerRP) HandleReadMessage(msg rtclient.MessageWithClient, writer roomplay.RoomWriter) {
 	if msg.Message.Type == "click" {
-		rp.click()
+		rp.clicks += 1
+		writer.GlobalWriteMessage(rp.newStateMessage())
 	}
 }
 
-func (rp *ClickerRP) JoinClient(userID int) {
-	rp.clientChan <- userID
+func (rp *ClickerRP) JoinClient(userID int, writer roomplay.RoomWriter) {
+	writer.WriteMessageTo(rp.newStateMessage(), userID)
 }
 
 func (rp *ClickerRP) GetMaxClients() int {
@@ -54,9 +40,4 @@ func (rp *ClickerRP) newStateMessage() *message.JSON {
 		Type: "clicks",
 		Body: rp.clicks,
 	}
-}
-
-func (rp *ClickerRP) click() {
-	rp.clicks += 1
-	rp.clickChan <- struct{}{}
 }
