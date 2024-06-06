@@ -34,16 +34,17 @@
     - [ ] Multiplayer platformer game
         - [ ] Server
             - [X] Basic "gamelogic"
-            - [X] Data send: Rect{transform, dynamic}, Server-Tick speed
-            - [ ] Game state update and send
-            - [ ] Client Input receive
+            - [X] Data send: Level, Server-Tick speed
+            - [ ] Game state update
+                - [ ] Client Input+Duration receive
+                - [ ] Physics engine
+            - [ ] Deltas send
         - [ ] Client
             - [X] Basic page
             - [ ] Some class that handles server-sent game data
             - [ ] Game state update every Server-Tick based on server sent data
             - [ ] Objects position interpolation every Client-Tick based on Server-Tick amount
             - [ ] Controls binding and sending input to server
-
 
 - [ ] Admin page
     - [ ] UI
