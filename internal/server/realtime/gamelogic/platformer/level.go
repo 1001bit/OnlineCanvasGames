@@ -3,10 +3,10 @@ package platformer
 import "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/gamelogic"
 
 func NewPlatformerLevel() *gamelogic.Level {
-	rects := make(map[int]*gamelogic.Rect)
+	level := gamelogic.NewLevel()
 
-	static := gamelogic.NewRect(100, 100, 100, 100, false, true)
-	rects[1] = static
+	staticRect := gamelogic.NewRect(100, 100, 100, 100)
+	level.InsertRect(staticRect, 1, true)
 
-	return gamelogic.NewLevel(rects)
+	return level
 }

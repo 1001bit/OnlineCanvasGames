@@ -12,7 +12,7 @@ func NewGameDataMessage(tps int, l *Level) *message.JSON {
 		Type: "gamedata",
 		Body: GameData{
 			TicksPerSecond: tps,
-			Level:          l.GetRects(false, true),
+			Level:          l.GetPublicRects(),
 		},
 	}
 }

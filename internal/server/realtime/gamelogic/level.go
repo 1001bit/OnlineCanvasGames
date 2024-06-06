@@ -1,31 +1,28 @@
 package gamelogic
 
 type Level struct {
-	rects map[int]*Rect
+	rects       map[int]*Rect
+	publicRects map[int]*Rect
 }
 
-func NewLevel(rects map[int]*Rect) *Level {
+func NewLevel() *Level {
 	return &Level{
-		rects: rects,
+		rects:       make(map[int]*Rect),
+		publicRects: make(map[int]*Rect),
 	}
 }
 
-func (l *Level) GetRects(onlyDynamic, onlyPublic bool) map[int]*Rect {
-	if !onlyDynamic && !onlyPublic {
-		return l.rects
+func (l *Level) InsertRect(r *Rect, id int, public bool) {
+	l.rects[id] = r
+	if public {
+		l.publicRects[id] = r
 	}
+}
 
-	result := make(map[int]*Rect)
+func (l *Level) GetAllRects() map[int]*Rect {
+	return l.rects
+}
 
-	for i := range l.rects {
-		if onlyPublic && !l.rects[i].public {
-			continue
-		}
-		if onlyDynamic && !l.rects[i].Dynamic {
-			continue
-		}
-		result[i] = l.rects[i]
-	}
-
-	return result
+func (l *Level) GetPublicRects() map[int]*Rect {
+	return l.publicRects
 }
