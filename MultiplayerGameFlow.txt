@@ -1,19 +1,16 @@
 - Data storage:
-    - Objects storages: 
-        Static - processed on init. Ones with ID are sent to client upon connection
-        Dynamic - processed every tick. Ones with ID are sent to client every tick
     - Objects types:
         - Server:
-            Rect
+            Rect{transform, isdynamic, ispublic}
         - Client:
             RectangleShape, Sprite, AnimatedSprite
 
 - Init:
     - Server: 
-        GameLogic generates a level based on a struct{staticObjects, dynamicObjects}, which is a blueprint of level. 
-        It contains all the objects that are needed to be created and their parameters, then starts ticking
+        GameLogic generates a level based on a map[id]rect, which is a blueprint of level. 
+        It contains all the rects that are needed to be created and their parameters, then starts ticking
     - Client: 
-        Gets levelJson message, which is generated upon client join, 
+        Gets gamedata message, which is generated upon client join, 
         reads it and shows on canvas, then starts ticking
 
 - Ticks:
