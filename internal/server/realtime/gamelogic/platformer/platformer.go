@@ -26,7 +26,8 @@ func (gl *PlatformerGL) HandleReadMessage(msg rtclient.MessageWithClient, writer
 }
 
 func (gl *PlatformerGL) JoinClient(userID int, writer gamelogic.RoomWriter) {
-	writer.WriteMessageTo(gamelogic.NewGameDataMessage(gl.ticksPerSecond, gl.level), userID)
+	writer.WriteMessageTo(gamelogic.NewGameInfoMessage(gl.ticksPerSecond), userID)
+	writer.WriteMessageTo(gamelogic.NewLevelMessage(gl.level), userID)
 }
 
 func (gl *PlatformerGL) GetMaxClients() int {

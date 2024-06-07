@@ -14,8 +14,8 @@ type GameNodeRequester interface {
 }
 
 func (roomNode *RoomNode) clientsFlow(requester GameNodeRequester, stopTimer *time.Timer) {
-	log.Println("<--RoomNode clientsFlow>")
-	defer log.Println("<--RoomNode clientsFlow Done>")
+	log.Println("--<RoomNode clientsFlow>")
+	defer log.Println("--<RoomNode clientsFlow Done>")
 
 	for {
 		select {

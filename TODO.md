@@ -42,7 +42,8 @@
         - [ ] Client
             - [X] Basic page
             - [ ] Some class that handles server-sent game data
-            - [ ] Game state update every Server-Tick based on server sent data
+                - [X] Level message handle
+                - [ ] Gameinfo message handle
             - [ ] Objects position interpolation every Client-Tick based on Server-Tick amount
             - [ ] Controls binding and sending input to server
 
