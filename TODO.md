@@ -38,14 +38,15 @@
             - [ ] Game state update
                 - [ ] Client Input+Duration receive
                 - [ ] Physics engine
-            - [ ] Deltas send
+                    - [ ] Kinematic and Static rect
+                - [ ] Deltas send
         - [ ] Client
             - [X] Basic page
             - [ ] Some class that handles server-sent game data
                 - [X] Level message handle
                 - [ ] Gameinfo message handle
             - [ ] Objects position interpolation every Client-Tick based on Server-Tick amount
-            - [ ] Controls binding and sending input to server
+            - [ ] Controls binding and sending input with duration to server
 
 - [ ] Admin page
     - [ ] UI
