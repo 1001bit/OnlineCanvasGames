@@ -24,6 +24,7 @@ class Level {
         this.clientTPS = client
         this.serverTPS = server
 
+        this.timer.getDeltaTime()
         setInterval(() => {this.tick()}, 1000/this.clientTPS)
     }
 

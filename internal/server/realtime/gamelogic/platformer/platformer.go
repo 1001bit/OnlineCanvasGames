@@ -18,7 +18,9 @@ func NewPlatformerGL() *PlatformerGL {
 }
 
 func (gl *PlatformerGL) Run(doneChan <-chan struct{}, writer gamelogic.RoomWriter) {
+	go gl.gameLoop(doneChan)
 
+	<-doneChan
 }
 
 func (gl *PlatformerGL) HandleReadMessage(msg rtclient.MessageWithClient, writer gamelogic.RoomWriter) {
@@ -31,5 +33,5 @@ func (gl *PlatformerGL) JoinClient(userID int, writer gamelogic.RoomWriter) {
 }
 
 func (gl *PlatformerGL) GetMaxClients() int {
-	return 1
+	return 2
 }

@@ -36,13 +36,14 @@
             - [X] Basic "gamelogic"
             - [X] Data send: Level, Server-Tick speed
             - [ ] Game state update
+                - [X] Game loop
                 - [ ] Client Input+Duration receive
                 - [ ] Physics engine
                     - [ ] Kinematic and Static rect
                 - [ ] Deltas send
         - [ ] Client
-            - [X] Basic page
-            - [X] Level messages handling
+            - [X] Level messages handling and level draw
+            - [X] Game loop
             - [ ] Objects position interpolation every Client-Tick based on Server-Tick amount
             - [ ] Controls binding and sending input with duration to server
 
