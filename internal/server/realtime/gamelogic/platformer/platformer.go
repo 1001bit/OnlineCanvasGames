@@ -6,8 +6,12 @@ import (
 )
 
 type PlatformerGL struct {
-	level          *gamelogic.Level
+	level          *Level
 	ticksPerSecond int
+}
+
+type GameInfo struct {
+	TPS int `json:"tps"`
 }
 
 func NewPlatformerGL() *PlatformerGL {
@@ -24,12 +28,16 @@ func (gl *PlatformerGL) Run(doneChan <-chan struct{}, writer gamelogic.RoomWrite
 }
 
 func (gl *PlatformerGL) HandleReadMessage(msg rtclient.MessageWithClient, writer gamelogic.RoomWriter) {
-
+	// TODO: Handle Input
 }
 
 func (gl *PlatformerGL) JoinClient(userID int, writer gamelogic.RoomWriter) {
-	writer.WriteMessageTo(gamelogic.NewGameInfoMessage(gl.ticksPerSecond), userID)
-	writer.WriteMessageTo(gamelogic.NewLevelMessage(gl.level), userID)
+	gameinfo := GameInfo{
+		TPS: gl.ticksPerSecond,
+	}
+
+	writer.WriteMessageTo(gamelogic.NewGameInfoMessage(gameinfo), userID)
+	writer.WriteMessageTo(NewLevelMessage(gl.level), userID)
 }
 
 func (gl *PlatformerGL) GetMaxClients() int {

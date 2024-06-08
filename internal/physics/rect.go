@@ -1,4 +1,4 @@
-package gamelogic
+package physics
 
 type Rect struct {
 	X int `json:"x"`
