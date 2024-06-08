@@ -16,14 +16,18 @@ text.setPosition(button.rect.position.x + 10, button.rect.position.y + 10)
 game.canvas.drawablesLayers.insertDrawable(text, 1)
 
 let clicks = 0
+function click(newClicks){
+    clicks = newClicks
+    text.setString(`${clicks} clicks`)
+    game.canvas.draw()
+}
 
 // button click
 game.canvas.canvas.addEventListener("click", e => {
     let mPos = game.canvas.getLevelMousePos()
     
     if (button.rect.containsPoint(mPos.x, mPos.y)){
-        clicks += 1
-        text.setString(`${clicks} clicks`)
+        click(clicks+1)
         game.websocket.sendMessage("click", 0)
     }
 })
@@ -31,7 +35,6 @@ game.canvas.canvas.addEventListener("click", e => {
 // on server message
 game.handleGameMessage = (type, body) => {
     if(type == "clicks"){
-        clicks = body
-        text.setString(`${clicks} clicks`)
+        click(body)
     }
 }

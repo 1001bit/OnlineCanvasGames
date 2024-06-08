@@ -7,13 +7,20 @@ game.canvas.setBackgroundColor(RGB(30, 200, 200))
 
 const rectangle = new RectangleShape(0, 0, false)
 game.canvas.drawablesLayers.insertDrawable(rectangle, 0)
-const level = new Level({1: rectangle})
+const level = new Level(game.canvas, {1: rectangle})
 
 // on server message
 game.handleGameMessage = (type, body) => {
-    // TODO: Handle gameinfo type
+    switch (type) {
+        case "gameinfo":
+            level.setTPS(60, body.tps)
+            break;
 
-    if(type == "level"){
-        level.handleLevelMessage(body)
+        case "level":
+            level.handleLevelMessage(body)
+            break
+
+        default:
+            break;
     }
 }

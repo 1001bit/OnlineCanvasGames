@@ -15,9 +15,6 @@ class GameCanvas {
 
         this.mousePos = new Vector2(0, 0)
 
-        this.drawRate = 60
-        this.drawInterval = setInterval(() => this.draw(), 1000/this.drawRate)
-
         this.resize()
 
         window.addEventListener('resize', () => this.resize(), false);
@@ -31,8 +28,6 @@ class GameCanvas {
 
     stop(){
         this.active = false
-
-        clearInterval(this.drawInterval)
         this.clear()
         this.canvas.remove()
     }

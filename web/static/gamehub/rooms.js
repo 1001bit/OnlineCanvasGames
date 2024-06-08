@@ -8,7 +8,7 @@ class Rooms {
         room.removeClass("sample")
 
         room.find(".owner").text(`${roomJSON.owner}'s room`)
-        room.find(".clients").text(`${roomJSON.clients}/${roomJSON.limit} clients`)
+        room.find(".clients").text(`${roomJSON.clients}/${roomJSON.limit} players`)
         room.find(".join").attr("href", `/game/${gameID}/room/${roomJSON.id}`)
 
         return room
