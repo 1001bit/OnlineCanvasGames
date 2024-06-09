@@ -9,6 +9,9 @@ const rectangle = new RectangleShape(0, 0, false)
 game.canvas.drawablesLayers.insertDrawable(rectangle, 0)
 const level = new Level(game.canvas, {1: rectangle})
 
+level.controls.bindControl("d", "right")
+level.controls.bindControl("a", "left")
+
 // on server message
 game.handleGameMessage = (type, body) => {
     switch (type) {
@@ -17,7 +20,7 @@ game.handleGameMessage = (type, body) => {
             break;
 
         case "level":
-            level.handleLevelMessage(body)
+            level.handleLevelMessage(body, game.websocket)
             break
 
         default:

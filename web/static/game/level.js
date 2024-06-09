@@ -5,11 +5,13 @@ class Level {
 
         this.serverTPS = 0
         this.clientTPS = 0
+        this.accumulator = 0
 
         this.timer = new DeltaTimer()
+        this.controls = new Controls()
     }
 
-    handleLevelMessage = (body) => {
+    handleLevelMessage(body, websocket) {
         for (const key in body){
             if(!(key in this.drawables)){
                 continue
@@ -18,6 +20,9 @@ class Level {
             this.drawables[key].setPosition(body[key].x, body[key].y)
             this.drawables[key].setSize(body[key].w, body[key].h)
         }
+
+        websocket.sendMessage("input", this.controls.getControlsJSON())
+        this.controls.clear()
     }
 
     setTPS(client, server){
@@ -29,7 +34,13 @@ class Level {
     }
 
     update(dt){
+        this.controls.updateHoldTime(dt)
+        
+        this.accumulator += dt
+        let alpha = this.accumulator/(1000/this.serverTPS)
+        // TODO: Interpolate all the rects, that have been transformed
 
+        this.controls.updatePressedStatus()
     }
 
     tick(){

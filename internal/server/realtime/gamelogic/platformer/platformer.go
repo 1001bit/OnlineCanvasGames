@@ -28,7 +28,10 @@ func (gl *PlatformerGL) Run(doneChan <-chan struct{}, writer gamelogic.RoomWrite
 }
 
 func (gl *PlatformerGL) HandleReadMessage(msg rtclient.MessageWithClient, writer gamelogic.RoomWriter) {
-	// TODO: Handle Input
+	switch msg.Message.Type {
+	case "input":
+		gl.handleInputMessage(msg.Message.Body, msg.Client.GetUser().ID)
+	}
 }
 
 func (gl *PlatformerGL) JoinClient(userID int, writer gamelogic.RoomWriter) {
