@@ -3,15 +3,14 @@ class Control {
         this.isPressed = false
         this.isHeld = false
 
-        this.wasPressed = false
         this.holdPeriod = 0
     }
 }
 
 function controlValueReplacer(key, value){
     let exceptions = new Set(["isHeld", "isPressed"])
-
     if(exceptions.has(key)) return undefined
+
     return value
 }
 
@@ -30,7 +29,6 @@ class Controls {
 
             let control = this.controls.get(this.bindings.get(e.key))
             control.isPressed = true
-            control.wasPressed = true
             control.isHeld = true
         })
 
@@ -82,7 +80,6 @@ class Controls {
     clear(){
         this.controls.forEach((control) => {
             control.holdPeriod = 0
-            control.wasPressed = false
         })
     }
 

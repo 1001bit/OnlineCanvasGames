@@ -14,5 +14,6 @@ type GameLogic interface {
 	Run(doneChan <-chan struct{}, writer RoomWriter)
 	HandleReadMessage(msg rtclient.MessageWithClient, writer RoomWriter)
 	JoinClient(userID int, writer RoomWriter)
+	DeleteClient(userID int, writer RoomWriter)
 	GetMaxClients() int
 }

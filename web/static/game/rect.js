@@ -32,6 +32,14 @@ class Rect {
     isKinematic(){
         return false
     }
+
+    getPosition(){
+        return this.position
+    }
+
+    getSize(){
+        return this.size
+    }
 }
 
 class KinematicRect extends Rect {

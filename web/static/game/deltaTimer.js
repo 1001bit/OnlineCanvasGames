@@ -1,10 +1,10 @@
 class DeltaTimer {
     constructor(){
-        this.lastTick = Date.now()
+        this.lastTick = performance.now()
     }
 
     getDeltaTime(){
-        let now = Date.now()
+        let now = performance.now()
         let dt = now - this.lastTick
         this.lastTick = now
 

@@ -33,21 +33,28 @@
     - [X] Limit players amount
     - [ ] Multiplayer platformer game
         - [ ] Server
-            - [X] Basic "gamelogic"
-            - [X] Data send: Level, Server-Tick speed
-            - [ ] Game state update
-                - [X] Game loop
-                - [X] Client Input+Duration receive
-                - [ ] Physics engine
-                    - [ ] Kinematic and Static rect
-                - [ ] Deltas send
-        - [ ] Client
+            - [X] Game loop
+            - [X] Client Input+Duration receive
+            - [X] Physics engine
+                - [X] Kinematic and Static rect
+                - [X] Movement
+                - [ ] Collisions
+            - [ ] Data send
+                - [X] Full level
+                - [ ] Deltas
+                    - [ ] Velocity
+                    - [ ] Position
+        - [X] Client
             - [X] Level messages handling and level draw
             - [X] Game loop
             - [X] Controls
                 - [X] Frontend controls bindings
                 - [X] Send input right after server message
-            - [ ] Objects position interpolation every Client-Tick based on Server-Tick amount
+            - [ ] Smooth out rects movement
+                - [X] Interpolation
+                - [ ] Velocity prediction
+                - [ ] Divergence tolerance
+                - [ ] Divergence correction
 
 - [ ] Admin page
     - [ ] UI

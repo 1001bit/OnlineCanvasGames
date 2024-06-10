@@ -32,7 +32,7 @@ func (roomNode *RoomNode) clientsFlow(requester GameNodeRequester, stopTimer *ti
 			go requester.RequestUpdatingRoomsJSON()
 
 			// Notify the gamelogic about new client
-			go roomNode.gamelogic.JoinClient(client.GetUser().ID, roomNode)
+			roomNode.gamelogic.JoinClient(client.GetUser().ID, roomNode)
 
 			log.Println("<RoomNode +Client>:", len(roomNode.Clients.IDMap))
 
@@ -42,6 +42,9 @@ func (roomNode *RoomNode) clientsFlow(requester GameNodeRequester, stopTimer *ti
 
 			// Request updaing GameNode's RoomsJSON
 			go requester.RequestUpdatingRoomsJSON()
+
+			// Notify the gamelogic about client disconnect
+			roomNode.gamelogic.DeleteClient(client.GetUser().ID, roomNode)
 
 			log.Println("<RoomNode -Client>:", len(roomNode.Clients.IDMap))
 

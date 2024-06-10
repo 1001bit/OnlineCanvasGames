@@ -11,7 +11,6 @@ class GameCanvas {
         
         this.drawablesLayers = new DrawablesLayers(1)
         this.camera = new KinematicRect()
-        this.kinematicRects = [this.camera]
 
         this.mousePos = new Vector2(0, 0)
 
@@ -46,33 +45,26 @@ class GameCanvas {
     }
 
     setCameraPos(x, y){
-        this.camera.setCurrentPos(x, y)
+        this.camera.setTargetPos(x, y)
+    }
+
+    getCameraPos(){
+        return this.camera.getPosition()
     }
 
     draw(){
         const ctx = this.ctx
         this.clear()
 
-        ctx.save()
-        ctx.translate(-this.camera.left, -this.camera.top) // for some reason, it has to be a negative value
+        const cameraPos = this.camera.getPosition()
 
-        // there is no need for interpolation for now, using 1 for alpha
-        this.interpolateKinematics(1)
+
+        ctx.save()
+        ctx.translate(-cameraPos.x, -cameraPos.y) // for some reason, it has to be a negative value
 
         this.drawablesLayers.draw(ctx)
 
         ctx.restore()
-    }
-
-    interpolateKinematics(alpha){
-        // updating prevPos each tick for now
-        this.kinematicRects.forEach(rect => {
-            rect.updatePrevPos()
-        })
-
-        this.kinematicRects.forEach(rect => {
-            rect.interpolate(alpha)
-        })
     }
 
     clear(){
@@ -104,7 +96,7 @@ class GameCanvas {
     }
 
     getLevelMousePos(){
-        let cameraPos = this.camera.position
+        let cameraPos = this.camera.getPosition()
         let mousePos = this.mousePos
 
         return new Vector2(cameraPos.x + mousePos.x, cameraPos.y + mousePos.y)

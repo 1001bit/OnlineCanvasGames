@@ -6,23 +6,25 @@ import (
 )
 
 type PlatformerGL struct {
-	level          *Level
-	ticksPerSecond int
-}
+	level      *Level
+	tps        int
+	maxPlayers int
 
-type GameInfo struct {
-	TPS int `json:"tps"`
+	inputChan chan gamelogic.UserInput
 }
 
 func NewPlatformerGL() *PlatformerGL {
 	return &PlatformerGL{
-		level:          NewPlatformerLevel(),
-		ticksPerSecond: 20,
+		level:      NewPlatformerLevel(),
+		tps:        20,
+		maxPlayers: 2,
+
+		inputChan: make(chan gamelogic.UserInput),
 	}
 }
 
 func (gl *PlatformerGL) Run(doneChan <-chan struct{}, writer gamelogic.RoomWriter) {
-	go gl.gameLoop(doneChan)
+	go gl.gameLoop(doneChan, writer)
 
 	<-doneChan
 }
@@ -30,19 +32,21 @@ func (gl *PlatformerGL) Run(doneChan <-chan struct{}, writer gamelogic.RoomWrite
 func (gl *PlatformerGL) HandleReadMessage(msg rtclient.MessageWithClient, writer gamelogic.RoomWriter) {
 	switch msg.Message.Type {
 	case "input":
-		gl.handleInputMessage(msg.Message.Body, msg.Client.GetUser().ID)
+		gamelogic.ExtractInputFromMsg(msg.Message.Body, msg.Client.GetUser().ID, gl.inputChan)
 	}
 }
 
 func (gl *PlatformerGL) JoinClient(userID int, writer gamelogic.RoomWriter) {
-	gameinfo := GameInfo{
-		TPS: gl.ticksPerSecond,
-	}
+	rectID := gl.level.CreatePlayer(userID)
 
-	writer.WriteMessageTo(gamelogic.NewGameInfoMessage(gameinfo), userID)
-	writer.WriteMessageTo(NewLevelMessage(gl.level), userID)
+	writer.WriteMessageTo(gl.NewGameInfoMessage(rectID), userID)
+	writer.WriteMessageTo(gl.NewFullLevelMessage(), userID)
+}
+
+func (gl *PlatformerGL) DeleteClient(userID int, writer gamelogic.RoomWriter) {
+	gl.level.DeletePlayer(userID)
 }
 
 func (gl *PlatformerGL) GetMaxClients() int {
-	return 2
+	return gl.maxPlayers
 }

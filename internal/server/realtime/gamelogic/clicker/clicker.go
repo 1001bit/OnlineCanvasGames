@@ -7,12 +7,14 @@ import (
 )
 
 type ClickerGL struct {
-	clicks uint
+	clicks     uint
+	maxPlayers int
 }
 
 func NewClickerGL() *ClickerGL {
 	return &ClickerGL{
-		clicks: 0,
+		clicks:     0,
+		maxPlayers: 10,
 	}
 }
 
@@ -31,8 +33,12 @@ func (gl *ClickerGL) JoinClient(userID int, writer gamelogic.RoomWriter) {
 	writer.WriteMessageTo(gl.newStateMessage(), userID)
 }
 
+func (gl *ClickerGL) DeleteClient(userID int, writer gamelogic.RoomWriter) {
+
+}
+
 func (gl *ClickerGL) GetMaxClients() int {
-	return 10
+	return gl.maxPlayers
 }
 
 func (gl *ClickerGL) newStateMessage() *message.JSON {
