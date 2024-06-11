@@ -7,10 +7,6 @@ class RectangleShape {
         this.color = RGB(255, 255, 255) 
     }
 
-    setPosition(left, top){
-        this.rect.setPosition(left, top)
-    }
-
     setSize(width, height){
         this.rect.setSize(width, height)
     }

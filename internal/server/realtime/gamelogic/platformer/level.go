@@ -1,49 +1,32 @@
 package platformer
 
 import (
+	"errors"
+
 	"github.com/1001bit/OnlineCanvasGames/internal/physics"
 )
 
+var ErrNoPlayer = errors.New("no such player")
+
 const (
-	friction = 0.9
+	friction = 0.001
 	gForce   = 1
 )
 
 type Level struct {
-	physEnv     physics.Environment
-	publicRects map[int]*physics.Rect
+	physEnv physics.Environment
 
 	playersRects map[int]int
 }
 
 func NewPlatformerLevel() *Level {
 	level := &Level{
-		physEnv:     *physics.NewEnvironment(friction, gForce),
-		publicRects: make(map[int]*physics.Rect),
+		physEnv: *physics.NewEnvironment(friction, gForce),
 
 		playersRects: make(map[int]int),
 	}
 
 	return level
-}
-
-func (l *Level) InsertRect(r *physics.Rect, id int, public bool) {
-	l.physEnv.InsertRect(r, id)
-	if public {
-		l.publicRects[id] = r
-	}
-}
-
-func (l *Level) InsertKinematicRect(kr *physics.KinematicRect, id int, public bool) {
-	l.physEnv.InsertKinematicRect(kr, id)
-	if public {
-		l.publicRects[id] = kr.GetRect()
-	}
-}
-
-func (l *Level) DeleteRect(id int) {
-	l.physEnv.DeleteRect(id)
-	delete(l.publicRects, id)
 }
 
 func (l *Level) CreatePlayer(userID int) int {
@@ -53,26 +36,24 @@ func (l *Level) CreatePlayer(userID int) int {
 
 	rectID := len(l.playersRects)
 
-	inner := physics.NewRect(100*float64(rectID), 100, 100, 100)
+	inner := physics.MakeRect(100*float64(rectID), 100, 100, 100)
 	kinRect := physics.NewKinematicRect(inner, false, false, true)
 
-	l.InsertKinematicRect(kinRect, rectID, true)
+	l.physEnv.InsertKinematicRect(kinRect, rectID)
 
 	l.playersRects[userID] = rectID
 
 	return rectID
 }
 
-func (l *Level) DeletePlayer(userID int) {
+func (l *Level) DeletePlayer(userID int) (int, error) {
 	rectID, ok := l.playersRects[userID]
 	if !ok {
-		return
+		return 0, ErrNoPlayer
 	}
 
 	delete(l.playersRects, userID)
-	l.DeleteRect(rectID)
-}
+	l.physEnv.DeleteRect(rectID)
 
-func (l *Level) GetPublicRects() map[int]*physics.Rect {
-	return l.publicRects
+	return rectID, nil
 }

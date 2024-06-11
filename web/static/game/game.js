@@ -1,9 +1,9 @@
 class Game {
-    constructor(gameID, roomID){
+    constructor(gameID, roomID, layers){
         this.active = true
         this.websocket = new GameWebSocket(gameID, roomID)
         this.gui = new Gui()
-        this.canvas = new GameCanvas("canvas")
+        this.canvas = new GameCanvas("canvas", layers)
 
         this.initWebsocket()
     }

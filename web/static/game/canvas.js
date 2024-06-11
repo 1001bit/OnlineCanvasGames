@@ -3,13 +3,17 @@ function lerp(a, b, alpha){
 }
 
 class GameCanvas {
-    constructor(canvasID) {
+    constructor(canvasID, layersCount) {
         this.active = true
 
         this.canvas = document.getElementById(canvasID)
         this.ctx = this.canvas.getContext("2d")
         
-        this.drawablesLayers = new DrawablesLayers(1)
+        this.layers = []
+        for (let i = 0; i < layersCount; i++){
+            this.layers.push(new Map())
+        }
+
         this.camera = new KinematicRect()
 
         this.mousePos = new Vector2(0, 0)
@@ -22,8 +26,6 @@ class GameCanvas {
             this.updateMousePos(e)
         })
     }
-
-    gameUpdate = () => {}
 
     stop(){
         this.active = false
@@ -44,12 +46,18 @@ class GameCanvas {
         this.draw()
     }
 
-    setCameraPos(x, y){
-        this.camera.setTargetPos(x, y)
+    insertDrawable(drawable, layer, id){
+        this.layers[layer].set(id, drawable)
     }
 
-    getCameraPos(){
-        return this.camera.getPosition()
+    deleteDrawable(id){
+        this.layers.forEach(layer => {
+            layer.delete(id)
+        })
+    }
+
+    setCameraPos(x, y){
+        this.camera.setTargetPos(x, y)
     }
 
     draw(){
@@ -58,11 +66,14 @@ class GameCanvas {
 
         const cameraPos = this.camera.getPosition()
 
-
         ctx.save()
         ctx.translate(-cameraPos.x, -cameraPos.y) // for some reason, it has to be a negative value
 
-        this.drawablesLayers.draw(ctx)
+        this.layers.forEach(layer => {
+            layer.forEach(drawable => {
+                drawable.draw(ctx)
+            })
+        })
 
         ctx.restore()
     }
@@ -78,10 +89,6 @@ class GameCanvas {
 
     setBackgroundColor(color){
         this.backgroundColor = color
-    }
-
-    setLayersCount(layers){
-        this.drawablesLayers = new DrawablesLayers(layers)
     }
 
     updateMousePos(e){
@@ -100,5 +107,9 @@ class GameCanvas {
         let mousePos = this.mousePos
 
         return new Vector2(cameraPos.x + mousePos.x, cameraPos.y + mousePos.y)
+    }
+
+    getCameraPos(){
+        return this.camera.getPosition()
     }
 }

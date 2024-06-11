@@ -1,9 +1,9 @@
 const gameID = $("main").data("game-id")
 const roomID = $("main").data("room-id")
+const layers = 2
 
-const game = new Game(gameID, roomID)
+const game = new Game(gameID, roomID, layers)
 
-game.canvas.setLayersCount(2)
 game.canvas.setBackgroundColor(RGB(60, 70, 70))
 
 button = new RectangleShape(300, 200, false)

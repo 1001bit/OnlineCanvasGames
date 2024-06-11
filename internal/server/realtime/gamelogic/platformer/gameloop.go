@@ -27,11 +27,11 @@ func (gl *PlatformerGL) gameLoop(doneChan <-chan struct{}, writer gamelogic.Room
 		select {
 		case <-ticker.C:
 			gl.handleInput()
-			gl.level.physEnv.Tick(float64(time.Since(lastTick)) / 1000000)
+			dtMs := float64(time.Since(lastTick)) / 1000000
 
-			// TODO: Send deltas instead of full level
-			// TODO: Add teleport parameter to rect, if no interpolation is needed
-			writer.GlobalWriteMessage(gl.NewFullLevelMessage())
+			gl.level.physEnv.Tick(dtMs)
+			// TODO: send deltas instead of full level
+			writer.GlobalWriteMessage(gl.NewLevelMessage())
 
 			lastTick = time.Now()
 		case <-doneChan:

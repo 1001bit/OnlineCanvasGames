@@ -17,28 +17,6 @@ class Level {
         this.controls = new Controls()
     }
 
-    handleLevelMessage(body, websocket) {
-        this.updateKinematics()
-        this.accumulator = 0
-
-        for (const key in body){
-            let rectID = parseInt(key)
-            if(this.staticRects.has(rectID)){
-                this.staticRects.get(rectID).setPosition(body[key].x, body[key].y)
-                this.staticRects.get(rectID).setSize(body[key].w, body[key].h)
-            }
-            if(this.kinematicRects.has(rectID)){
-                this.kinematicRects.get(rectID).setTargetPos(body[key].x, body[key].y)
-                this.kinematicRects.get(rectID).setSize(body[key].w, body[key].h)
-            }
-        }
-
-        websocket.sendMessage("input", this.controls.getControlsJSON())
-        this.controls.clear()
-
-        return body
-    }
-
     setTPS(client, server){
         this.clientTPS = client
         this.serverTPS = server
@@ -61,6 +39,7 @@ class Level {
     }
 
     updateKinematics(){
+        this.accumulator = 0
         this.kinematicRects.forEach((kinRect) => {
             kinRect.updatePrevPos()
         })
@@ -74,7 +53,7 @@ class Level {
     }
 
     insertDrawable(drawable, layer, id){
-        this.canvas.drawablesLayers.insertDrawable(drawable, layer)
+        this.canvas.insertDrawable(drawable, layer, id)
 
         if(drawable.rect.isKinematic()){
             this.kinematicRects.set(id, drawable.rect)
@@ -83,8 +62,10 @@ class Level {
         }
     }
 
-    rectExists(id){
-        return this.kinematicRects.has(id) || this.staticRects.has(id)
+    deleteDrawable(id){
+        this.canvas.drawablesLayers.deleteDrawable(id)
+        this.kinematicRects.delete(id)
+        this.staticRects.delete(id)
     }
 
     tick(){

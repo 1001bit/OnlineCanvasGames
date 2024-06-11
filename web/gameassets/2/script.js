@@ -1,8 +1,8 @@
 const gameID = $("main").data("game-id")
 const roomID = $("main").data("room-id")
+const layers = 2
 
-const game = new Game(gameID, roomID)
-game.canvas.setLayersCount(2)
+const game = new Game(gameID, roomID, layers)
 game.canvas.setBackgroundColor(RGB(30, 200, 200))
 
 const level = new Level(game.canvas)
@@ -15,31 +15,57 @@ level.controls.bindControl("s", "down")
 let playerRectID = -1
 
 function handleLevelMessage(body){
-    // get all the rects from the message
-    let rects = level.handleLevelMessage(body, game.websocket)
-
-    // iterate over all the rects
-    for (const key in rects){
-        let rectID = parseInt(key)
-
-        // is rectID is in "player" range, and the rect doesn't exist yet, create new player rect
-        if (rectID < level.playersLimit && !level.rectExists(rectID)){
-            const player = new RectangleShape(0, 0, true)
-            level.insertDrawable(player, 0, rectID)
-        }
+    if(!("kinematic" in body) || !("static" in body)){
+        return
     }
 
-    // bind camera to player rect if it exists
-    if (level.rectExists(playerRectID)){
-        let playerPos = level.kinematicRects.get(playerRectID).getPosition()
-        // game.canvas.setCameraPos(playerPos.x - this.canvas.width/2 + 50, playerPos.y - this.canvas.height/2 + 50)
+    level.updateKinematics()
+    game.websocket.sendMessage("input", level.controls.getControlsJSON())
+    level.controls.clear()
+
+    let kinematic = body.kinematic
+    let static = body.static
+
+    for (idStr in kinematic){
+        let rectID = parseInt(idStr)
+        let clientRect = 0;
+        let serverRect = kinematic[idStr]
+
+        if (!level.kinematicRects.has(rectID)){
+            let rectangle = new RectangleShape(serverRect.size.x, serverRect.size.y, true)
+            level.insertDrawable(rectangle, 0, rectID)
+            clientRect = rectangle.rect
+        } else {
+            clientRect = level.kinematicRects.get(rectID)
+        }
+        
+        clientRect.setTargetPos(serverRect.position.x, serverRect.position.y, false)
+    }
+    for (idStr in static){
+        let rectID = parseInt(idStr)
+        let clientRect = 0;
+        let serverRect = static[idStr]
+
+        if (!level.kinematicRects.has(rectID)){
+            let rectangle = new RectangleShape(serverRect.size.x, serverRect.size.y, false)
+            level.insertDrawable(rectangle, 0, rectID)
+            clientRect = rectangle.rect
+        } else {
+            clientRect = level.kinematicRects.get(rectID)
+        }
+
+        clientRect.setPosition(serverRect.position.x, serverRect.position.y)
     }
 }
 
 function handleGameInfoMessage(body){
-    level.setTPS(90, body.tps)
+    level.setTPS(60, body.tps)
     level.setPlayersLimit(body.limit)
     playerRectID = body.rectID
+}
+
+function handleDeleteMessage(body){
+    level.deleteDrawable(parseInt(body))
 }
 
 // on server message
@@ -51,6 +77,10 @@ game.handleGameMessage = (type, body) => {
 
         case "level":
             handleLevelMessage(body);
+            break;
+
+        case "delete":
+            handleDeleteMessage(body);
             break;
 
         default:
