@@ -45,30 +45,7 @@ class Rect {
 class KinematicRect extends Rect {
     constructor(){
         super()
-        this.previousPos = new Vector2(0, 0)
-        this.targetPos = new Vector2(0, 0)
-    }
-
-    setTargetPos(x, y, teleport){
-        this.targetPos.setPosition(x, y)
-
-        if (teleport) {
-            this.setPosition(x, y)
-            this.updatePrevPos()
-        }
-    }
-
-    updatePrevPos(){
-        this.previousPos.setPosition(this.targetPos.x, this.targetPos.y)
-    }
-
-    interpolate(alpha){
-        let prev = this.previousPos
-        let targ = this.targetPos
-
-        let posX = lerp(prev.x, targ.x, alpha) 
-        let posY = lerp(prev.y, targ.y, alpha)
-        this.setPosition(posX, posY)
+        this.velocity = new Vector2(0, 0)
     }
 
     isKinematic(){

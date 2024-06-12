@@ -6,7 +6,6 @@ import (
 )
 
 type GameInfo struct {
-	TPS    int `json:"tps"`
 	Limit  int `json:"limit"`
 	RectID int `json:"rectID"`
 }
@@ -14,6 +13,11 @@ type GameInfo struct {
 type LevelData struct {
 	StaticRects    map[int]*physics.Rect          `json:"static"`
 	KinematicRects map[int]*physics.KinematicRect `json:"kinematic"`
+}
+
+type CreateData struct {
+	ID   int                    `json:"id"`
+	Rect *physics.KinematicRect `json:"rect"`
 }
 
 func (gl *PlatformerGL) NewLevelMessage() *message.JSON {
@@ -26,6 +30,13 @@ func (gl *PlatformerGL) NewLevelMessage() *message.JSON {
 	}
 }
 
+func (gl *PlatformerGL) NewDeltasMessage(deltas map[int]*physics.KinematicRect) *message.JSON {
+	return &message.JSON{
+		Type: "deltas",
+		Body: deltas,
+	}
+}
+
 func (gl *PlatformerGL) NewDeleteMessage(rectID int) *message.JSON {
 	return &message.JSON{
 		Type: "delete",
@@ -33,11 +44,20 @@ func (gl *PlatformerGL) NewDeleteMessage(rectID int) *message.JSON {
 	}
 }
 
+func (gl *PlatformerGL) NewCreateMessage(rectID int, rect *physics.KinematicRect) *message.JSON {
+	return &message.JSON{
+		Type: "create",
+		Body: CreateData{
+			ID:   rectID,
+			Rect: rect,
+		},
+	}
+}
+
 func (gl *PlatformerGL) NewGameInfoMessage(playerRectID int) *message.JSON {
 	return &message.JSON{
 		Type: "gameinfo",
 		Body: GameInfo{
-			TPS:    gl.tps,
 			Limit:  gl.maxPlayers,
 			RectID: playerRectID,
 		},

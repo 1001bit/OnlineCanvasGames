@@ -7,8 +7,9 @@ import (
 
 type PlatformerGL struct {
 	level      *Level
-	tps        int
 	maxPlayers int
+
+	tps int
 
 	inputChan chan gamelogic.UserInput
 }
@@ -16,15 +17,18 @@ type PlatformerGL struct {
 func NewPlatformerGL() *PlatformerGL {
 	return &PlatformerGL{
 		level:      NewPlatformerLevel(),
-		tps:        200,
 		maxPlayers: 2,
+
+		tps: 60,
 
 		inputChan: make(chan gamelogic.UserInput),
 	}
 }
 
 func (gl *PlatformerGL) Run(doneChan <-chan struct{}, writer gamelogic.RoomWriter) {
-	go gl.gameLoop(doneChan, writer)
+	go gamelogic.Gameloop(func(dtMs float64) {
+		gl.tick(dtMs, writer)
+	}, gl.tps, doneChan)
 
 	<-doneChan
 }
@@ -41,6 +45,10 @@ func (gl *PlatformerGL) JoinClient(userID int, writer gamelogic.RoomWriter) {
 
 	writer.WriteMessageTo(gl.NewGameInfoMessage(rectID), userID)
 	writer.WriteMessageTo(gl.NewLevelMessage(), userID)
+
+	rect := gl.level.physEnv.GetKinematicRects()[gl.level.playersRects[rectID]]
+
+	writer.GlobalWriteMessage(gl.NewCreateMessage(rectID, rect))
 }
 
 func (gl *PlatformerGL) DeleteClient(userID int, writer gamelogic.RoomWriter) {

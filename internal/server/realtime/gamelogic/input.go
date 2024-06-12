@@ -5,12 +5,17 @@ import (
 )
 
 type Control struct {
-	HoldPeriod float64 `json:"holdPeriod"`
+	IsHeld bool `json:"isHeld"`
 }
 
 type UserInput struct {
 	Controls map[string]Control
 	UserID   int
+}
+
+func (input UserInput) IsControlHeld(id string) bool {
+	control, ok := input.Controls[id]
+	return ok && control.IsHeld
 }
 
 func ExtractInputFromMsg(body any, userID int, inputChan chan<- UserInput) {

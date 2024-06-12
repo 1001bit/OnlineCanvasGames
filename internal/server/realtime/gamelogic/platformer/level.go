@@ -8,11 +8,6 @@ import (
 
 var ErrNoPlayer = errors.New("no such player")
 
-const (
-	friction = 0.001
-	gForce   = 1
-)
-
 type Level struct {
 	physEnv physics.Environment
 
@@ -21,7 +16,7 @@ type Level struct {
 
 func NewPlatformerLevel() *Level {
 	level := &Level{
-		physEnv: *physics.NewEnvironment(friction, gForce),
+		physEnv: *physics.NewEnvironment(),
 
 		playersRects: make(map[int]int),
 	}

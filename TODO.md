@@ -39,11 +39,11 @@
                 - [X] Kinematic and Static rect
                 - [X] Movement
                 - [ ] Collisions
-            - [ ] Data send
+                - [ ] Gravity
+            - [X] Data send
                 - [X] Full level
-                - [ ] Deltas
-                    - [ ] Velocity
-                    - [ ] Position
+                - [X] Deltas
+                - [X] Rect Delete/Create
         - [X] Client
             - [X] Level messages handling and level draw
             - [X] Game loop
@@ -51,7 +51,6 @@
                 - [X] Frontend controls bindings
                 - [X] Send input right after server message
             - [ ] Smooth out rects movement
-                - [X] Interpolation
                 - [ ] Velocity prediction
                 - [ ] Divergence tolerance
                 - [ ] Divergence correction

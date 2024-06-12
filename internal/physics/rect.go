@@ -15,8 +15,7 @@ func MakeRect(x, y, w, h float64) Rect {
 type KinematicRect struct {
 	Rect
 
-	Velocity     Vector2f `json:"velocity"`
-	acceleration Vector2f
+	Velocity Vector2f `json:"velocity"`
 
 	doApplyGravity    bool
 	doApplyCollisions bool
@@ -27,8 +26,7 @@ func NewKinematicRect(rect Rect, gravity, collisions, friction bool) *KinematicR
 	return &KinematicRect{
 		Rect: rect,
 
-		Velocity:     Vector2f{0, 0},
-		acceleration: Vector2f{0, 0},
+		Velocity: Vector2f{0, 0},
 
 		doApplyGravity:    gravity,
 		doApplyCollisions: collisions,
@@ -36,28 +34,30 @@ func NewKinematicRect(rect Rect, gravity, collisions, friction bool) *KinematicR
 	}
 }
 
-func (kr *KinematicRect) AddToAccel(add Vector2f) {
-	kr.acceleration.Add(add)
+func (kr *KinematicRect) AddToVel(add Vector2f) {
+	kr.Velocity.Add(add)
 }
 
 func (kr *KinematicRect) GetRect() Rect {
 	return kr.Rect
 }
 
-func (kr *KinematicRect) applyGravityToAccel(dtMs, force float64) {
+func (kr *KinematicRect) applyGravityToVel(dtMs, force float64) {
 	if !kr.doApplyGravity {
 		return
 	}
 
-	kr.acceleration.Y += force * dtMs
+	kr.Velocity.Y += force * dtMs
 }
 
-func (kr *KinematicRect) applyAccelToVel() {
-	kr.Velocity.Add(kr.acceleration)
-	kr.acceleration.X = 0
-	kr.acceleration.Y = 0
+func (kr *KinematicRect) applyFrictionToVel(friction float64) {
+	if !kr.doApplyFriction {
+		return
+	}
+
+	kr.Velocity.Add(kr.Velocity.Scale(-friction))
 }
 
 func (kr *KinematicRect) applyVelToPos(dtMs float64) {
-	kr.Rect.Position.Add(kr.Velocity.GetProduct(dtMs))
+	kr.Rect.Position.Add(kr.Velocity.Scale(dtMs))
 }

@@ -1,10 +1,8 @@
 class Level {
-    constructor(canvas){
+    constructor(canvas, tps){
         this.canvas = canvas
 
-        this.serverTPS = 0
-        this.clientTPS = 0
-        this.accumulator = 0
+        setInterval(() => {this.tick()}, 1000/tps)
 
         this.playersLimit = 0
 
@@ -17,39 +15,12 @@ class Level {
         this.controls = new Controls()
     }
 
-    setTPS(client, server){
-        this.clientTPS = client
-        this.serverTPS = server
-
-        this.timer.getDeltaTime()
-        setInterval(() => {this.tick()}, 1000/this.clientTPS)
-    }
-
     setPlayersLimit(limit){
         this.playersLimit = limit
     }
 
     update(dt){
-        this.controls.updateHoldTime(dt)
-        this.accumulator += dt
-        let alpha = this.accumulator/(1000/this.serverTPS)
-        this.interpolateKinematic(alpha)
-
-        this.controls.updatePressedStatus()
-    }
-
-    updateKinematics(){
-        this.accumulator = 0
-        this.kinematicRects.forEach((kinRect) => {
-            kinRect.updatePrevPos()
-        })
-    }
-
-    interpolateKinematic(alpha){
-        alpha = Math.min(alpha, 1)
-        this.kinematicRects.forEach((kinRect) => {
-            kinRect.interpolate(alpha)
-        })
+        // TODO: Something here
     }
 
     insertDrawable(drawable, layer, id){
@@ -63,7 +34,7 @@ class Level {
     }
 
     deleteDrawable(id){
-        this.canvas.drawablesLayers.deleteDrawable(id)
+        this.canvas.deleteDrawable(id)
         this.kinematicRects.delete(id)
         this.staticRects.delete(id)
     }

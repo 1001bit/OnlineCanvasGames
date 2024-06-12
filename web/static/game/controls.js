@@ -1,17 +1,7 @@
 class Control {
     constructor(){
-        this.isPressed = false
         this.isHeld = false
-
-        this.holdPeriod = 0
     }
-}
-
-function controlValueReplacer(key, value){
-    let exceptions = new Set(["isHeld", "isPressed"])
-    if(exceptions.has(key)) return undefined
-
-    return value
 }
 
 class Controls {
@@ -28,7 +18,6 @@ class Controls {
             }
 
             let control = this.controls.get(this.bindings.get(e.key))
-            control.isPressed = true
             control.isHeld = true
         })
 
@@ -47,7 +36,6 @@ class Controls {
         this.controls.set(control, new Control())
     }
 
-    // is held
     isHeld(control) {
         if (!this.controls.has(control)){
             return false
@@ -55,35 +43,7 @@ class Controls {
         return this.controls.get(control).isHeld
     }
 
-    // was pressed before server update
-    isPressed(control) {
-        if (!this.controls.has(control)){
-            return false
-        }
-        return this.controls.get(control).isPressed
-    }
-
-    updateHoldTime(dt){
-        this.controls.forEach((control) => {
-            if(control.isHeld){
-                control.holdPeriod += dt
-            }
-        })
-    }
-
-    updatePressedStatus(){
-        this.controls.forEach((control) => {
-            control.isPressed = false
-        })
-    }
-
-    clear(){
-        this.controls.forEach((control) => {
-            control.holdPeriod = 0
-        })
-    }
-
     getControlsJSON(){
-        return JSON.stringify(Object.fromEntries(this.controls.entries()), controlValueReplacer)
+        return JSON.stringify(Object.fromEntries(this.controls.entries()))
     }
 }

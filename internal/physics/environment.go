@@ -3,18 +3,12 @@ package physics
 type Environment struct {
 	staticRects    map[int]*Rect
 	kinematicRects map[int]*KinematicRect
-
-	friction float64
-	gForce   float64
 }
 
-func NewEnvironment(friction, gForce float64) *Environment {
+func NewEnvironment() *Environment {
 	return &Environment{
 		staticRects:    make(map[int]*Rect),
 		kinematicRects: make(map[int]*KinematicRect),
-
-		friction: friction,
-		gForce:   gForce,
 	}
 }
 
