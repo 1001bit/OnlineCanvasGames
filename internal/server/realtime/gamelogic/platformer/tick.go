@@ -7,7 +7,7 @@ import (
 func (gl *PlatformerGL) tick(dtMs float64, writer gamelogic.RoomWriter) {
 	var (
 		friction = 0.92
-		gForce   = 1.0
+		gForce   = 0.5
 	)
 
 	gl.handleInput()

@@ -15,11 +15,16 @@ type PlatformerGL struct {
 }
 
 func NewPlatformerGL() *PlatformerGL {
+	const (
+		maxPlayers = 2
+		tps        = 20
+	)
+
 	return &PlatformerGL{
 		level:      NewPlatformerLevel(),
-		maxPlayers: 2,
+		maxPlayers: maxPlayers,
 
-		tps: 60,
+		tps: tps,
 
 		inputChan: make(chan gamelogic.UserInput),
 	}
@@ -41,12 +46,12 @@ func (gl *PlatformerGL) HandleReadMessage(msg rtclient.MessageWithClient, writer
 }
 
 func (gl *PlatformerGL) JoinClient(userID int, writer gamelogic.RoomWriter) {
-	rectID := gl.level.CreatePlayer(userID)
+	rectID := gl.level.CreatePlayer(userID, gl.maxPlayers)
 
 	writer.WriteMessageTo(gl.NewGameInfoMessage(rectID), userID)
 	writer.WriteMessageTo(gl.NewLevelMessage(), userID)
 
-	rect := gl.level.physEnv.GetKinematicRects()[gl.level.playersRects[rectID]]
+	rect := gl.level.physEnv.GetKinematicRects()[rectID]
 
 	writer.GlobalWriteMessage(gl.NewCreateMessage(rectID, rect))
 }

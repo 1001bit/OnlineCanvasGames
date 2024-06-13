@@ -1,8 +1,8 @@
 class Level {
-    constructor(canvas, tps){
+    constructor(canvas){
         this.canvas = canvas
 
-        setInterval(() => {this.tick()}, 1000/tps)
+        requestAnimationFrame(() => this.tick())
 
         this.playersLimit = 0
 
@@ -20,7 +20,10 @@ class Level {
     }
 
     update(dt){
-        // TODO: Something here
+        this.kinematicRects.forEach(kRect => {
+            kRect.applyVelToPos(dt)
+            kRect.pullToServerPos(dt)
+        })
     }
 
     insertDrawable(drawable, layer, id){
@@ -44,5 +47,6 @@ class Level {
         this.update(dt)
 
         this.canvas.draw()
+        requestAnimationFrame(() => this.tick())
     }
 }

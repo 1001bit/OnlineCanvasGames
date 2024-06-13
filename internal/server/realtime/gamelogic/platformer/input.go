@@ -5,7 +5,7 @@ import (
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/gamelogic"
 )
 
-const playerSpeed = 0.3
+const playerSpeed = 5
 
 func (gl *PlatformerGL) handleInput() {
 	for {

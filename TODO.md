@@ -39,7 +39,6 @@
                 - [X] Kinematic and Static rect
                 - [X] Movement
                 - [ ] Collisions
-                - [ ] Gravity
             - [X] Data send
                 - [X] Full level
                 - [X] Deltas
@@ -50,10 +49,10 @@
             - [X] Controls
                 - [X] Frontend controls bindings
                 - [X] Send input right after server message
-            - [ ] Smooth out rects movement
-                - [ ] Velocity prediction
-                - [ ] Divergence tolerance
-                - [ ] Divergence correction
+            - [X] Smooth out rects movement
+                - [X] Velocity prediction
+                - [X] Divergence correction
+            - [ ] Player controls prediction
 
 - [ ] Admin page
     - [ ] UI

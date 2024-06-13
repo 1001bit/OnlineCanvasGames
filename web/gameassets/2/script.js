@@ -14,7 +14,19 @@ level.controls.bindControl("s", "down")
 
 let playerRectID = -1
 
-let timer = new DeltaTimer()
+function createKinematicRect(serverRect, rectID){
+    let rectangle = new RectangleShape(serverRect.size.x, serverRect.size.y, true)
+    rectangle.rect.setPosition(serverRect.position.x, serverRect.position.y)
+    rectangle.rect.setServerPos(serverRect.position.x, serverRect.position.y)
+
+    level.insertDrawable(rectangle, 0, rectID)
+}
+
+function createStaticRect(serverRect, rectID){
+    let rectangle = new RectangleShape(serverRect.size.x, serverRect.size.y, false)
+    level.insertDrawable(rectangle, 0, rectID)
+    rectangle.rect.setPosition(serverRect.position.x, serverRect.position.y)
+}
 
 function handleLevelMessage(body){
     if(!("kinematic" in body) || !("static" in body)){
@@ -28,17 +40,13 @@ function handleLevelMessage(body){
         let rectID = parseInt(idStr)
         let serverRect = kinematic[idStr]
 
-        let rectangle = new RectangleShape(serverRect.size.x, serverRect.size.y, true)
-        level.insertDrawable(rectangle, 0, rectID)
-        rectangle.rect.setPosition(serverRect.position.x, serverRect.position.y)
+        createKinematicRect(serverRect, rectID)
     }
     for (idStr in static){
         let rectID = parseInt(idStr)
         let serverRect = static[idStr]
 
-        let rectangle = new RectangleShape(serverRect.size.x, serverRect.size.y, false)
-        level.insertDrawable(rectangle, 0, rectID)
-        rectangle.rect.setPosition(serverRect.position.x, serverRect.position.y)
+        createStaticRect(serverRect, rectID)
     }
 }
 
@@ -49,13 +57,16 @@ function handleDeleteMessage(body){
 function handleCreateMessage(body){
     let serverRect = body.rect
     let rectID = parseInt(body.id)
-    if (level.kinematicRects.has(rectID) || rectID in level.staticRects.has(rectID)){
+
+    if (level.kinematicRects.has(rectID) || level.staticRects.has(rectID)){
         return
     }
 
-    let rectangle = new RectangleShape(serverRect.size.x, serverRect.size.y, "velocity" in body)
-    level.insertDrawable(rectangle, 0, rectID)
-    rectangle.rect.setPosition(serverRect.position.x, serverRect.position.y)
+    if ("velocity" in body.rect){
+        createKinematicRect(body.rect, rectID)
+    } else {
+        createStaticRect(body.rect, rectID)
+    }
 }
 
 function handleDeltasMessage(body){
@@ -68,7 +79,8 @@ function handleDeltasMessage(body){
         }
         let serverRect = body[idStr]
 
-        level.kinematicRects.get(rectID).setPosition(serverRect.position.x, serverRect.position.y)
+        level.kinematicRects.get(rectID).setServerPos(serverRect.position.x, serverRect.position.y)
+        level.kinematicRects.get(rectID).setVelocity(serverRect.velocity.x, serverRect.velocity.y)
     }
 }
 

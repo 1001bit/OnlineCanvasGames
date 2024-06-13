@@ -24,15 +24,21 @@ func NewPlatformerLevel() *Level {
 	return level
 }
 
-func (l *Level) CreatePlayer(userID int) int {
+func (l *Level) CreatePlayer(userID int, playersLimit int) int {
+	const (
+		applyGravity    = false
+		applyCollisions = true
+		applyFriction   = true
+	)
+
 	if rectID, ok := l.playersRects[userID]; ok {
 		return rectID
 	}
 
-	rectID := len(l.playersRects)
+	rectID := l.getFreePlayerRectID(playersLimit)
 
 	inner := physics.MakeRect(100*float64(rectID), 100, 100, 100)
-	kinRect := physics.NewKinematicRect(inner, false, false, true)
+	kinRect := physics.NewKinematicRect(inner, applyGravity, applyCollisions, applyFriction)
 
 	l.physEnv.InsertKinematicRect(kinRect, rectID)
 
@@ -51,4 +57,18 @@ func (l *Level) DeletePlayer(userID int) (int, error) {
 	l.physEnv.DeleteRect(rectID)
 
 	return rectID, nil
+}
+
+func (l *Level) getFreePlayerRectID(playersLimit int) int {
+	occupiedIDs := make([]bool, playersLimit)
+	for _, v := range l.playersRects {
+		occupiedIDs[v] = true
+	}
+
+	for id, occupied := range occupiedIDs {
+		if !occupied {
+			return id
+		}
+	}
+	return -1
 }
