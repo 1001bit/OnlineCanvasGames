@@ -54,19 +54,23 @@ class KinematicRect extends Rect {
         this.velocity.y = y
     }
 
+    setPosition(x, y){
+        super.setPosition(x, y)
+        this.setServerPos(x, y)
+    }
+
     setServerPos(x, y){
         this.serverPos.x = x
         this.serverPos.y = y
     }
 
     applyVelToPos(dt){
-        let posX = this.position.x + this.velocity.x * dt
-        let posY = this.position.y + this.velocity.y * dt
-        this.setPosition(posX, posY)
+        this.position.x += this.velocity.x * dt
+        this.position.y += this.velocity.y * dt
     }
 
     pullToServerPos(dt){
-        const approachFactor = 0.8
+        const approachFactor = 0.9
 
         let blend = Math.pow(approachFactor, dt)
         this.position.x = lerp(this.position.x, this.serverPos.x, blend)

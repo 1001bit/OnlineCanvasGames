@@ -9,23 +9,15 @@ const level = new Level(game.canvas)
 
 level.controls.bindControl("d", "right")
 level.controls.bindControl("a", "left")
-level.controls.bindControl("w", "up")
-level.controls.bindControl("s", "down")
+level.controls.bindControl("w", "jump")
+level.controls.bindControl(" ", "jump")
 
 let playerRectID = -1
 
-function createKinematicRect(serverRect, rectID){
-    let rectangle = new RectangleShape(serverRect.size.x, serverRect.size.y, true)
+function createRect(serverRect, rectID, kinematic){
+    let rectangle = new RectangleShape(serverRect.size.x, serverRect.size.y, kinematic)
     rectangle.rect.setPosition(serverRect.position.x, serverRect.position.y)
-    rectangle.rect.setServerPos(serverRect.position.x, serverRect.position.y)
-
     level.insertDrawable(rectangle, 0, rectID)
-}
-
-function createStaticRect(serverRect, rectID){
-    let rectangle = new RectangleShape(serverRect.size.x, serverRect.size.y, false)
-    level.insertDrawable(rectangle, 0, rectID)
-    rectangle.rect.setPosition(serverRect.position.x, serverRect.position.y)
 }
 
 function handleLevelMessage(body){
@@ -40,13 +32,13 @@ function handleLevelMessage(body){
         let rectID = parseInt(idStr)
         let serverRect = kinematic[idStr]
 
-        createKinematicRect(serverRect, rectID)
+        createRect(serverRect, rectID, true)
     }
     for (idStr in static){
         let rectID = parseInt(idStr)
         let serverRect = static[idStr]
 
-        createStaticRect(serverRect, rectID)
+        createRect(serverRect, rectID, false)
     }
 }
 
@@ -63,9 +55,9 @@ function handleCreateMessage(body){
     }
 
     if ("velocity" in body.rect){
-        createKinematicRect(body.rect, rectID)
+        createRect(serverRect, rectID, true)
     } else {
-        createStaticRect(body.rect, rectID)
+        createRect(serverRect, rectID, false)
     }
 }
 
@@ -79,6 +71,7 @@ function handleDeltasMessage(body){
         }
         let serverRect = body[idStr]
 
+        // level.kinematicRects.get(rectID).setPosition(serverRect.position.x, serverRect.position.y)
         level.kinematicRects.get(rectID).setServerPos(serverRect.position.x, serverRect.position.y)
         level.kinematicRects.get(rectID).setVelocity(serverRect.velocity.x, serverRect.velocity.y)
     }

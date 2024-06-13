@@ -5,8 +5,6 @@ import (
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/gamelogic"
 )
 
-const playerSpeed = 5
-
 func (gl *PlatformerGL) handleInput() {
 	for {
 		select {
@@ -19,6 +17,11 @@ func (gl *PlatformerGL) handleInput() {
 }
 
 func (l *Level) controlPlayerRect(input gamelogic.UserInput) {
+	const (
+		playerSpeed = 5
+		jumpForce   = 3
+	)
+
 	rectID := l.playersRects[input.UserID]
 	playerKRect, ok := l.physEnv.GetKinematicRects()[rectID]
 	if !ok {
@@ -36,11 +39,8 @@ func (l *Level) controlPlayerRect(input gamelogic.UserInput) {
 	if input.IsControlHeld("right") {
 		add.X += playerSpeed
 	}
-	if input.IsControlHeld("up") {
-		add.Y -= playerSpeed
-	}
-	if input.IsControlHeld("down") {
-		add.Y += playerSpeed
+	if input.IsControlHeld("jump") && playerKRect.GetCollisionDir().Vertical == physics.Down {
+		add.Y -= jumpForce
 	}
 
 	playerKRect.AddToVel(add)

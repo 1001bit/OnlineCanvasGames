@@ -32,13 +32,13 @@
         - [X] "Show nav bar" button
     - [X] Limit players amount
     - [ ] Multiplayer platformer game
-        - [ ] Server
+        - [X] Server
             - [X] Game loop
             - [X] Client Input+Duration receive
             - [X] Physics engine
                 - [X] Kinematic and Static rect
                 - [X] Movement
-                - [ ] Collisions
+                - [X] Collisions
             - [X] Data send
                 - [X] Full level
                 - [X] Deltas
@@ -52,7 +52,7 @@
             - [X] Smooth out rects movement
                 - [X] Velocity prediction
                 - [X] Divergence correction
-            - [ ] Player controls prediction
+                - [ ] Something else, probably based on prediction
 
 - [ ] Admin page
     - [ ] UI
