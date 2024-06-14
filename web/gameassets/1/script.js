@@ -9,11 +9,11 @@ game.canvas.setBackgroundColor(RGB(60, 70, 70))
 button = new RectangleShape(300, 200, false)
 button.setColor(RGB(150, 150, 40))
 button.setPosition((window.innerWidth - button.rect.size.x)/2, (window.innerHeight - button.rect.size.y)/2)
-game.canvas.drawablesLayers.insertDrawable(button, 0)
+game.canvas.insertDrawable(button, 0)
 
 text = new Text("0 clicks", 48)
 text.setPosition(button.rect.position.x + 10, button.rect.position.y + 10)
-game.canvas.drawablesLayers.insertDrawable(text, 1)
+game.canvas.insertDrawable(text, 1)
 
 let clicks = 0
 function click(newClicks){

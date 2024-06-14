@@ -11,6 +11,10 @@ class RectangleShape {
         this.rect.setSize(width, height)
     }
 
+    setPosition(left, top){
+        this.rect.setPosition(left, top)
+    }
+
     setColor(color){
         this.color = color
     }
