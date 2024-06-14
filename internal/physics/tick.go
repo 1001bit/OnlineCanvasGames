@@ -6,9 +6,10 @@ func (e *Environment) Tick(dtMs, friction, gForce float64) map[int]*KinematicRec
 	for id, kRect := range e.kinematicRects {
 		kRect.applyGravityToVel(dtMs, gForce)
 		kRect.applyFrictionToVel(friction)
-		e.applyCollisions(kRect, dtMs)
 
 		kRect.applyVelToPos(dtMs)
+
+		e.applyCollisions(kRect, dtMs)
 
 		didRound := kRect.Velocity.RoundToZero(0.0001)
 

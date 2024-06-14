@@ -71,9 +71,7 @@ function handleDeltasMessage(body){
         }
         let serverRect = body[idStr]
 
-        // level.kinematicRects.get(rectID).setPosition(serverRect.position.x, serverRect.position.y)
-        level.kinematicRects.get(rectID).setServerPos(serverRect.position.x, serverRect.position.y)
-        level.kinematicRects.get(rectID).setVelocity(serverRect.velocity.x, serverRect.velocity.y)
+        level.kinematicRects.get(rectID).setPosition(serverRect.position.x, serverRect.position.y)
     }
 }
 

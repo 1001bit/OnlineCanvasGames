@@ -49,10 +49,7 @@
             - [X] Controls
                 - [X] Frontend controls bindings
                 - [X] Send input right after server message
-            - [X] Smooth out rects movement
-                - [X] Velocity prediction
-                - [X] Divergence correction
-                - [ ] Something else, probably based on prediction
+            - [ ] Smooth out rects movement
 
 - [ ] Admin page
     - [ ] UI

@@ -20,10 +20,7 @@ class Level {
     }
 
     update(dt){
-        this.kinematicRects.forEach(kRect => {
-            kRect.applyVelToPos(dt)
-            kRect.pullToServerPos(dt)
-        })
+        // TODO: some prediction here
     }
 
     insertDrawable(drawable, layer, id){
