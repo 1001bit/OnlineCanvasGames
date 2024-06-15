@@ -6,9 +6,17 @@ import (
 )
 
 func (gl *PlatformerGL) handleInput() {
+	handledClients := make(map[int]bool)
+
 	for {
 		select {
 		case input := <-gl.inputChan:
+			// protect from handling input from same user more than once
+			if _, ok := handledClients[input.UserID]; ok {
+				continue
+			}
+			handledClients[input.UserID] = true
+
 			gl.level.controlPlayerRect(input)
 		default:
 			return

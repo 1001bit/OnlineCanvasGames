@@ -15,12 +15,14 @@ class Level {
         this.controls = new Controls()
     }
 
+    updateKinematics = dt => {} 
+
     setPlayersLimit(limit){
         this.playersLimit = limit
     }
 
     update(dt){
-        // TODO: some prediction here
+        this.updateKinematics(dt)
     }
 
     insertDrawable(drawable, layer, id){

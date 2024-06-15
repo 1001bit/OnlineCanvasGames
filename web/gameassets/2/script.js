@@ -75,6 +75,10 @@ function handleDeltasMessage(body){
     }
 }
 
+level.updateKinematics = dt => {
+    
+}
+
 function handleGameInfoMessage(body){
     level.setPlayersLimit(body.limit)
     playerRectID = body.rectID

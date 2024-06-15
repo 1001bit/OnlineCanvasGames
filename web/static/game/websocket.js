@@ -21,6 +21,10 @@ class GameWebSocket {
     }
 
     sendMessage(type, body){
+        if(this.websocket.readyState !== WebSocket.OPEN){
+            return
+        }
+
         this.websocket.send(JSON.stringify({
             type: type,
             body: body,
