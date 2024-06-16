@@ -6,8 +6,7 @@ import (
 )
 
 type GameInfo struct {
-	Limit  int `json:"limit"`
-	RectID int `json:"rectID"`
+	PlayerRectID int `json:"rectID"`
 }
 
 type LevelData struct {
@@ -58,8 +57,7 @@ func (gl *PlatformerGL) NewGameInfoMessage(playerRectID int) *message.JSON {
 	return &message.JSON{
 		Type: "gameinfo",
 		Body: GameInfo{
-			Limit:  gl.maxPlayers,
-			RectID: playerRectID,
+			PlayerRectID: playerRectID,
 		},
 	}
 }

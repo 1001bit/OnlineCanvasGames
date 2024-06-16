@@ -71,6 +71,7 @@ class GameCanvas {
 
         this.layers.forEach(layer => {
             layer.forEach(drawable => {
+                console.log(1)
                 drawable.draw(ctx)
             })
         })

@@ -1,113 +1,129 @@
-const gameID = $("main").data("game-id")
-const roomID = $("main").data("room-id")
-const layers = 2
+class Platformer {
+    constructor(){
+        const layers = 2
 
-const game = new Game(gameID, roomID, layers)
-game.canvas.setBackgroundColor(RGB(30, 200, 200))
+        this.game = new Game(layers)
+        this.game.canvas.setBackgroundColor(RGB(30, 200, 200))
 
-const level = new Level(game.canvas)
+        this.controls = new Controls()
+        this.bindControls()
 
-level.controls.bindControl("d", "right")
-level.controls.bindControl("a", "left")
-level.controls.bindControl("w", "jump")
-level.controls.bindControl(" ", "jump")
+        this.level = new Level(this.game.canvas)
 
-let playerRectID = -1
-
-function createRect(serverRect, rectID, kinematic){
-    let rectangle = new RectangleShape(serverRect.size.x, serverRect.size.y, kinematic)
-    rectangle.rect.setPosition(serverRect.position.x, serverRect.position.y)
-    level.insertDrawable(rectangle, 0, rectID)
-}
-
-function handleLevelMessage(body){
-    if(!("kinematic" in body) || !("static" in body)){
-        return
+        this.websocket = new GameWebSocket()
+        const gameID = $("main").data("game-id")
+        const roomID = $("main").data("room-id")
+        this.initWebsocket(gameID, roomID)
     }
 
-    let kinematic = body.kinematic
-    let static = body.static
+    bindControls(){
+        const controls = this.controls
 
-    for (idStr in kinematic){
-        let rectID = parseInt(idStr)
-        let serverRect = kinematic[idStr]
-
-        createRect(serverRect, rectID, true)
-    }
-    for (idStr in static){
-        let rectID = parseInt(idStr)
-        let serverRect = static[idStr]
-
-        createRect(serverRect, rectID, false)
-    }
-}
-
-function handleDeleteMessage(body){
-    level.deleteDrawable(parseInt(body))
-}
-
-function handleCreateMessage(body){
-    let serverRect = body.rect
-    let rectID = parseInt(body.id)
-
-    if (level.kinematicRects.has(rectID) || level.staticRects.has(rectID)){
-        return
+        controls.bindControl("d", "right")
+        controls.bindControl("a", "left")
+        controls.bindControl("w", "jump")
+        controls.bindControl(" ", "jump")
     }
 
-    if ("velocity" in body.rect){
-        createRect(serverRect, rectID, true)
-    } else {
-        createRect(serverRect, rectID, false)
+    initWebsocket(gameID, roomID){
+        this.game.initWebsocket(this.websocket, gameID, roomID, (type, body) => {
+            switch (type) {
+                case "gameinfo":
+                    this.handleGameInfoMessage(body);
+                    break;
+        
+                case "level":
+                    this.handleLevelMessage(body);
+                    break;
+        
+                case "deltas":
+                    this.handleDeltasMessage(body);
+                    break;
+        
+                case "delete":
+                    this.handleDeleteMessage(body);
+                    break;
+        
+                case "create":
+                    this.handleCreateMessage(body);
+                    break;
+        
+                default:
+                    break;
+            }
+        })
     }
-}
 
-function handleDeltasMessage(body){
-    game.websocket.sendMessage("input", level.controls.getControlsJSON())
+    createRect(serverRect, rectID, kinematic){
+        const level = this.level
 
-    for (idStr in body){
-        let rectID = parseInt(idStr)
-        if(!level.kinematicRects.has(rectID)){
-            continue
+        let rectangle = new RectangleShape(serverRect.size.x, serverRect.size.y, kinematic)
+        rectangle.rect.setPosition(serverRect.position.x, serverRect.position.y)
+        level.insertDrawable(rectangle, 0, rectID)
+    }
+
+    handleLevelMessage(body){
+        if(!("kinematic" in body) || !("static" in body)){
+            return
         }
-        let serverRect = body[idStr]
-
-        level.kinematicRects.get(rectID).setPosition(serverRect.position.x, serverRect.position.y)
-    }
-}
-
-level.updateKinematics = dt => {
     
-}
+        let kinematicRects = body.kinematic
+        let staticRects = body.static
+    
+        for (const idStr in kinematicRects){
+            let rectID = parseInt(idStr)
+            let serverRect = kinematicRects[idStr]
+    
+            this.createRect(serverRect, rectID, true)
+        }
+        for (const idStr in staticRects){
+            let rectID = parseInt(idStr)
+            let serverRect = staticRects[idStr]
+    
+            this.createRect(serverRect, rectID, false)
+        }
+    }
 
-function handleGameInfoMessage(body){
-    level.setPlayersLimit(body.limit)
-    playerRectID = body.rectID
-}
+    handleDeleteMessage(body){
+        this.level.deleteDrawable(parseInt(body))
+    }
 
-// on server message
-game.handleGameMessage = (type, body) => {
-    switch (type) {
-        case "gameinfo":
-            handleGameInfoMessage(body);
-            break;
+    handleCreateMessage(body){
+        const level = this.level
 
-        case "level":
-            handleLevelMessage(body);
-            break;
+        let serverRect = body.rect
+        let rectID = parseInt(body.id)
+    
+        if (level.kinematicRects.has(rectID) || level.staticRects.has(rectID)){
+            return
+        }
+    
+        if ("velocity" in body.rect){
+            this.createRect(serverRect, rectID, true)
+        } else {
+            this.createRect(serverRect, rectID, false)
+        }
+    }
 
-        case "deltas":
-            handleDeltasMessage(body);
-            break;
+    handleDeltasMessage(body){
+        const level = this.level
 
-        case "delete":
-            handleDeleteMessage(body);
-            break;
+        this.websocket.sendMessage("input", this.controls.getControlsJSON())
+    
+        for (const idStr in body){
+            let rectID = parseInt(idStr)
+            if(!level.kinematicRects.has(rectID)){
+                continue
+            }
+            let serverRect = body[idStr]
+    
+            level.kinematicRects.get(rectID).setPosition(serverRect.position.x, serverRect.position.y)
+        }
+    }
 
-        case "create":
-            handleCreateMessage(body);
-            break;
-
-        default:
-            break;
+    handleGameInfoMessage(body){
+        this.playerRectID = body.rectID
     }
 }
+
+const platformer = new Platformer()

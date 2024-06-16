@@ -4,26 +4,15 @@ class Level {
 
         requestAnimationFrame(() => this.tick())
 
-        this.playersLimit = 0
-
         this.kinematicRects = new Map([
             [50, canvas.camera]
         ])
         this.staticRects = new Map()
 
         this.timer = new DeltaTimer()
-        this.controls = new Controls()
     }
 
-    updateKinematics = dt => {} 
-
-    setPlayersLimit(limit){
-        this.playersLimit = limit
-    }
-
-    update(dt){
-        this.updateKinematics(dt)
-    }
+    updateKinematics = dt => {}
 
     insertDrawable(drawable, layer, id){
         this.canvas.insertDrawable(drawable, layer, id)
@@ -43,7 +32,7 @@ class Level {
 
     tick(){
         let dt = this.timer.getDeltaTime()
-        this.update(dt)
+        this.updateKinematics(dt)
 
         this.canvas.draw()
         requestAnimationFrame(() => this.tick())

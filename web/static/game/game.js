@@ -1,35 +1,18 @@
 class Game {
-    constructor(gameID, roomID, layers){
+    constructor(layers){
         this.active = true
-        this.websocket = new GameWebSocket(gameID, roomID)
         this.gui = new Gui()
         this.canvas = new GameCanvas("canvas", layers)
-
-        this.initWebsocket()
     }
 
-    handleGameMessage = (type, body) => {} 
-
-    initWebsocket(){
-        this.websocket.handleClose = () => {
-            this.stopWithText("Connection closed!")
+    initWebsocket(websocket, gameID, roomID, callback){
+        websocket.handleClose = (body) => {
+            this.stopWithText(body)
         }
 
-        this.websocket.handleError = () => {
-            this.stopWithText("Something went wrong!")
-        }
+        websocket.handleMessage = callback
 
-        this.websocket.handleMessage = (msg) => {
-            this.handleRawMessage(msg)
-        }
-    }
-
-    handleRawMessage(msg){
-        if (msg.type == "close"){
-            this.stopWithText(msg.body)
-            return
-        }
-        this.handleGameMessage(msg.type, msg.body)
+        websocket.openConnection(gameID, roomID)
     }
 
     stopWithText(text){

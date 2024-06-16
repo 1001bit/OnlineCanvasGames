@@ -1,5 +1,7 @@
 class GameWebSocket {
-    constructor(gameID, roomID){
+    constructor(){}
+
+    openConnection(gameID, roomID){
         const protocol = location.protocol == "https:" ? "wss:" : "ws:" 
 
         this.websocket = new WebSocket(`${protocol}//${document.location.host}/rt/ws/game/${gameID}/room/${roomID}`)
@@ -8,15 +10,17 @@ class GameWebSocket {
         ws.onopen = (e) => {}
 
         ws.onclose = (e) => {
-            this.handleClose()
+            this.handleClose("Connection closed")
         }
 
         ws.onerror = (e) => {
-            this.handleError()
+            this.handleClose("Something went wrong")
         }
 
         ws.onmessage = (e) => {
-            this.handleMessage(JSON.parse(e.data))
+            const CLOSE = "close"
+            const data = JSON.parse(e.data)
+            data.type == CLOSE ? this.handleClose(data.body) : this.handleMessage(data.type, data.body)
         }
     }
 
@@ -31,7 +35,6 @@ class GameWebSocket {
         }))
     }
 
-    handleClose = () => {}
-    handleError = () => {}
-    handleMessage = (msg) => {}
+    handleClose = (body) => {}
+    handleMessage = (type, body) => {}
 }
