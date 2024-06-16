@@ -4,8 +4,6 @@ function lerp(a, b, alpha){
 
 class GameCanvas {
     constructor(canvasID, layersCount) {
-        this.active = true
-
         this.canvas = document.getElementById(canvasID)
         this.ctx = this.canvas.getContext("2d")
         
@@ -14,12 +12,9 @@ class GameCanvas {
             this.layers.push(new Map())
         }
 
-        this.camera = new KinematicRect()
-
         this.mousePos = new Vector2(0, 0)
 
         this.resize()
-
         window.addEventListener('resize', () => this.resize(), false);
 
         $(document).mousemove(e => {
@@ -28,16 +23,10 @@ class GameCanvas {
     }
 
     stop(){
-        this.active = false
-        this.clear()
         this.canvas.remove()
     }
 
-    resize (){
-        if(!this.active){
-            return
-        }
-
+    resize(){
         const canvas = this.canvas
 
         canvas.width = window.innerWidth
@@ -56,27 +45,16 @@ class GameCanvas {
         })
     }
 
-    setCameraPos(x, y){
-        this.camera.setTargetPos(x, y)
-    }
-
     draw(){
         const ctx = this.ctx
+
         this.clear()
-
-        const cameraPos = this.camera.getPosition()
-
-        ctx.save()
-        ctx.translate(-cameraPos.x, -cameraPos.y) // for some reason, it has to be a negative value
 
         this.layers.forEach(layer => {
             layer.forEach(drawable => {
-                console.log(1)
                 drawable.draw(ctx)
             })
         })
-
-        ctx.restore()
     }
 
     clear(){
@@ -101,16 +79,5 @@ class GameCanvas {
 
     getMousePos(){
         return this.mousePos
-    }
-
-    getLevelMousePos(){
-        let cameraPos = this.camera.getPosition()
-        let mousePos = this.mousePos
-
-        return new Vector2(cameraPos.x + mousePos.x, cameraPos.y + mousePos.y)
-    }
-
-    getCameraPos(){
-        return this.camera.getPosition()
     }
 }

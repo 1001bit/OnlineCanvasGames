@@ -2,13 +2,16 @@ class Platformer {
     constructor(){
         const layers = 2
 
-        this.game = new Game(layers)
-        this.game.canvas.setBackgroundColor(RGB(30, 200, 200))
+        this.canvas = new GameCanvas("canvas", layers)
+        this.canvas.setBackgroundColor(RGB(30, 100, 100))
 
         this.controls = new Controls()
         this.bindControls()
 
-        this.level = new Level(this.game.canvas)
+        this.level = new Level()
+        
+        this.updater = new Updater()
+        this.updater.tick(dt => this.update(dt))
 
         this.websocket = new GameWebSocket()
         const gameID = $("main").data("game-id")
@@ -25,8 +28,12 @@ class Platformer {
         controls.bindControl(" ", "jump")
     }
 
+    update(dt) {
+        this.canvas.draw()
+    }
+
     initWebsocket(gameID, roomID){
-        this.game.initWebsocket(this.websocket, gameID, roomID, (type, body) => {
+        this.websocket.handleMessage = (type, body) => {
             switch (type) {
                 case "gameinfo":
                     this.handleGameInfoMessage(body);
@@ -51,15 +58,34 @@ class Platformer {
                 default:
                     break;
             }
-        })
+        }
+
+        this.websocket.handleClose = (body) => {
+            this.stopWithText(body)
+        }
+
+        this.websocket.openConnection(gameID, roomID)
     }
 
-    createRect(serverRect, rectID, kinematic){
+    stopWithText(text){
+        this.canvas.stop()
+        roomGui.showMessage(text)
+        roomGui.setNavBarVisibility(true)
+    }
+
+    createRectangleShape(serverRect, rectID, kinematic){
         const level = this.level
 
         let rectangle = new RectangleShape(serverRect.size.x, serverRect.size.y, kinematic)
-        rectangle.rect.setPosition(serverRect.position.x, serverRect.position.y)
-        level.insertDrawable(rectangle, 0, rectID)
+        rectangle.setPosition(serverRect.position.x, serverRect.position.y)
+
+        if(kinematic){
+            level.insertKinematicRect(rectID, rectangle.rect)
+        } else {
+            level.insertStaticRect(rectID, rectangle.rect)
+        }
+
+        this.canvas.insertDrawable(rectangle, 0, rectID)
     }
 
     handleLevelMessage(body){
@@ -74,18 +100,21 @@ class Platformer {
             let rectID = parseInt(idStr)
             let serverRect = kinematicRects[idStr]
     
-            this.createRect(serverRect, rectID, true)
+            this.createRectangleShape(serverRect, rectID, true)
         }
         for (const idStr in staticRects){
             let rectID = parseInt(idStr)
             let serverRect = staticRects[idStr]
     
-            this.createRect(serverRect, rectID, false)
+            this.createRectangleShape(serverRect, rectID, false)
         }
     }
 
     handleDeleteMessage(body){
-        this.level.deleteDrawable(parseInt(body))
+        let rectID = parseInt(body)
+
+        this.level.deleteRect(rectID)
+        this.canvas.deleteDrawable(rectID)
     }
 
     handleCreateMessage(body){
@@ -97,12 +126,8 @@ class Platformer {
         if (level.kinematicRects.has(rectID) || level.staticRects.has(rectID)){
             return
         }
-    
-        if ("velocity" in body.rect){
-            this.createRect(serverRect, rectID, true)
-        } else {
-            this.createRect(serverRect, rectID, false)
-        }
+        
+        this.createRectangleShape(serverRect, rectID, "velocity" in body.rect)
     }
 
     handleDeltasMessage(body){
@@ -126,4 +151,4 @@ class Platformer {
     }
 }
 
-const platformer = new Platformer()
+new Platformer()
