@@ -49,8 +49,8 @@
             - [X] Controls
                 - [X] Frontend controls bindings
                 - [X] Send input right after server message
-            - [ ] Smooth out rects movement
-                - [ ] Physics class, that replicates server physics (instead of existing level)
+            - [ ] Smooth rect movements
+                - [ ] Physics class, which replicates server physics (instead of existing level)
                 - [ ] Correct position every 5 seconds
 
 - [ ] Admin page
