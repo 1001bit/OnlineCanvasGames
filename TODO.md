@@ -54,7 +54,7 @@
                 - [ ] Correct position every 5 seconds
 
 - [ ] Admin page
-    - [ ] UI
+    - [ ] Front end
     - [ ] SSE
     - [ ] RT nodes control
     - [ ] Users control
