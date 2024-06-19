@@ -40,7 +40,9 @@
                 - [X] Movement
                 - [X] Collisions
             - [X] Data send
-                - [X] Full level
+                - [X] Info
+                    - [X] Level
+                    - [ ] Physics Constants
                 - [X] Deltas
                 - [X] Rect Delete/Create
         - [X] Client
@@ -50,7 +52,8 @@
                 - [X] Frontend controls bindings
                 - [X] Send input right after server message
             - [ ] Smooth rect movements
-                - [ ] Physics class, which replicates server physics (instead of existing level)
+                - [ ] Physics class, which replicates server's physics (instead of existing "level" class)
+                    - [ ] Use server's constants to replicate behavior
                 - [ ] Correct position every 5 seconds
 
 - [ ] Admin page
