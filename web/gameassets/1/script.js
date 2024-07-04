@@ -1,24 +1,24 @@
 class Clicker {
     constructor(){
         const layers = 2
+        
         this.clicks = 0
 
         this.canvas = new GameCanvas("canvas", layers)
         this.canvas.setBackgroundColor(RGB(60, 70, 70))
 
-        this.updater = new Updater()
-        this.updater.tick(dt => this.update(dt))
-
         this.websocket = new GameWebSocket()
-
         const gameID = $("main").data("game-id")
         const roomID = $("main").data("room-id")
         this.initWebsocket(gameID, roomID)
 
         this.initDrawables()
+
+        this.ticker = new Ticker()
+        this.ticker.tick(dt => this.tick(dt))
     }
 
-    update(dt){
+    tick(dt){
         this.canvas.draw()
     }
 

@@ -1,24 +1,22 @@
-class Control {
-    constructor(){
-        this.isHeld = false
-    }
-}
-
 class Controls {
     constructor(){
-        this.controls = new Map()
+        // using map instead of set here because golang doesn't have set implementation yet
+        this.heldControls = new Map()
         this.bindings = new Map()
 
+        // on key press
         document.addEventListener("keypress", (e) => {
+            // only single press
             if (e.repeat) {
                 return
             }
+            // if no key in bindings
             if(!this.bindings.has(e.key)){
                 return
             }
 
-            let control = this.controls.get(this.bindings.get(e.key))
-            control.isHeld = true
+            // get control from binding
+            this.heldControls.set(this.bindings.get(e.key), true)
         })
 
         document.addEventListener("keyup", (e) => {
@@ -26,24 +24,19 @@ class Controls {
                 return
             }
 
-            let control = this.controls.get(this.bindings.get(e.key))
-            control.isHeld = false
+            this.heldControls.delete(this.bindings.get(e.key))
         })
     }
 
     bindControl(key, control){
         this.bindings.set(key, control)
-        this.controls.set(control, new Control())
     }
 
     isHeld(control) {
-        if (!this.controls.has(control)){
-            return false
-        }
-        return this.controls.get(control).isHeld
+        return this.heldControls.has(control)
     }
 
-    getControlsJSON(){
-        return JSON.stringify(Object.fromEntries(this.controls.entries()))
+    getHeldControls(){
+        return this.heldControls
     }
 }

@@ -74,7 +74,6 @@ func (kr *KinematicRect) applyFrictionToVel(friction float64) {
 		return
 	}
 
-	// TODO: air friction
 	kr.Velocity.X -= kr.Velocity.X * friction
 }
 

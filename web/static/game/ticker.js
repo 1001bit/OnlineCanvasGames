@@ -1,4 +1,4 @@
-class Updater {
+class Ticker {
     constructor() {
         this.timer = new DeltaTimer()
     }

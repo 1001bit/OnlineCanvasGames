@@ -12,5 +12,7 @@ func (gl *PlatformerGL) tick(dtMs float64, writer gamelogic.RoomWriter) {
 
 	gl.handleInput()
 	deltas := gl.level.physEnv.Tick(dtMs, friction, gForce)
-	writer.GlobalWriteMessage(gl.NewDeltasMessage(deltas))
+	if len(deltas) > 0 {
+		writer.GlobalWriteMessage(gl.NewDeltasMessage(deltas))
+	}
 }

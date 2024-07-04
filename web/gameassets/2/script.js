@@ -2,6 +2,8 @@ class Platformer {
     constructor(){
         const layers = 2
 
+        this.canSendControls = true
+
         this.canvas = new GameCanvas("canvas", layers)
         this.canvas.setBackgroundColor(RGB(30, 100, 100))
 
@@ -9,14 +11,14 @@ class Platformer {
         this.bindControls()
 
         this.level = new Level()
-        
-        this.updater = new Updater()
-        this.updater.tick(dt => this.update(dt))
 
         this.websocket = new GameWebSocket()
         const gameID = $("main").data("game-id")
         const roomID = $("main").data("room-id")
         this.initWebsocket(gameID, roomID)
+
+        this.ticker = new Ticker()
+        this.ticker.tick(dt => this.tick(dt))
     }
 
     bindControls(){
@@ -26,10 +28,6 @@ class Platformer {
         controls.bindControl("a", "left")
         controls.bindControl("w", "jump")
         controls.bindControl(" ", "jump")
-    }
-
-    update(dt) {
-        this.canvas.draw()
     }
 
     initWebsocket(gameID, roomID){
@@ -65,6 +63,19 @@ class Platformer {
         }
 
         this.websocket.openConnection(gameID, roomID)
+    }
+
+    tick(dt) {
+        if(this.canSendControls){
+            let heldControls = this.controls.getHeldControls()
+            if(heldControls.size > 0){
+                let json = JSON.stringify(Object.fromEntries(heldControls.entries()))
+                this.websocket.sendMessage("input", json)
+                this.canSendControls = false
+            }
+        }
+
+        this.canvas.draw()
     }
 
     stopWithText(text){
@@ -133,7 +144,7 @@ class Platformer {
     handleDeltasMessage(body){
         const level = this.level
 
-        this.websocket.sendMessage("input", this.controls.getControlsJSON())
+        this.canSendControls = true
     
         for (const idStr in body){
             let rectID = parseInt(idStr)

@@ -4,6 +4,8 @@ func (e *Environment) Tick(dtMs, friction, gForce float64) map[int]*KinematicRec
 	deltas := make(map[int]*KinematicRect)
 
 	for id, kRect := range e.kinematicRects {
+		startVelocity := kRect.Velocity
+
 		kRect.applyGravityToVel(dtMs, gForce)
 		kRect.applyFrictionToVel(friction)
 
@@ -11,9 +13,9 @@ func (e *Environment) Tick(dtMs, friction, gForce float64) map[int]*KinematicRec
 
 		e.applyCollisions(kRect, dtMs)
 
-		didRound := kRect.Velocity.RoundToZero(0.0001)
+		kRect.Velocity.RoundToZero(0.0001)
 
-		if kRect.Velocity.X != 0 || kRect.Velocity.Y != 0 || didRound {
+		if kRect.Velocity != startVelocity {
 			deltas[id] = kRect
 		}
 	}

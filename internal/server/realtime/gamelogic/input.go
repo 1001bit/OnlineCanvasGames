@@ -4,22 +4,18 @@ import (
 	"encoding/json"
 )
 
-type Control struct {
-	IsHeld bool `json:"isHeld"`
-}
-
 type UserInput struct {
-	Controls map[string]Control
+	Controls map[string]bool
 	UserID   int
 }
 
 func (input UserInput) IsControlHeld(id string) bool {
-	control, ok := input.Controls[id]
-	return ok && control.IsHeld
+	_, ok := input.Controls[id]
+	return ok
 }
 
 func ExtractInputFromMsg(body any, userID int, inputChan chan<- UserInput) {
-	inputMap := make(map[string]Control)
+	inputMap := make(map[string]bool)
 
 	err := json.Unmarshal([]byte(body.(string)), &inputMap)
 	if err != nil {

@@ -17,17 +17,13 @@ func (v2 *Vector2f) Add(otherV2 Vector2f) {
 	v2.Y += otherV2.Y
 }
 
-func (v2 *Vector2f) RoundToZero(num float64) bool {
-	result := false
-	if math.Abs(v2.X) <= num {
+func (v2 *Vector2f) RoundToZero(num float64) {
+	if math.Abs(v2.X) <= num && v2.X != 0 {
 		v2.X = 0
-		result = true
 	}
-	if math.Abs(v2.Y) <= num {
+	if math.Abs(v2.Y) <= num && v2.Y != 0 {
 		v2.Y = 0
-		result = true
 	}
-	return result
 }
 
 func (v2 Vector2f) Scale(scalar float64) Vector2f {
