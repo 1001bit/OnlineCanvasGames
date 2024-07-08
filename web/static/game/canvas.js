@@ -7,10 +7,11 @@ class GameCanvas {
         this.canvas = document.getElementById(canvasID)
         this.ctx = this.canvas.getContext("2d")
         
-        this.layers = []
+        this.layers = new Array()
         for (let i = 0; i < layersCount; i++){
             this.layers.push(new Map())
         }
+        this.drawables = new Map()
 
         this.mousePos = new Vector2(0, 0)
 
@@ -36,10 +37,12 @@ class GameCanvas {
     }
 
     insertDrawable(drawable, layer, id){
+        this.drawables.set(id, drawable)
         this.layers[layer].set(id, drawable)
     }
 
     deleteDrawable(id){
+        this.drawables.delete(id)
         this.layers.forEach(layer => {
             layer.delete(id)
         })
@@ -79,5 +82,13 @@ class GameCanvas {
 
     getMousePos(){
         return this.mousePos
+    }
+
+    drawableExists(id){
+        return this.drawables.has(id)
+    }
+
+    getDrawable(id){
+        return this.drawables.get(id)
     }
 }

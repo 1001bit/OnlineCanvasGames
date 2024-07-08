@@ -48,7 +48,7 @@ func (gl *PlatformerGL) HandleReadMessage(msg rtclient.MessageWithClient, writer
 func (gl *PlatformerGL) JoinClient(userID int, writer gamelogic.RoomWriter) {
 	rectID := gl.level.CreatePlayer(userID, gl.maxPlayers)
 
-	writer.WriteMessageTo(gl.NewGameInfoMessage(rectID), userID)
+	writer.WriteMessageTo(gl.NewGameInfoMessage(rectID, platformerConstants), userID)
 	writer.WriteMessageTo(gl.NewLevelMessage(), userID)
 
 	rect := gl.level.physEnv.GetKinematicRects()[rectID]

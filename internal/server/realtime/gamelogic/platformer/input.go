@@ -25,11 +25,6 @@ func (gl *PlatformerGL) handleInput() {
 }
 
 func (l *Level) controlPlayerRect(input gamelogic.UserInput) {
-	const (
-		playerSpeed = 5
-		jumpForce   = 3
-	)
-
 	rectID := l.playersRects[input.UserID]
 	playerKRect, ok := l.physEnv.GetKinematicRects()[rectID]
 	if !ok {
@@ -42,13 +37,13 @@ func (l *Level) controlPlayerRect(input gamelogic.UserInput) {
 	}
 
 	if input.IsControlHeld("left") {
-		add.X -= playerSpeed
+		add.X -= platformerConstants.PlayerSpeed
 	}
 	if input.IsControlHeld("right") {
-		add.X += playerSpeed
+		add.X += platformerConstants.PlayerSpeed
 	}
 	if input.IsControlHeld("jump") && playerKRect.GetCollisionDir().Vertical == physics.Down {
-		add.Y -= jumpForce
+		add.Y -= platformerConstants.PlayerJump
 	}
 
 	playerKRect.AddToVel(add)

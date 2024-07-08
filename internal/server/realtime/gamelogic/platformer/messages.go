@@ -6,7 +6,8 @@ import (
 )
 
 type GameInfo struct {
-	PlayerRectID int `json:"rectID"`
+	PlayerRectID int       `json:"rectID"`
+	Constants    Constants `json:"constants"`
 }
 
 type LevelData struct {
@@ -53,11 +54,12 @@ func (gl *PlatformerGL) NewCreateMessage(rectID int, rect *physics.KinematicRect
 	}
 }
 
-func (gl *PlatformerGL) NewGameInfoMessage(playerRectID int) *message.JSON {
+func (gl *PlatformerGL) NewGameInfoMessage(playerRectID int, constants Constants) *message.JSON {
 	return &message.JSON{
 		Type: "gameinfo",
 		Body: GameInfo{
 			PlayerRectID: playerRectID,
+			Constants:    constants,
 		},
 	}
 }

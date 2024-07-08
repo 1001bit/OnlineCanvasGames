@@ -1,6 +1,6 @@
 class RectangleShape {
-    constructor(width, height, kinematic){
-        this.rect = kinematic ? new KinematicRect() : new Rect()
+    constructor(width, height){
+        this.rect = new Rect()
         this.rect.setSize(width, height)
         this.rect.setPosition(0, 0)
 

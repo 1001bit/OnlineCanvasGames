@@ -10,8 +10,6 @@ class Platformer {
         this.controls = new Controls()
         this.bindControls()
 
-        this.level = new Level()
-
         this.websocket = new GameWebSocket()
         const gameID = $("main").data("game-id")
         const roomID = $("main").data("room-id")
@@ -84,18 +82,13 @@ class Platformer {
         roomGui.setNavBarVisibility(true)
     }
 
-    createRectangleShape(serverRect, rectID, kinematic){
-        const level = this.level
-
-        let rectangle = new RectangleShape(serverRect.size.x, serverRect.size.y, kinematic)
+    createRectangleShape(serverRect, rectID){
+        let rectangle = new RectangleShape(serverRect.size.x, serverRect.size.y)
         rectangle.setPosition(serverRect.position.x, serverRect.position.y)
 
-        if(kinematic){
-            level.insertKinematicRect(rectID, rectangle.rect)
-        } else {
-            level.insertStaticRect(rectID, rectangle.rect)
+        if(this.canvas.drawableExists(rectID)){
+            return
         }
-
         this.canvas.insertDrawable(rectangle, 0, rectID)
     }
 
@@ -104,61 +97,54 @@ class Platformer {
             return
         }
     
-        let kinematicRects = body.kinematic
-        let staticRects = body.static
+        let serverKinematicRects = body.kinematic
+        let serverStaticRects = body.static
     
-        for (const idStr in kinematicRects){
+        for (const idStr in serverKinematicRects){
             let rectID = parseInt(idStr)
-            let serverRect = kinematicRects[idStr]
+            let serverRect = serverKinematicRects[idStr]
     
-            this.createRectangleShape(serverRect, rectID, true)
+            this.createRectangleShape(serverRect, rectID)
         }
-        for (const idStr in staticRects){
+        for (const idStr in serverStaticRects){
             let rectID = parseInt(idStr)
-            let serverRect = staticRects[idStr]
+            let serverRect = serverStaticRects[idStr]
     
-            this.createRectangleShape(serverRect, rectID, false)
+            this.createRectangleShape(serverRect, rectID)
         }
     }
 
     handleDeleteMessage(body){
         let rectID = parseInt(body)
-
-        this.level.deleteRect(rectID)
         this.canvas.deleteDrawable(rectID)
     }
 
     handleCreateMessage(body){
-        const level = this.level
-
         let serverRect = body.rect
         let rectID = parseInt(body.id)
-    
-        if (level.kinematicRects.has(rectID) || level.staticRects.has(rectID)){
-            return
-        }
         
         this.createRectangleShape(serverRect, rectID, "velocity" in body.rect)
     }
 
     handleDeltasMessage(body){
-        const level = this.level
-
         this.canSendControls = true
     
         for (const idStr in body){
             let rectID = parseInt(idStr)
-            if(!level.kinematicRects.has(rectID)){
-                continue
-            }
             let serverRect = body[idStr]
-    
-            level.kinematicRects.get(rectID).setPosition(serverRect.position.x, serverRect.position.y)
+
+            if(!this.canvas.drawableExists(rectID)){
+                return
+            }
+            this.canvas.getDrawable(rectID).setPosition(serverRect.position.x, serverRect.position.y)
         }
     }
 
     handleGameInfoMessage(body){
         this.playerRectID = body.rectID
+
+        // TODO: Handle constants and make physical calculations based on them
+        console.log(body.constants)
     }
 }
 

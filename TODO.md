@@ -52,8 +52,8 @@
                 - [X] Frontend controls bindings
                 - [X] Send input right after server message
             - [ ] Smooth rect movements
-                - [ ] Physics class, which replicates server's physics (instead of existing "level" class)
-                    - [ ] Use server's constants to replicate behavior
+                - [X] Get physical constants
+                - [ ] Physics class, which replicates server's physics
                 - [ ] Correct position every 5 seconds
 
 - [ ] Admin page

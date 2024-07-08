@@ -29,10 +29,6 @@ class Rect {
         return false
     }
 
-    isKinematic(){
-        return false
-    }
-
     getPosition(){
         return this.position
     }
@@ -41,13 +37,3 @@ class Rect {
         return this.size
     }
 }
-
-class KinematicRect extends Rect {
-    constructor(){
-        super()
-    }
-
-    isKinematic(){
-        return true
-    }
-} 
