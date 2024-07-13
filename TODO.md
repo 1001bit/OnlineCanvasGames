@@ -7,6 +7,8 @@
 - [X] Favicon
 - [X] Refresh token
 - [ ] Use typescript instead of javascript
+    - [X] Compiler
+    - [ ] TS code
 
 - [X] Home page
     - [X] Use BaseNode's gamesJSON instead of database table for games list

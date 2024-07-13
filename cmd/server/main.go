@@ -8,6 +8,7 @@ import (
 	"github.com/1001bit/OnlineCanvasGames/internal/database"
 	"github.com/1001bit/OnlineCanvasGames/internal/env"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/router"
+	"github.com/1001bit/OnlineCanvasGames/internal/tscompiler"
 )
 
 func init() {
@@ -19,9 +20,15 @@ func main() {
 	// start database
 	err := database.Start()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("err starting database:", err)
 	}
 	defer database.DB.Close()
+
+	// compile typescript
+	err = tscompiler.CompileTypeScript()
+	if err != nil {
+		log.Fatal("err compiling typescript:", err)
+	}
 
 	// start http server
 	router, err := router.NewRouter()
