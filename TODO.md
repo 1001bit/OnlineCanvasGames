@@ -6,6 +6,7 @@
 - [X] Header
 - [X] Favicon
 - [X] Refresh token
+- [ ] Use typescript instead of javascript
 
 - [X] Home page
     - [X] Use BaseNode's gamesJSON instead of database table for games list
@@ -42,7 +43,7 @@
             - [X] Data send
                 - [X] Info
                     - [X] Level
-                    - [ ] Physics Constants
+                    - [X] Physics Constants
                 - [X] Deltas
                 - [X] Rect Delete/Create
         - [X] Client
@@ -52,7 +53,6 @@
                 - [X] Frontend controls bindings
                 - [X] Send input right after server message
             - [ ] Smooth rect movements
-                - [X] Get physical constants
                 - [ ] Physics class, which replicates server's physics
                 - [ ] Correct position every 5 seconds
 
