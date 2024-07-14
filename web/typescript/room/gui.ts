@@ -1,6 +1,8 @@
 class RoomGui{
+    navVisible: boolean;
+
     constructor(){
-        this.navvisible = true
+        this.navVisible = true
 
         this.onclick()
 
@@ -9,12 +11,12 @@ class RoomGui{
         })
     }
 
-    showMessage(text){
+    showMessage(text: string){
         $("#message").text(text)
     }
 
-    setNavBarVisibility(visibility){
-        this.navvisible = visibility
+    setNavBarVisibility(visibility: boolean){
+        this.navVisible = visibility
 
         if(visibility){
             $("#navigation").show()
@@ -28,9 +30,10 @@ class RoomGui{
     }
 
     onclick(){
-        this.navvisible = !this.navvisible
-        this.setNavBarVisibility(this.navvisible) 
+        this.navVisible = !this.navVisible
+        this.setNavBarVisibility(this.navVisible) 
     }
 }
 
+// using variable, so other scripts can use it
 const roomGui = new RoomGui()

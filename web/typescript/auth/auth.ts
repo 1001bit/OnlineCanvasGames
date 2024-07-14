@@ -1,9 +1,9 @@
-const InputType = {
-    Login: "login",
-    Register: "register"
+enum InputType {
+    Login = "login",
+    Register = "register"
 }
 
-function postInput(type){
+function postInput(type: InputType){
     const inputData = {
         username: $("#username").val(),
         password: $("#password").val(),
@@ -25,12 +25,11 @@ function postInput(type){
     })
 }
 
-$(document).ready(() => {
-    $("#login").click(() => {
-        postInput(InputType.Login)
-    })
 
-    $("#register").click(() => {
-        postInput(InputType.Register)
-    })
+$("#login").on("click", () => {
+    postInput(InputType.Login)
+})
+
+$("#register").on("click", () => {
+    postInput(InputType.Register)
 })

@@ -1,14 +1,17 @@
+/// <reference path="rooms.ts"/>
+/// <reference path="sse.ts"/>
+
 const rooms = new Rooms("rooms")
 const sse = new GameSSE(rooms)
 let gameID = 0
 
-$("main").ready(() => {
+$(() => {
     gameID = $("main").data("game-id")
     sse.openConnection(gameID)
 })
 
-$("#random").click(joinRandomRoom)
-$("#create").click(createRoom)
+$("#random").on("click", joinRandomRoom)
+$("#create").on("click", createRoom)
 
 function joinRandomRoom(){
     const roomList = rooms.roomList.find(".room")
@@ -16,8 +19,18 @@ function joinRandomRoom(){
         $("#random").text("No rooms yet!")
         return
     }
+
     const room = roomList[Math.floor(Math.random() * roomList.length)]
-    window.location.href = $(room).find(".join").attr("href")
+    if(!room){
+        return
+    }
+
+    const href = $(room).find(".join").attr("href")
+    if(!href){
+        return
+    }
+
+    window.location.href = href 
 }
 
 function createRoom(){

@@ -1,9 +1,18 @@
+interface RoomJSON {
+    owner: string;
+    clients: number;
+    limit: number;
+    id: number;
+}
+
 class Rooms {
-    constructor(roomListID){
+    roomList: JQuery<HTMLElement>;
+
+    constructor(roomListID: string){
         this.roomList = $(`#${roomListID}`)
     }
 
-    newRoom(roomJSON) {
+    newRoom(roomJSON: RoomJSON) {
         const room = $(".sample.room").clone()
         room.removeClass("sample")
 
@@ -14,7 +23,7 @@ class Rooms {
         return room
     }
 
-    updateRoomList(listJSON){
+    updateRoomList(listJSON: Array<RoomJSON>){
         this.roomList.empty()
         listJSON.forEach(roomJSON => {
             this.roomList.append(this.newRoom(roomJSON))

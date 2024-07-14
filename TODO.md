@@ -8,7 +8,8 @@
 - [X] Refresh token
 - [ ] Use typescript instead of javascript
     - [X] Compiler
-    - [ ] TS code
+    - [X] Static scripts
+    - [ ] Game scripts
 
 - [X] Home page
     - [X] Use BaseNode's gamesJSON instead of database table for games list

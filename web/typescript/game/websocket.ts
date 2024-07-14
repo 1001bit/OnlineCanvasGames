@@ -1,19 +1,23 @@
 class GameWebSocket {
+    active: boolean;
+    websocket: WebSocket | null;
+
     constructor(){
-        this.active = false
+        this.active = false;
+        this.websocket = null;
     }
 
-    openConnection(gameID, roomID){
+    openConnection(gameID: number, roomID: number){
         const protocol = location.protocol == "https:" ? "wss:" : "ws:" 
 
         this.websocket = new WebSocket(`${protocol}//${document.location.host}/rt/ws/game/${gameID}/room/${roomID}`)
         const ws = this.websocket
 
-        ws.onopen = (e) => {
+        ws.onopen = _e => {
             this.active = true
         }
 
-        ws.onclose = (e) => {
+        ws.onclose = _e => {
             if (!this.active){
                 return
             }
@@ -23,7 +27,7 @@ class GameWebSocket {
             this.active = false
         }
 
-        ws.onerror = (e) => {
+        ws.onerror = _e => {
             if (!this.active){
                 return
             }
@@ -49,17 +53,22 @@ class GameWebSocket {
         }
     }
 
-    sendMessage(type, body){
+    sendMessage(type: string, body: string){
         if(!this.active){
             return
         }
 
-        this.websocket.send(JSON.stringify({
+        const ws = this.websocket
+        if(!ws){
+            return
+        }
+
+        ws.send(JSON.stringify({
             type: type,
             body: body,
         }))
     }
 
-    handleClose = (body) => {}
-    handleMessage = (type, body) => {}
+    handleClose = (_body: string) => {}
+    handleMessage = (_type: string, _body: string) => {}
 }
