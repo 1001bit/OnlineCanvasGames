@@ -35,5 +35,5 @@ class RoomGui{
     }
 }
 
-// using variable, so other scripts can use it
+// using global variable, so other scripts can use it
 const roomGui = new RoomGui()

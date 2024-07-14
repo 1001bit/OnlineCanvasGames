@@ -1,7 +1,6 @@
 package tscompiler
 
 import (
-	"errors"
 	"log"
 	"os"
 	"os/exec"
@@ -22,27 +21,33 @@ func isPathForbidden(path string) bool {
 	return false
 }
 
+func compilePath(path string) {
+	if isPathForbidden(path) {
+		return
+	}
+
+	app := "tsc"
+	flag := "-p"
+
+	cmd := exec.Command(app, flag, path)
+	out, err := cmd.Output()
+	if err != nil {
+		log.Println("Error compiling typescript:", string(out))
+	}
+
+	log.Println("Compiled typescript from", path)
+}
+
 func CompileTypeScript() error {
-	// Iterate over directories under sourceRoot
+	// Iterate over directories under typeScriptRoot
 	err := filepath.Walk(typeScriptRoot, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 
-		if !info.IsDir() || isPathForbidden(path) {
-			return nil
+		if info.IsDir() {
+			go compilePath(path)
 		}
-
-		app := "tsc"
-		flag := "-p"
-
-		cmd := exec.Command(app, flag, path)
-		out, err := cmd.Output()
-		if err != nil {
-			return errors.New(string(out))
-		}
-
-		log.Println("compiled typescript from", path)
 
 		return nil
 	})

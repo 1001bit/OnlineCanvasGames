@@ -1,7 +1,0 @@
-{
-    "extends": "../tsconfig.json",
-    "compilerOptions": {
-        "outFile": "../../static/game/script.js",
-    },
-    "include": ["*.ts"],
-}
