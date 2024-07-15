@@ -1,9 +1,9 @@
 package roomnode
 
 import (
-	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/gamelogic"
-	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/gamelogic/clicker"
-	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/gamelogic/platformer"
+	"github.com/1001bit/OnlineCanvasGames/internal/gamelogic"
+	"github.com/1001bit/OnlineCanvasGames/internal/gamelogic/clicker"
+	"github.com/1001bit/OnlineCanvasGames/internal/gamelogic/platformer"
 )
 
 func NewGameLogicByID(gameID int) gamelogic.GameLogic {

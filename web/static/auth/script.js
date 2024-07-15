@@ -5,7 +5,7 @@ var InputType;
     InputType["Register"] = "register";
 })(InputType || (InputType = {}));
 function postInput(type) {
-    var inputData = {
+    const inputData = {
         username: $("#username").val(),
         password: $("#password").val(),
         type: type
@@ -17,16 +17,16 @@ function postInput(type) {
         },
         body: JSON.stringify(inputData)
     })
-        .then(function (response) {
-        response.json().then(function (data) { return $("#info").html(data.body); });
+        .then(response => {
+        response.json().then(data => $("#info").html(data.body));
         if (response.status == 200) {
             window.location.reload();
         }
     });
 }
-$("#login").on("click", function () {
+$("#login").on("click", () => {
     postInput(InputType.Login);
 });
-$("#register").on("click", function () {
+$("#register").on("click", () => {
     postInput(InputType.Register);
 });

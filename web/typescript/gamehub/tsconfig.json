@@ -1,7 +1,0 @@
-{
-    "extends": "../tsconfig.json",
-    "compilerOptions": {
-        "outFile": "../../static/gamehub/script.js",
-    },
-    "include": ["*.ts"],
-}

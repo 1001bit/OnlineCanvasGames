@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-      "target": "es5",
+      "target": "es6",
 
       "strict": true,
 
@@ -18,7 +18,7 @@
 
       "esModuleInterop": true,
       "skipLibCheck": true,
-      "lib": ["ES2015", "DOM"],
+      "lib": ["ES2021", "DOM"],
     },
     "files": ["jquery/JQuery.d.ts"],
 }

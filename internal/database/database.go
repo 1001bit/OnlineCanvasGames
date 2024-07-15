@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/1001bit/OnlineCanvasGames/internal/env"
+	"github.com/1001bit/OnlineCanvasGames/pkg/env"
 	_ "github.com/lib/pq"
 )
 

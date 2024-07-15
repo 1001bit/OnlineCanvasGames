@@ -1,6 +1,6 @@
 package basetoken
 
-import "github.com/1001bit/OnlineCanvasGames/internal/env"
+import "github.com/1001bit/OnlineCanvasGames/pkg/env"
 
 var secret = []byte("")
 

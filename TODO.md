@@ -6,10 +6,10 @@
 - [X] Header
 - [X] Favicon
 - [X] Refresh token
-- [ ] Use typescript instead of javascript
+- [X] Use typescript instead of javascript
     - [X] Compiler
     - [X] Static scripts
-    - [ ] Game scripts
+    - [X] Game scripts
 
 - [X] Home page
     - [X] Use BaseNode's gamesJSON instead of database table for games list

@@ -1,7 +1,0 @@
-{
-    "extends": "../tsconfig.json",
-    "compilerOptions": {
-        "outFile": "../../static/auth/script.js",
-    },
-    "include": ["*.ts"],
-}

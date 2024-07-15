@@ -6,8 +6,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/1001bit/OnlineCanvasGames/internal/crypt"
 	"github.com/1001bit/OnlineCanvasGames/internal/database"
+	"github.com/1001bit/OnlineCanvasGames/pkg/crypt"
 )
 
 const maxQueryTime = 5 * time.Second

@@ -24,7 +24,6 @@ func NewRouter() (http.Handler, error) {
 	router.Handle("/static/*", http.StripPrefix("/static", http.HandlerFunc(storage.HandleStatic)))
 	router.Get("/favicon.ico", storage.HandleStatic)
 	router.Handle("/image/*", http.StripPrefix("/image", http.HandlerFunc(storage.HandleImage)))
-	router.Handle("/gameassets/*", http.StripPrefix("/gameassets", http.HandlerFunc(storage.HandleGameAssets)))
 
 	// Realtime
 	baseNode := basenode.NewBaseNode()
@@ -74,7 +73,7 @@ func NewRouter() (http.Handler, error) {
 		r.Group(func(rs chi.Router) {
 			rs.Use(middleware.AuthHTML)
 
-			rs.Get("/game/{gameid}", page.HandleGame)
+			rs.Get("/game/{gameid}", page.HandleGameHub)
 			rs.Get("/game/{gameid}/room/{roomid}", page.HandleGameRoom)
 		})
 

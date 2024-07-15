@@ -4,8 +4,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/1001bit/OnlineCanvasGames/internal/gamelogic"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/children"
-	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/gamelogic"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/roomclient"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/runflow"
 )

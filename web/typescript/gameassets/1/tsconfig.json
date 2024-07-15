@@ -1,0 +1,7 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "outFile": "../../../static/gameroom/1/script.js",
+    },
+    "include": ["../room/*.ts", "*.ts"],
+}
