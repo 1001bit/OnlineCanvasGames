@@ -4,6 +4,8 @@ class DrawableText extends Drawable {
     font: string;
     fontSize: number;
 
+    position: Vector2;
+
     constructor(string: string, fontSize: number){
         super();
 
@@ -11,6 +13,7 @@ class DrawableText extends Drawable {
         this.color = RGB(255, 255, 255);
         this.fontSize = fontSize
         this.font = "serif";
+        this.position = new Vector2(0, 0)
     }
 
     setString(string: string){
@@ -27,6 +30,10 @@ class DrawableText extends Drawable {
 
     setFontSize(fontSize: number){
         this.fontSize = fontSize
+    }
+
+    setPosition(x: number, y: number){
+        this.position.setPosition(x, y)
     }
 
     override draw(ctx: CanvasRenderingContext2D){

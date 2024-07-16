@@ -8,14 +8,11 @@ import (
 type GameInfo struct {
 	PlayerRectID int       `json:"rectID"`
 	Constants    Constants `json:"constants"`
+	TPS          int       `json:"tps"`
 }
 
 type LevelData struct {
 	StaticRects    map[int]*physics.Rect          `json:"static"`
-	KinematicRects map[int]*physics.KinematicRect `json:"kinematic"`
-}
-
-type DeltasData struct {
 	KinematicRects map[int]*physics.KinematicRect `json:"kinematic"`
 }
 
@@ -32,17 +29,8 @@ func (gl *PlatformerGL) NewLevelMessage() *message.JSON {
 	return &message.JSON{
 		Type: "level",
 		Body: LevelData{
-			StaticRects:    gl.level.physEnv.GetStaticRects(),
-			KinematicRects: gl.level.physEnv.GetKinematicRects(),
-		},
-	}
-}
-
-func (gl *PlatformerGL) NewDeltasMessage(deltas map[int]*physics.KinematicRect) *message.JSON {
-	return &message.JSON{
-		Type: "deltas",
-		Body: DeltasData{
-			KinematicRects: deltas,
+			StaticRects:    gl.level.physEng.GetStaticRects(),
+			KinematicRects: gl.level.physEng.GetKinematicRects(),
 		},
 	}
 }
@@ -66,12 +54,13 @@ func (gl *PlatformerGL) NewCreateMessage(rectID int, rect *physics.KinematicRect
 	}
 }
 
-func (gl *PlatformerGL) NewGameInfoMessage(playerRectID int, constants Constants) *message.JSON {
+func (gl *PlatformerGL) NewGameInfoMessage(playerRectID int, tps int, constants Constants) *message.JSON {
 	return &message.JSON{
 		Type: "gameinfo",
 		Body: GameInfo{
 			PlayerRectID: playerRectID,
 			Constants:    constants,
+			TPS:          tps,
 		},
 	}
 }

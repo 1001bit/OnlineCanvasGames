@@ -1,9 +1,5 @@
-/// <reference path="rect.ts"/>
-
-class Drawable extends Rect{
-    constructor(){
-        super()
-    }
+class Drawable{
+    constructor(){}
 
     draw(_ctx: CanvasRenderingContext2D){}
 }

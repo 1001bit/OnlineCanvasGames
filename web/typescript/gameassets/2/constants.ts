@@ -1,4 +1,4 @@
-type PlatformerConstants = {
+interface PlatformerConstants {
     friction: number;
     gravity: number;
     playerSpeed: number;

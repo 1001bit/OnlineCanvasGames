@@ -3,5 +3,7 @@
     "compilerOptions": {
         "outFile": "../../../static/gamehub/script.js",
     },
-    "include": ["*.ts"],
+    "include": [
+        "*.ts",
+    ],
 }

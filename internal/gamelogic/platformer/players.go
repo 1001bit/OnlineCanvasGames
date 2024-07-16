@@ -18,7 +18,7 @@ func (l *Level) CreatePlayer(userID int, playersLimit int) int {
 	inner := physics.MakeRect(100*float64(rectID), 100, 100, 100, true)
 	kinRect := physics.NewKinematicRect(inner, applyGravity, applyFriction)
 
-	l.physEnv.InsertKinematicRect(kinRect, rectID)
+	l.physEng.InsertKinematicRect(kinRect, rectID)
 
 	l.playersRects[userID] = rectID
 
@@ -32,7 +32,7 @@ func (l *Level) DeletePlayer(userID int) (int, error) {
 	}
 
 	delete(l.playersRects, userID)
-	l.physEnv.DeleteRect(rectID)
+	l.physEng.DeleteRect(rectID)
 
 	return rectID, nil
 }

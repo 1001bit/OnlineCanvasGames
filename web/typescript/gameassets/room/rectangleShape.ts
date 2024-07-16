@@ -1,12 +1,25 @@
 class RectangleShape extends Drawable {
     color: string;
+    rect: Rect;
 
-    constructor(width: number, height: number){
+    constructor(rect?: Rect){
         super();
 
-        this.setSize(width, height)
+        if(rect){
+            this.rect = rect
+        } else {
+            this.rect = new Rect()
+        }
 
         this.color = RGB(255, 255, 255);
+    }
+
+    setSize(x: number, y: number){
+        this.rect.setSize(x, y)
+    }
+
+    setPosition(x: number, y: number){
+        this.rect.setPosition(x, y)
     }
 
     setColor(color: string){
@@ -14,8 +27,8 @@ class RectangleShape extends Drawable {
     }
 
     override draw(ctx: CanvasRenderingContext2D){
-        let pos = this.position;
-        let size = this.size;
+        let pos = this.rect.position;
+        let size = this.rect.size;
 
         ctx.fillStyle = this.color;
         ctx.fillRect(pos.x, pos.y, size.x, size.y);

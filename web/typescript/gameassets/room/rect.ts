@@ -6,7 +6,13 @@ class Rect {
     position: Vector2;
     size: Vector2;
 
-    constructor(){
+    constructor(rect?: Rect){
+        if(rect){
+            this.position = rect.position;
+            this.size = rect.size;
+            return;
+        }
+
         this.position = new Vector2(0, 0);
         this.size = new Vector2(0, 0);
     }

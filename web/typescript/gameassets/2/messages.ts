@@ -1,5 +1,5 @@
 interface LevelMessage {
-    kinematic: Map<number, Rect>
+    kinematic: Map<number, KinematicRect>
     static: Map<number, Rect>
 }
 
@@ -8,15 +8,12 @@ interface DeleteMessage {
 }
 
 interface CreateMessage {
-    rect: Rect;
+    rect: Rect | KinematicRect;
     id: number;
-}
-
-interface DeltasMessage {
-    kinematic: Map<number, Rect>;
 }
 
 interface GameInfoMessage {
     rectID: number;
+    tps: number;
     constants: PlatformerConstants;
 }

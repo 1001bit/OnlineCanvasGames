@@ -1,4 +1,4 @@
 #!/bin/bash
 
-./scripts/tscompiler.sh
+./scripts/tscompiler.sh &
 go run cmd/server/main.go

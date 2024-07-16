@@ -26,7 +26,7 @@ func (gl *PlatformerGL) handleInput() {
 
 func (l *Level) controlPlayerRect(input gamelogic.UserInput) {
 	rectID := l.playersRects[input.UserID]
-	playerKRect, ok := l.physEnv.GetKinematicRects()[rectID]
+	playerKRect, ok := l.physEng.GetKinematicRects()[rectID]
 	if !ok {
 		return
 	}

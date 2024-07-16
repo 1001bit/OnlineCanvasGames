@@ -129,41 +129,8 @@ class DeltaTimer {
         return dt;
     }
 }
-function lerp(a, b, alpha) {
-    return a + alpha * (b - a);
-}
-class Rect {
-    constructor() {
-        this.position = new Vector2(0, 0);
-        this.size = new Vector2(0, 0);
-    }
-    setPosition(x, y) {
-        this.position.setPosition(x, y);
-    }
-    setSize(x, y) {
-        this.size.setPosition(x, y);
-    }
-    containsPoint(x, y) {
-        let pos = this.position;
-        let size = this.size;
-        if (x >= pos.x && x <= pos.x + size.x &&
-            y >= pos.y && y <= pos.y + size.y) {
-            return true;
-        }
-        return false;
-    }
-    getPosition() {
-        return this.position;
-    }
-    getSize() {
-        return this.size;
-    }
-}
-/// <reference path="rect.ts"/>
-class Drawable extends Rect {
-    constructor() {
-        super();
-    }
+class Drawable {
+    constructor() { }
     draw(_ctx) { }
 }
 class RoomGui {
@@ -196,18 +163,64 @@ class RoomGui {
 }
 // using global variable, so other scripts can use it
 const roomGui = new RoomGui();
+function lerp(a, b, alpha) {
+    return a + alpha * (b - a);
+}
+class Rect {
+    constructor(rect) {
+        if (rect) {
+            this.position = rect.position;
+            this.size = rect.size;
+            return;
+        }
+        this.position = new Vector2(0, 0);
+        this.size = new Vector2(0, 0);
+    }
+    setPosition(x, y) {
+        this.position.setPosition(x, y);
+    }
+    setSize(x, y) {
+        this.size.setPosition(x, y);
+    }
+    containsPoint(x, y) {
+        let pos = this.position;
+        let size = this.size;
+        if (x >= pos.x && x <= pos.x + size.x &&
+            y >= pos.y && y <= pos.y + size.y) {
+            return true;
+        }
+        return false;
+    }
+    getPosition() {
+        return this.position;
+    }
+    getSize() {
+        return this.size;
+    }
+}
 class RectangleShape extends Drawable {
-    constructor(width, height) {
+    constructor(rect) {
         super();
-        this.setSize(width, height);
+        if (rect) {
+            this.rect = rect;
+        }
+        else {
+            this.rect = new Rect();
+        }
         this.color = RGB(255, 255, 255);
+    }
+    setSize(x, y) {
+        this.rect.setSize(x, y);
+    }
+    setPosition(x, y) {
+        this.rect.setPosition(x, y);
     }
     setColor(color) {
         this.color = color;
     }
     draw(ctx) {
-        let pos = this.position;
-        let size = this.size;
+        let pos = this.rect.position;
+        let size = this.rect.size;
         ctx.fillStyle = this.color;
         ctx.fillRect(pos.x, pos.y, size.x, size.y);
     }
@@ -222,6 +235,7 @@ class DrawableText extends Drawable {
         this.color = RGB(255, 255, 255);
         this.fontSize = fontSize;
         this.font = "serif";
+        this.position = new Vector2(0, 0);
     }
     setString(string) {
         this.string = string;
@@ -234,6 +248,9 @@ class DrawableText extends Drawable {
     }
     setFontSize(fontSize) {
         this.fontSize = fontSize;
+    }
+    setPosition(x, y) {
+        this.position.setPosition(x, y);
     }
     draw(ctx) {
         ctx.fillStyle = this.color;
@@ -320,11 +337,54 @@ class GameWebSocket {
         }));
     }
 }
+class Physics {
+    constructor() {
+        this.constants = {
+            friction: 0,
+            gravity: 0,
+            playerSpeed: 0,
+            playerJump: 0
+        };
+        this.staticRects = new Map();
+        this.kinematicRects = new Map();
+    }
+    setConstants(constants) {
+        this.constants = constants;
+    }
+    insertKinematicRect(id, rect) {
+        this.kinematicRects.set(id, rect);
+    }
+    insertStaticRect(id, rect) {
+        this.staticRects.set(id, rect);
+    }
+    deleteRect(id) {
+        this.staticRects.delete(id);
+        this.kinematicRects.delete(id);
+    }
+    getRect(id) {
+        const rect = this.kinematicRects.get(id);
+        if (rect) {
+            return rect;
+        }
+        return this.staticRects.get(id);
+    }
+    tick(dt) {
+        for (const [_id, rect] of this.kinematicRects) {
+            this.applyVelToPos(rect, dt);
+        }
+    }
+    applyVelToPos(rect, dt) {
+        rect.position.x += rect.velocity.x * dt;
+        rect.position.y += rect.velocity.y * dt;
+    }
+}
+/// <reference path="physicsEngine.ts"/>
 class Platformer {
     constructor() {
         const layers = 2;
         this.playerRectID = 0;
-        this.canSendControls = true;
+        this.controlsAccumulator = 0;
+        this.serverTPS = 0;
         this.canvas = new GameCanvas("canvas", layers);
         this.canvas.setBackgroundColor(RGB(30, 100, 100));
         this.controls = new Controls();
@@ -333,6 +393,7 @@ class Platformer {
         const gameID = $("main").data("game-id");
         const roomID = $("main").data("room-id");
         this.initWebsocket(gameID, roomID);
+        this.physicsEngine = new Physics();
         this.ticker = new Ticker();
         this.ticker.tick(dt => this.tick(dt));
     }
@@ -352,9 +413,6 @@ class Platformer {
                 case "level":
                     this.handleLevelMessage(body);
                     break;
-                case "deltas":
-                    this.handleDeltasMessage(body);
-                    break;
                 case "delete":
                     this.handleDeleteMessage(body);
                     break;
@@ -370,14 +428,17 @@ class Platformer {
         };
         this.websocket.openConnection(gameID, roomID);
     }
-    tick(_dt) {
-        if (this.canSendControls) {
+    tick(dt) {
+        this.physicsEngine.tick(dt);
+        this.controlsAccumulator += dt;
+        const maxControlsAccumulator = 1000 / (this.serverTPS * 4);
+        while (this.controlsAccumulator > maxControlsAccumulator) {
             let heldControls = this.controls.getHeldControls();
             if (heldControls.size > 0) {
                 let json = JSON.stringify(Object.fromEntries(heldControls.entries()));
                 this.websocket.sendMessage("input", json);
-                this.canSendControls = false;
             }
+            this.controlsAccumulator -= maxControlsAccumulator;
         }
         this.canvas.draw();
     }
@@ -387,17 +448,30 @@ class Platformer {
         roomGui.setNavBarVisibility(true);
     }
     createRectangleShape(serverRect, rectID) {
-        let rectangle = new RectangleShape(serverRect.size.x, serverRect.size.y);
-        rectangle.setPosition(serverRect.position.x, serverRect.position.y);
+        if (this.canvas.getDrawable(rectID)) {
+            return;
+        }
+        let rectangle;
+        if (isKinematicRect(serverRect)) {
+            const rect = new KinematicRect(serverRect);
+            rect.setVelocity(serverRect.velocity.x, serverRect.velocity.y);
+            this.physicsEngine.insertKinematicRect(rectID, rect);
+            rectangle = new RectangleShape(rect);
+        }
+        else {
+            const rect = new Rect(serverRect);
+            this.physicsEngine.insertStaticRect(rectID, rect);
+            rectangle = new RectangleShape(rect);
+        }
         this.canvas.insertDrawable(rectangle, 0, rectID);
     }
     handleLevelMessage(body) {
-        for (let [key, val] of Object.entries(body.kinematic)) {
+        for (const [key, val] of Object.entries(body.kinematic)) {
             const id = Number(key);
             const serverRect = val;
             this.createRectangleShape(serverRect, id);
         }
-        for (let [key, val] of Object.entries(body.static)) {
+        for (const [key, val] of Object.entries(body.static)) {
             const id = Number(key);
             const serverRect = val;
             this.createRectangleShape(serverRect, id);
@@ -405,27 +479,32 @@ class Platformer {
     }
     handleDeleteMessage(body) {
         this.canvas.deleteDrawable(body.ID);
+        this.physicsEngine.deleteRect(body.ID);
     }
     handleCreateMessage(body) {
         let serverRect = body.rect;
         let rectID = body.id;
         this.createRectangleShape(serverRect, rectID);
     }
-    handleDeltasMessage(body) {
-        this.canSendControls = true;
-        for (let [key, val] of Object.entries(body.kinematic)) {
-            const id = Number(key);
-            const serverRect = val;
-            const clientRect = this.canvas.getDrawable(id);
-            if (clientRect) {
-                clientRect.setPosition(serverRect.position.x, serverRect.position.y);
-            }
-        }
-    }
     handleGameInfoMessage(body) {
         this.playerRectID = body.rectID;
-        // TODO: Handle constants and make physical calculations based on them
-        console.log(body.constants);
+        this.serverTPS = body.tps;
+        this.physicsEngine.setConstants(body.constants);
     }
 }
 new Platformer();
+function isRect(obj) {
+    return "position" in obj && "size" in obj;
+}
+function isKinematicRect(obj) {
+    return isRect(obj) && "velocity" in obj;
+}
+class KinematicRect extends Rect {
+    constructor(rect) {
+        super(rect);
+        this.velocity = new Vector2(0, 0);
+    }
+    setVelocity(x, y) {
+        this.velocity.setPosition(x, y);
+    }
+}

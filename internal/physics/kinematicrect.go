@@ -55,28 +55,3 @@ func (kr *KinematicRect) GetRect() Rect {
 func (kr *KinematicRect) GetCollisionDir() CollisionDirection {
 	return kr.collisionDir
 }
-
-func (kr *KinematicRect) applyGravityToVel(dtMs, force float64) {
-	if !kr.doApplyGravity {
-		return
-	}
-
-	kr.Velocity.Y += force * dtMs
-}
-
-func (kr *KinematicRect) applyFrictionToVel(friction float64) {
-	if !kr.doApplyFriction {
-		return
-	}
-	// for non gravitable rects
-	if !kr.doApplyGravity {
-		kr.Velocity.Add(kr.Velocity.Scale(-friction))
-		return
-	}
-
-	kr.Velocity.X -= kr.Velocity.X * friction
-}
-
-func (kr *KinematicRect) applyVelToPos(dtMs float64) {
-	kr.Rect.Position.Add(kr.Velocity.Scale(dtMs))
-}

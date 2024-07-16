@@ -44,20 +44,30 @@
                 - [X] Movement
                 - [X] Collisions
             - [X] Data send
+                - [X] Level
                 - [X] Info
-                    - [X] Level
+                    - [X] Player rectID
                     - [X] Physics Constants
-                - [X] Deltas
+                    - [X] TPS
                 - [X] Rect Delete/Create
+                - [ ] Actions
+                - [ ] Level state
+
         - [X] Client
-            - [X] Level messages handling and level draw
+            - [X] Level Draw
             - [X] Game loop
             - [X] Controls
                 - [X] Frontend controls bindings
                 - [X] Send input right after server message
+            - [X] Messages handling:
+                - [X] Level
+                - [X] GameInfo
+                - [X] Rect Delete/Create
             - [ ] Smooth rect movements
-                - [ ] Physics class, which replicates server's physics
-                - [ ] Correct position every 5 seconds
+                - [X] Physics class, which replicates server's physics
+                - [ ] Accelerating rects based on server's actions and client's actions (input)
+                - [ ] Physics calculations based on current state
+                - [ ] Interpolated state correct based on state message
 
 - [ ] Admin page
     - [ ] Front end

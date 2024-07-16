@@ -57,22 +57,23 @@ class Clicker {
     }
 
     initDrawables(){
-        const button = new RectangleShape(300, 200)
+        const button = new RectangleShape()
         this.drawables.set("button", button)
         button.setColor(RGB(150, 150, 40))
-        button.setPosition((window.innerWidth - button.size.x)/2, (window.innerHeight - button.size.y)/2)
+        button.setSize(300, 200)
+        button.setPosition((window.innerWidth - button.rect.size.x)/2, (window.innerHeight - button.rect.size.y)/2)
         this.canvas.insertDrawable(button, 0, 0)
 
         const text = new DrawableText("0 clicks", 48)
         this.drawables.set("text", text)
-        text.setPosition(button.position.x + 10, button.position.y + 10)
+        text.setPosition(button.rect.position.x + 10, button.rect.position.y + 10)
         this.canvas.insertDrawable(text, 1, 1)
 
         // button click
         this.canvas.canvas.addEventListener("click", _e => {
             let mPos = this.canvas.getMousePos()
 
-            if (button.containsPoint(mPos.x, mPos.y)){
+            if (button.rect.containsPoint(mPos.x, mPos.y)){
                 this.click(this.clicks+1)
                 this.websocket.sendMessage("click", "")
             }

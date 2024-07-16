@@ -1,17 +1,25 @@
+/// <reference path="physicsEngine.ts"/>
+
 class Platformer {
+    playerRectID: number;
+
+    controlsAccumulator: number;
+    serverTPS: number;
+
     canvas: GameCanvas;
     controls: Controls;
     websocket: GameWebSocket;
     ticker: Ticker;
 
-    canSendControls: boolean;
-    playerRectID: number;
+    physicsEngine: Physics;
 
     constructor(){
         const layers = 2
 
         this.playerRectID = 0
-        this.canSendControls = true
+
+        this.controlsAccumulator = 0;
+        this.serverTPS = 0
 
         this.canvas = new GameCanvas("canvas", layers)
         this.canvas.setBackgroundColor(RGB(30, 100, 100))
@@ -23,6 +31,8 @@ class Platformer {
         const gameID = $("main").data("game-id")
         const roomID = $("main").data("room-id")
         this.initWebsocket(gameID, roomID)
+        
+        this.physicsEngine = new Physics()
 
         this.ticker = new Ticker()
         this.ticker.tick(dt => this.tick(dt))
@@ -48,10 +58,6 @@ class Platformer {
                     this.handleLevelMessage(body);
                     break;
         
-                case "deltas":
-                    this.handleDeltasMessage(body);
-                    break;
-        
                 case "delete":
                     this.handleDeleteMessage(body);
                     break;
@@ -72,14 +78,18 @@ class Platformer {
         this.websocket.openConnection(gameID, roomID)
     }
 
-    tick(_dt: number) {
-        if(this.canSendControls){
+    tick(dt: number) {
+        this.physicsEngine.tick(dt)
+
+        this.controlsAccumulator += dt
+        const maxControlsAccumulator = 1000/(this.serverTPS*4)
+        while(this.controlsAccumulator > maxControlsAccumulator){
             let heldControls = this.controls.getHeldControls()
             if(heldControls.size > 0){
                 let json = JSON.stringify(Object.fromEntries(heldControls.entries()))
                 this.websocket.sendMessage("input", json)
-                this.canSendControls = false
             }
+            this.controlsAccumulator -= maxControlsAccumulator
         }
 
         this.canvas.draw()
@@ -91,22 +101,38 @@ class Platformer {
         roomGui.setNavBarVisibility(true)
     }
 
-    createRectangleShape(serverRect: Rect, rectID: number){
-        let rectangle = new RectangleShape(serverRect.size.x, serverRect.size.y)
-        rectangle.setPosition(serverRect.position.x, serverRect.position.y)
+    createRectangleShape(serverRect: Rect | KinematicRect, rectID: number){
+        if(this.canvas.getDrawable(rectID)){
+            return
+        }
+
+        let rectangle: RectangleShape;
+
+        if(isKinematicRect(serverRect)){
+            const rect = new KinematicRect(serverRect)
+            rect.setVelocity(serverRect.velocity.x, serverRect.velocity.y)
+            this.physicsEngine.insertKinematicRect(rectID, rect)
+
+            rectangle = new RectangleShape(rect)
+        } else {
+            const rect = new Rect(serverRect)
+            this.physicsEngine.insertStaticRect(rectID, rect)
+
+            rectangle = new RectangleShape(rect)
+        }
 
         this.canvas.insertDrawable(rectangle, 0, rectID)
     }
 
     handleLevelMessage(body: LevelMessage){
-        for (let [key, val] of Object.entries(body.kinematic)){
+        for (const [key, val] of Object.entries(body.kinematic)){
             const id = Number(key)
-            const serverRect = val as Rect
+            const serverRect = val as KinematicRect
 
             this.createRectangleShape(serverRect, id)
         }
 
-        for (let [key, val] of Object.entries(body.static)){
+        for (const [key, val] of Object.entries(body.static)){
             const id = Number(key)
             const serverRect = val as Rect
 
@@ -116,6 +142,7 @@ class Platformer {
 
     handleDeleteMessage(body: DeleteMessage){
         this.canvas.deleteDrawable(body.ID)
+        this.physicsEngine.deleteRect(body.ID)
     }
 
     handleCreateMessage(body: CreateMessage){
@@ -125,26 +152,11 @@ class Platformer {
         this.createRectangleShape(serverRect, rectID)
     }
 
-    handleDeltasMessage(body: DeltasMessage){
-        this.canSendControls = true
-
-        for (let [key, val] of Object.entries(body.kinematic)){
-            const id = Number(key)
-            const serverRect = val as Rect
-
-            const clientRect = this.canvas.getDrawable(id)
-
-            if(clientRect){
-                clientRect.setPosition(serverRect.position.x, serverRect.position.y)
-            }
-        }
-    }
-
     handleGameInfoMessage(body: GameInfoMessage){
         this.playerRectID = body.rectID
+        this.serverTPS = body.tps
 
-        // TODO: Handle constants and make physical calculations based on them
-        console.log(body.constants)
+        this.physicsEngine.setConstants(body.constants)
     }
 }
 

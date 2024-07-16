@@ -129,41 +129,8 @@ class DeltaTimer {
         return dt;
     }
 }
-function lerp(a, b, alpha) {
-    return a + alpha * (b - a);
-}
-class Rect {
-    constructor() {
-        this.position = new Vector2(0, 0);
-        this.size = new Vector2(0, 0);
-    }
-    setPosition(x, y) {
-        this.position.setPosition(x, y);
-    }
-    setSize(x, y) {
-        this.size.setPosition(x, y);
-    }
-    containsPoint(x, y) {
-        let pos = this.position;
-        let size = this.size;
-        if (x >= pos.x && x <= pos.x + size.x &&
-            y >= pos.y && y <= pos.y + size.y) {
-            return true;
-        }
-        return false;
-    }
-    getPosition() {
-        return this.position;
-    }
-    getSize() {
-        return this.size;
-    }
-}
-/// <reference path="rect.ts"/>
-class Drawable extends Rect {
-    constructor() {
-        super();
-    }
+class Drawable {
+    constructor() { }
     draw(_ctx) { }
 }
 class RoomGui {
@@ -196,18 +163,64 @@ class RoomGui {
 }
 // using global variable, so other scripts can use it
 const roomGui = new RoomGui();
+function lerp(a, b, alpha) {
+    return a + alpha * (b - a);
+}
+class Rect {
+    constructor(rect) {
+        if (rect) {
+            this.position = rect.position;
+            this.size = rect.size;
+            return;
+        }
+        this.position = new Vector2(0, 0);
+        this.size = new Vector2(0, 0);
+    }
+    setPosition(x, y) {
+        this.position.setPosition(x, y);
+    }
+    setSize(x, y) {
+        this.size.setPosition(x, y);
+    }
+    containsPoint(x, y) {
+        let pos = this.position;
+        let size = this.size;
+        if (x >= pos.x && x <= pos.x + size.x &&
+            y >= pos.y && y <= pos.y + size.y) {
+            return true;
+        }
+        return false;
+    }
+    getPosition() {
+        return this.position;
+    }
+    getSize() {
+        return this.size;
+    }
+}
 class RectangleShape extends Drawable {
-    constructor(width, height) {
+    constructor(rect) {
         super();
-        this.setSize(width, height);
+        if (rect) {
+            this.rect = rect;
+        }
+        else {
+            this.rect = new Rect();
+        }
         this.color = RGB(255, 255, 255);
+    }
+    setSize(x, y) {
+        this.rect.setSize(x, y);
+    }
+    setPosition(x, y) {
+        this.rect.setPosition(x, y);
     }
     setColor(color) {
         this.color = color;
     }
     draw(ctx) {
-        let pos = this.position;
-        let size = this.size;
+        let pos = this.rect.position;
+        let size = this.rect.size;
         ctx.fillStyle = this.color;
         ctx.fillRect(pos.x, pos.y, size.x, size.y);
     }
@@ -222,6 +235,7 @@ class DrawableText extends Drawable {
         this.color = RGB(255, 255, 255);
         this.fontSize = fontSize;
         this.font = "serif";
+        this.position = new Vector2(0, 0);
     }
     setString(string) {
         this.string = string;
@@ -234,6 +248,9 @@ class DrawableText extends Drawable {
     }
     setFontSize(fontSize) {
         this.fontSize = fontSize;
+    }
+    setPosition(x, y) {
+        this.position.setPosition(x, y);
     }
     draw(ctx) {
         ctx.fillStyle = this.color;
@@ -359,19 +376,20 @@ class Clicker {
         roomGui.setNavBarVisibility(true);
     }
     initDrawables() {
-        const button = new RectangleShape(300, 200);
+        const button = new RectangleShape();
         this.drawables.set("button", button);
         button.setColor(RGB(150, 150, 40));
-        button.setPosition((window.innerWidth - button.size.x) / 2, (window.innerHeight - button.size.y) / 2);
+        button.setSize(300, 200);
+        button.setPosition((window.innerWidth - button.rect.size.x) / 2, (window.innerHeight - button.rect.size.y) / 2);
         this.canvas.insertDrawable(button, 0, 0);
         const text = new DrawableText("0 clicks", 48);
         this.drawables.set("text", text);
-        text.setPosition(button.position.x + 10, button.position.y + 10);
+        text.setPosition(button.rect.position.x + 10, button.rect.position.y + 10);
         this.canvas.insertDrawable(text, 1, 1);
         // button click
         this.canvas.canvas.addEventListener("click", _e => {
             let mPos = this.canvas.getMousePos();
-            if (button.containsPoint(mPos.x, mPos.y)) {
+            if (button.rect.containsPoint(mPos.x, mPos.y)) {
                 this.click(this.clicks + 1);
                 this.websocket.sendMessage("click", "");
             }
