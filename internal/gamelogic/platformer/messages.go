@@ -16,6 +16,10 @@ type LevelData struct {
 	KinematicRects map[int]*physics.KinematicRect `json:"kinematic"`
 }
 
+type UpdateData struct {
+	MovedRects map[int]*physics.Rect `json:"movedRects"`
+}
+
 type CreateData struct {
 	ID   int                    `json:"id"`
 	Rect *physics.KinematicRect `json:"rect"`
@@ -31,6 +35,15 @@ func (gl *PlatformerGL) NewLevelMessage() *message.JSON {
 		Body: LevelData{
 			StaticRects:    gl.level.physEng.GetStaticRects(),
 			KinematicRects: gl.level.physEng.GetKinematicRects(),
+		},
+	}
+}
+
+func (gl *PlatformerGL) NewUpdateMessage(movedRects map[int]*physics.Rect) *message.JSON {
+	return &message.JSON{
+		Type: "update",
+		Body: UpdateData{
+			MovedRects: movedRects,
 		},
 	}
 }

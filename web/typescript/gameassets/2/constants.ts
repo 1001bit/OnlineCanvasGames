@@ -1,6 +1,5 @@
 interface PlatformerConstants {
-    friction: number;
-    gravity: number;
+    physics: PhysicsConstants;
     playerSpeed: number;
     playerJump: number;
 }

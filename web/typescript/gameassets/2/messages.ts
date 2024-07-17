@@ -1,15 +1,19 @@
 interface LevelMessage {
     kinematic: Map<number, KinematicRect>
-    static: Map<number, Rect>
+    static: Map<number, PhysicalRect>
 }
 
 interface DeleteMessage {
-    ID: number;
+    id: number;
 }
 
 interface CreateMessage {
-    rect: Rect | KinematicRect;
+    rect: PhysicalRect | KinematicRect;
     id: number;
+}
+
+interface UpdateMessage {
+    movedRects: Map<number, PhysicalRect>
 }
 
 interface GameInfoMessage {

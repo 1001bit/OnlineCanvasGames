@@ -1,7 +1,6 @@
-/// <reference path="physicsEngine.ts"/>
-
 class Platformer {
     playerRectID: number;
+    constants: PlatformerConstants;
 
     controlsAccumulator: number;
     serverTPS: number;
@@ -11,12 +10,20 @@ class Platformer {
     websocket: GameWebSocket;
     ticker: Ticker;
 
-    physicsEngine: Physics;
+    physicsEngine: PhysicsEngine;
 
     constructor(){
         const layers = 2
 
         this.playerRectID = 0
+        this.constants = {
+            physics: {
+                friction: 0,
+                gravity: 0,
+            },
+            playerSpeed: 0,
+            playerJump: 0,
+        }
 
         this.controlsAccumulator = 0;
         this.serverTPS = 0
@@ -32,7 +39,7 @@ class Platformer {
         const roomID = $("main").data("room-id")
         this.initWebsocket(gameID, roomID)
         
-        this.physicsEngine = new Physics()
+        this.physicsEngine = new PhysicsEngine()
 
         this.ticker = new Ticker()
         this.ticker.tick(dt => this.tick(dt))
@@ -57,6 +64,10 @@ class Platformer {
                 case "level":
                     this.handleLevelMessage(body);
                     break;
+
+                case "update":
+                    this.handleUpdateMessage(body);
+                    break;
         
                 case "delete":
                     this.handleDeleteMessage(body);
@@ -79,7 +90,7 @@ class Platformer {
     }
 
     tick(dt: number) {
-        this.physicsEngine.tick(dt)
+        this.physicsEngine.tick(dt, this.serverTPS, this.constants.physics)
 
         this.controlsAccumulator += dt
         const maxControlsAccumulator = 1000/(this.serverTPS*4)
@@ -108,17 +119,27 @@ class Platformer {
 
         let rectangle: RectangleShape;
 
-        if(isKinematicRect(serverRect)){
+        if(isKinematicRect(serverRect) && rectID == this.playerRectID){
+            // Doing physics prediction only for player rect
             const rect = new KinematicRect(serverRect)
-            rect.setVelocity(serverRect.velocity.x, serverRect.velocity.y)
             this.physicsEngine.insertKinematicRect(rectID, rect)
 
             rectangle = new RectangleShape(rect)
-        } else {
-            const rect = new Rect(serverRect)
+        } else if(isKinematicRect(serverRect)) {
+            // Interpolated rect for other kinematic rects
+            const rect = new InterpolatedRect(serverRect)
+            this.physicsEngine.insertInterpolatedRect(rectID, rect)
+
+            rectangle = new RectangleShape(rect)
+        } else if(isPhysicalRect(serverRect)) {
+            // Static rects
+            const rect = new PhysicalRect(serverRect)
             this.physicsEngine.insertStaticRect(rectID, rect)
 
             rectangle = new RectangleShape(rect)
+        } else {
+            // non rects
+            return
         }
 
         this.canvas.insertDrawable(rectangle, 0, rectID)
@@ -140,9 +161,13 @@ class Platformer {
         }
     }
 
+    handleUpdateMessage(body: UpdateMessage){
+        this.physicsEngine.serverUpdate(body.movedRects, this.serverTPS)
+    }
+
     handleDeleteMessage(body: DeleteMessage){
-        this.canvas.deleteDrawable(body.ID)
-        this.physicsEngine.deleteRect(body.ID)
+        this.canvas.deleteDrawable(body.id)
+        this.physicsEngine.deleteRect(body.id)
     }
 
     handleCreateMessage(body: CreateMessage){
@@ -155,8 +180,7 @@ class Platformer {
     handleGameInfoMessage(body: GameInfoMessage){
         this.playerRectID = body.rectID
         this.serverTPS = body.tps
-
-        this.physicsEngine.setConstants(body.constants)
+        this.constants = body.constants
     }
 }
 

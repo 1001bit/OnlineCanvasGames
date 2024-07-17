@@ -50,8 +50,8 @@
                     - [X] Physics Constants
                     - [X] TPS
                 - [X] Rect Delete/Create
-                - [ ] Actions
-                - [ ] Level state
+                - [X] Moved rects
+                - [ ] Level state every 10 seconds
 
         - [X] Client
             - [X] Level Draw
@@ -65,9 +65,12 @@
                 - [X] Rect Delete/Create
             - [ ] Smooth rect movements
                 - [X] Physics class, which replicates server's physics
-                - [ ] Accelerating rects based on server's actions and client's actions (input)
-                - [ ] Physics calculations based on current state
-                - [ ] Interpolated state correct based on state message
+                - [ ] Client State -> Server State interpolation
+                    - [X] Whole level
+                    - [ ] Player
+                - [ ] Physics calculations (only for player's actions) based on current state
+                    - [X] Gravity, friction, small stuff
+                    - [ ] Collisions
 
 - [ ] Admin page
     - [ ] Front end

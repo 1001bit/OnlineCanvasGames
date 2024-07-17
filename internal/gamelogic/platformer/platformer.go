@@ -18,7 +18,7 @@ type PlatformerGL struct {
 func NewPlatformerGL() *PlatformerGL {
 	const (
 		maxPlayers = 2
-		tps        = 50
+		tps        = 10
 	)
 
 	return &PlatformerGL{

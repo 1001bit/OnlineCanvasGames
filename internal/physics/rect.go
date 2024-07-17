@@ -4,7 +4,7 @@ type Rect struct {
 	Position Vector2f `json:"position"`
 	Size     Vector2f `json:"size"`
 
-	doApplyCollisions bool
+	DoApplyCollisions bool `json:"doApplyCollisions"`
 }
 
 func MakeRect(x, y, w, h float64, doApplyCollisions bool) Rect {
@@ -12,7 +12,7 @@ func MakeRect(x, y, w, h float64, doApplyCollisions bool) Rect {
 		Position: Vector2f{x, y},
 		Size:     Vector2f{w, h},
 
-		doApplyCollisions: doApplyCollisions,
+		DoApplyCollisions: doApplyCollisions,
 	}
 }
 

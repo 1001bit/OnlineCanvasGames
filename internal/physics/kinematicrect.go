@@ -24,8 +24,8 @@ type KinematicRect struct {
 
 	collisionDir CollisionDirection
 
-	doApplyGravity  bool
-	doApplyFriction bool
+	DoApplyGravity  bool `json:"doApplyGravity"`
+	DoApplyFriction bool `json:"doApplyFriction"`
 }
 
 func NewKinematicRect(rect Rect, doGravity, doFriction bool) *KinematicRect {
@@ -39,8 +39,8 @@ func NewKinematicRect(rect Rect, doGravity, doFriction bool) *KinematicRect {
 			Horizontal: None,
 		},
 
-		doApplyGravity:  doGravity,
-		doApplyFriction: doFriction,
+		DoApplyGravity:  doGravity,
+		DoApplyFriction: doFriction,
 	}
 }
 

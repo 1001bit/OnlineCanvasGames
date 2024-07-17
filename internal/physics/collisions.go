@@ -1,7 +1,7 @@
 package physics
 
-func collideKinematicWithSolid(kinematic *KinematicRect, solid *Rect, dtMs float64) {
-	if !kinematic.Rect.doApplyCollisions || !solid.doApplyCollisions {
+func collideKinematicWithStatic(kinematic *KinematicRect, static *Rect, dtMs float64) {
+	if !static.DoApplyCollisions {
 		return
 	}
 	kinematic.collisionDir = CollisionDirection{None, None}
@@ -17,8 +17,8 @@ func collideKinematicWithSolid(kinematic *KinematicRect, solid *Rect, dtMs float
 	if velY > 0 {
 		// down
 		futureKinematic.Size.Y += velY
-		if futureKinematic.Intersects(*solid) {
-			kinematic.Position.Y = solid.Position.Y - kinematic.Size.Y
+		if futureKinematic.Intersects(*static) {
+			kinematic.Position.Y = static.Position.Y - kinematic.Size.Y
 			kinematic.Velocity.Y = 0
 
 			kinematic.collisionDir.Vertical = Down
@@ -27,8 +27,8 @@ func collideKinematicWithSolid(kinematic *KinematicRect, solid *Rect, dtMs float
 		// up
 		futureKinematic.Position.Y += velY
 		futureKinematic.Size.Y -= velY
-		if futureKinematic.Intersects(*solid) {
-			kinematic.Position.Y = solid.Position.Y + solid.Size.Y
+		if futureKinematic.Intersects(*static) {
+			kinematic.Position.Y = static.Position.Y + static.Size.Y
 			kinematic.Velocity.Y = 0
 
 			kinematic.collisionDir.Vertical = Up
@@ -41,8 +41,8 @@ func collideKinematicWithSolid(kinematic *KinematicRect, solid *Rect, dtMs float
 	if velX > 0 {
 		// Right
 		futureKinematic.Size.X += velX
-		if futureKinematic.Intersects(*solid) {
-			kinematic.Position.X = solid.Position.X - kinematic.Size.X
+		if futureKinematic.Intersects(*static) {
+			kinematic.Position.X = static.Position.X - kinematic.Size.X
 			kinematic.Velocity.X = 0
 
 			kinematic.collisionDir.Horizontal = Right
@@ -51,8 +51,8 @@ func collideKinematicWithSolid(kinematic *KinematicRect, solid *Rect, dtMs float
 		// Left
 		futureKinematic.Position.X += velX
 		futureKinematic.Size.X -= velX
-		if futureKinematic.Intersects(*solid) {
-			kinematic.Position.X = solid.Position.X + solid.Size.X
+		if futureKinematic.Intersects(*static) {
+			kinematic.Position.X = static.Position.X + static.Size.X
 			kinematic.Velocity.X = 0
 
 			kinematic.collisionDir.Horizontal = Left

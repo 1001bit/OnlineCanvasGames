@@ -167,14 +167,13 @@ function lerp(a, b, alpha) {
     return a + alpha * (b - a);
 }
 class Rect {
-    constructor(rect) {
-        if (rect) {
-            this.position = rect.position;
-            this.size = rect.size;
-            return;
-        }
+    constructor(abstractRect) {
         this.position = new Vector2(0, 0);
         this.size = new Vector2(0, 0);
+        if (abstractRect) {
+            this.setPosition(abstractRect.position.x, abstractRect.position.y);
+            this.setSize(abstractRect.size.x, abstractRect.size.y);
+        }
     }
     setPosition(x, y) {
         this.position.setPosition(x, y);
@@ -192,10 +191,10 @@ class Rect {
         return false;
     }
     getPosition() {
-        return this.position;
+        return new Vector2(this.position.x, this.position.y);
     }
     getSize() {
-        return this.size;
+        return new Vector2(this.size.x, this.size.y);
     }
 }
 class RectangleShape extends Drawable {
@@ -270,6 +269,9 @@ class Ticker {
         callback(dt);
         requestAnimationFrame(() => this.tick(callback));
     }
+}
+function lerpVector2(v1, v2, a) {
+    return new Vector2(v1.x + a * (v2.x - v1.x), v1.y + a * (v2.y - v1.y));
 }
 class Vector2 {
     constructor(x, y) {

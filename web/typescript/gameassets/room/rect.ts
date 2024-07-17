@@ -6,15 +6,14 @@ class Rect {
     position: Vector2;
     size: Vector2;
 
-    constructor(rect?: Rect){
-        if(rect){
-            this.position = rect.position;
-            this.size = rect.size;
-            return;
-        }
-
+    constructor(abstractRect?: Rect){
         this.position = new Vector2(0, 0);
         this.size = new Vector2(0, 0);
+
+        if(abstractRect){
+            this.setPosition(abstractRect.position.x, abstractRect.position.y);
+            this.setSize(abstractRect.size.x, abstractRect.size.y);
+        }
     }
 
     setPosition(x: number, y: number){
@@ -39,10 +38,10 @@ class Rect {
     }
 
     getPosition(){
-        return this.position;
+        return new Vector2(this.position.x, this.position.y);
     }
 
     getSize(){
-        return this.size;
+        return new Vector2(this.size.x, this.size.y);
     }
 }

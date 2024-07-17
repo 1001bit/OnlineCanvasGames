@@ -167,14 +167,13 @@ function lerp(a, b, alpha) {
     return a + alpha * (b - a);
 }
 class Rect {
-    constructor(rect) {
-        if (rect) {
-            this.position = rect.position;
-            this.size = rect.size;
-            return;
-        }
+    constructor(abstractRect) {
         this.position = new Vector2(0, 0);
         this.size = new Vector2(0, 0);
+        if (abstractRect) {
+            this.setPosition(abstractRect.position.x, abstractRect.position.y);
+            this.setSize(abstractRect.size.x, abstractRect.size.y);
+        }
     }
     setPosition(x, y) {
         this.position.setPosition(x, y);
@@ -192,10 +191,10 @@ class Rect {
         return false;
     }
     getPosition() {
-        return this.position;
+        return new Vector2(this.position.x, this.position.y);
     }
     getSize() {
-        return this.size;
+        return new Vector2(this.size.x, this.size.y);
     }
 }
 class RectangleShape extends Drawable {
@@ -271,6 +270,9 @@ class Ticker {
         requestAnimationFrame(() => this.tick(callback));
     }
 }
+function lerpVector2(v1, v2, a) {
+    return new Vector2(v1.x + a * (v2.x - v1.x), v1.y + a * (v2.y - v1.y));
+}
 class Vector2 {
     constructor(x, y) {
         this.x = x;
@@ -337,25 +339,28 @@ class GameWebSocket {
         }));
     }
 }
-class Physics {
+function collideKinematicWithStatic(kinematicRect, staticRect, dt) {
+    if (!staticRect.doApplyCollisions) {
+        return;
+    }
+    // TODO: Collisions
+}
+class PhysicsEngine {
     constructor() {
-        this.constants = {
-            friction: 0,
-            gravity: 0,
-            playerSpeed: 0,
-            playerJump: 0
-        };
         this.staticRects = new Map();
         this.kinematicRects = new Map();
-    }
-    setConstants(constants) {
-        this.constants = constants;
-    }
-    insertKinematicRect(id, rect) {
-        this.kinematicRects.set(id, rect);
+        this.interpolatedRects = new Map();
+        this.serverTickAccumulator = 0;
     }
     insertStaticRect(id, rect) {
         this.staticRects.set(id, rect);
+    }
+    insertInterpolatedRect(id, rect) {
+        this.interpolatedRects.set(id, rect);
+    }
+    insertKinematicRect(id, rect) {
+        this.insertInterpolatedRect(id, rect);
+        this.kinematicRects.set(id, rect);
     }
     deleteRect(id) {
         this.staticRects.delete(id);
@@ -368,21 +373,138 @@ class Physics {
         }
         return this.staticRects.get(id);
     }
-    tick(dt) {
+    tick(dt, serverTPS, constants) {
+        // HACK: Use fixed timestep for this loop
         for (const [_id, rect] of this.kinematicRects) {
+            this.applyGravityToVel(rect, constants.gravity, dt);
+            this.applyFrictionToVel(rect, constants.friction);
+            this.applyCollisions(rect, dt);
             this.applyVelToPos(rect, dt);
+        }
+        // Interpolation
+        this.serverTickAccumulator += dt;
+        for (const [_id, rect] of this.interpolatedRects) {
+            let alpha = this.serverTickAccumulator / (1000 / serverTPS);
+            alpha = Math.min(1, alpha);
+            rect.interpolate(alpha);
+        }
+    }
+    serverUpdate(movedRects, serverTPS) {
+        if (this.serverTickAccumulator >= (1000 / serverTPS)) {
+            this.serverTickAccumulator %= (1000 / serverTPS);
+        }
+        for (const [_id, rect] of this.interpolatedRects) {
+            rect.updateStartPos();
+        }
+        for (const [key, val] of Object.entries(movedRects)) {
+            const id = Number(key);
+            const serverRect = val;
+            const staticRect = this.staticRects.get(id);
+            if (staticRect) {
+                staticRect.setPosition(serverRect.position.x, serverRect.position.y);
+                continue;
+            }
+            const kinematicRect = this.kinematicRects.get(id);
+            if (kinematicRect) {
+                // TODO: Correct sometimes
+                const correct = false;
+                if (correct) {
+                    kinematicRect.setTargetPos(serverRect.position.x, serverRect.position.y);
+                }
+                continue;
+            }
+            const interpolatedRect = this.interpolatedRects.get(id);
+            if (interpolatedRect) {
+                interpolatedRect.setTargetPos(serverRect.position.x, serverRect.position.y);
+            }
+        }
+    }
+    applyGravityToVel(rect, gravity, dt) {
+        if (!rect.doApplyGravity) {
+            rect;
+        }
+        rect.velocity.y += gravity * dt;
+    }
+    applyFrictionToVel(rect, friction) {
+        if (!rect.doApplyFriction) {
+            return;
+        }
+        rect.velocity.x -= rect.velocity.x * friction;
+        // also do friction on y axis if non gravitable
+        if (!rect.doApplyGravity) {
+            rect.velocity.y -= rect.velocity.y * friction;
+        }
+    }
+    applyCollisions(rect, dt) {
+        if (!rect.doApplyCollisions) {
+            return;
+        }
+        for (const [_id, staticRect] of this.staticRects) {
+            collideKinematicWithStatic(rect, staticRect, dt);
         }
     }
     applyVelToPos(rect, dt) {
-        rect.position.x += rect.velocity.x * dt;
-        rect.position.y += rect.velocity.y * dt;
+        const posX = rect.targetPosition.x + rect.velocity.x * dt;
+        const posY = rect.targetPosition.y + rect.velocity.y * dt;
+        rect.setTargetPos(posX, posY);
     }
 }
-/// <reference path="physicsEngine.ts"/>
+function isPhysicalRect(obj) {
+    return "position" in obj && "size" in obj && "doApplyCollisions" in obj;
+}
+function isKinematicRect(obj) {
+    return isPhysicalRect(obj) && "velocity" in obj;
+}
+class PhysicalRect extends Rect {
+    constructor(abstractRect) {
+        super(abstractRect);
+        this.doApplyCollisions = abstractRect.doApplyCollisions;
+    }
+}
+class InterpolatedRect extends PhysicalRect {
+    constructor(abstractRect) {
+        super(abstractRect);
+        this.startPosition = this.getPosition();
+        this.targetPosition = this.getPosition();
+    }
+    setTargetPos(x, y, teleport) {
+        this.targetPosition.setPosition(x, y);
+        if (teleport) {
+            this.setPosition(x, y);
+            this.startPosition.setPosition(x, y);
+        }
+    }
+    updateStartPos() {
+        this.startPosition.setPosition(this.targetPosition.x, this.targetPosition.y);
+    }
+    interpolate(alpha) {
+        const newPos = lerpVector2(this.startPosition, this.targetPosition, alpha);
+        this.setPosition(newPos.x, newPos.y);
+    }
+}
+class KinematicRect extends InterpolatedRect {
+    constructor(abstractRect) {
+        super(abstractRect);
+        this.velocity = new Vector2(abstractRect.velocity.x, abstractRect.velocity.y);
+        this.doApplyGravity = abstractRect.doApplyCollisions;
+        this.doApplyFriction = abstractRect.doApplyFriction;
+    }
+    setVelocity(x, y) {
+        this.velocity.setPosition(x, y);
+    }
+}
 class Platformer {
     constructor() {
         const layers = 2;
         this.playerRectID = 0;
+        this.constants = {
+            physics: {
+                friction: 0,
+                gravity: 0,
+            },
+            playerSpeed: 0,
+            playerJump: 0,
+        };
         this.controlsAccumulator = 0;
         this.serverTPS = 0;
         this.canvas = new GameCanvas("canvas", layers);
@@ -393,7 +515,7 @@ class Platformer {
         const gameID = $("main").data("game-id");
         const roomID = $("main").data("room-id");
         this.initWebsocket(gameID, roomID);
-        this.physicsEngine = new Physics();
+        this.physicsEngine = new PhysicsEngine();
         this.ticker = new Ticker();
         this.ticker.tick(dt => this.tick(dt));
     }
@@ -413,6 +535,9 @@ class Platformer {
                 case "level":
                     this.handleLevelMessage(body);
                     break;
+                case "update":
+                    this.handleUpdateMessage(body);
+                    break;
                 case "delete":
                     this.handleDeleteMessage(body);
                     break;
@@ -429,7 +554,7 @@ class Platformer {
         this.websocket.openConnection(gameID, roomID);
     }
     tick(dt) {
-        this.physicsEngine.tick(dt);
+        this.physicsEngine.tick(dt, this.serverTPS, this.constants.physics);
         this.controlsAccumulator += dt;
         const maxControlsAccumulator = 1000 / (this.serverTPS * 4);
         while (this.controlsAccumulator > maxControlsAccumulator) {
@@ -452,16 +577,27 @@ class Platformer {
             return;
         }
         let rectangle;
-        if (isKinematicRect(serverRect)) {
+        if (isKinematicRect(serverRect) && rectID == this.playerRectID) {
+            // Doing physics prediction only for player rect
             const rect = new KinematicRect(serverRect);
-            rect.setVelocity(serverRect.velocity.x, serverRect.velocity.y);
             this.physicsEngine.insertKinematicRect(rectID, rect);
             rectangle = new RectangleShape(rect);
         }
-        else {
-            const rect = new Rect(serverRect);
+        else if (isKinematicRect(serverRect)) {
+            // Interpolated rect for other kinematic rects
+            const rect = new InterpolatedRect(serverRect);
+            this.physicsEngine.insertInterpolatedRect(rectID, rect);
+            rectangle = new RectangleShape(rect);
+        }
+        else if (isPhysicalRect(serverRect)) {
+            // Static rects
+            const rect = new PhysicalRect(serverRect);
             this.physicsEngine.insertStaticRect(rectID, rect);
             rectangle = new RectangleShape(rect);
+        }
+        else {
+            // non rects
+            return;
         }
         this.canvas.insertDrawable(rectangle, 0, rectID);
     }
@@ -477,9 +613,13 @@ class Platformer {
             this.createRectangleShape(serverRect, id);
         }
     }
+    handleUpdateMessage(body) {
+        this.physicsEngine.serverUpdate(body.movedRects, this.serverTPS);
+    }
     handleDeleteMessage(body) {
-        this.canvas.deleteDrawable(body.ID);
-        this.physicsEngine.deleteRect(body.ID);
+        console.log(body.id);
+        this.canvas.deleteDrawable(body.id);
+        this.physicsEngine.deleteRect(body.id);
     }
     handleCreateMessage(body) {
         let serverRect = body.rect;
@@ -489,22 +629,7 @@ class Platformer {
     handleGameInfoMessage(body) {
         this.playerRectID = body.rectID;
         this.serverTPS = body.tps;
-        this.physicsEngine.setConstants(body.constants);
+        this.constants = body.constants;
     }
 }
 new Platformer();
-function isRect(obj) {
-    return "position" in obj && "size" in obj;
-}
-function isKinematicRect(obj) {
-    return isRect(obj) && "velocity" in obj;
-}
-class KinematicRect extends Rect {
-    constructor(rect) {
-        super(rect);
-        this.velocity = new Vector2(0, 0);
-    }
-    setVelocity(x, y) {
-        this.velocity.setPosition(x, y);
-    }
-}
