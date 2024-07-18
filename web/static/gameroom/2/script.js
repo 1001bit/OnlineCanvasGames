@@ -190,6 +190,15 @@ class Rect {
         }
         return false;
     }
+    intersects(rect) {
+        if (this.position.x + this.size.x <= rect.position.x ||
+            this.position.x >= rect.position.x + rect.size.x ||
+            this.position.y + this.size.y <= rect.position.y ||
+            this.position.y >= rect.position.y + rect.size.y) {
+            return false;
+        }
+        return true;
+    }
     getPosition() {
         return new Vector2(this.position.x, this.position.y);
     }
@@ -343,7 +352,51 @@ function collideKinematicWithStatic(kinematicRect, staticRect, dt) {
     if (!staticRect.doApplyCollisions) {
         return;
     }
-    // TODO: Collisions
+    kinematicRect.setCollisionDir(Direction.None);
+    let futureKinematic = new Rect(kinematicRect);
+    futureKinematic.setPosition(kinematicRect.targetPosition.x, kinematicRect.targetPosition.y);
+    const velX = kinematicRect.velocity.x * dt;
+    const velY = kinematicRect.velocity.y * dt;
+    if (velY > 0) {
+        // down
+        futureKinematic.size.y += velY;
+        if (futureKinematic.intersects(staticRect)) {
+            kinematicRect.setTargetPos(kinematicRect.targetPosition.x, staticRect.position.y - kinematicRect.size.y, true);
+            kinematicRect.velocity.y = 0;
+            kinematicRect.setCollisionDir(Direction.Down);
+        }
+    }
+    else if (velY < 0) {
+        // up
+        futureKinematic.size.y += Math.abs(velY);
+        futureKinematic.position.y -= Math.abs(velY);
+        if (futureKinematic.intersects(staticRect)) {
+            kinematicRect.setTargetPos(kinematicRect.targetPosition.x, staticRect.position.y + staticRect.size.y, true);
+            kinematicRect.velocity.y = 0;
+            kinematicRect.setCollisionDir(Direction.Up);
+        }
+    }
+    futureKinematic = new Rect(kinematicRect);
+    futureKinematic.setPosition(kinematicRect.targetPosition.x, kinematicRect.targetPosition.y);
+    if (velX > 0) {
+        // right
+        futureKinematic.size.x += velX;
+        if (futureKinematic.intersects(staticRect)) {
+            kinematicRect.setTargetPos(staticRect.position.x - kinematicRect.size.x, kinematicRect.targetPosition.y, true);
+            kinematicRect.velocity.x = 0;
+            kinematicRect.setCollisionDir(Direction.Right);
+        }
+    }
+    else if (velX < 0) {
+        // left
+        futureKinematic.size.x += Math.abs(velX);
+        futureKinematic.position.x -= Math.abs(velX);
+        if (futureKinematic.intersects(staticRect)) {
+            kinematicRect.setTargetPos(staticRect.position.x + staticRect.size.x, kinematicRect.targetPosition.y, true);
+            kinematicRect.velocity.x = 0;
+            kinematicRect.setCollisionDir(Direction.Left);
+        }
+    }
 }
 class PhysicsEngine {
     constructor() {
@@ -389,6 +442,35 @@ class PhysicsEngine {
             rect.interpolate(alpha);
         }
     }
+    applyGravityToVel(rect, gravity, dt) {
+        if (!rect.doApplyGravity) {
+            rect;
+        }
+        rect.velocity.y += gravity * dt;
+    }
+    applyFrictionToVel(rect, friction) {
+        if (!rect.doApplyFriction) {
+            return;
+        }
+        rect.velocity.x -= rect.velocity.x * friction;
+        // also do friction on y axis if non gravitable
+        if (!rect.doApplyGravity) {
+            rect.velocity.y -= rect.velocity.y * friction;
+        }
+    }
+    applyCollisions(rect, dt) {
+        if (!rect.doApplyCollisions) {
+            return;
+        }
+        for (const [_id, staticRect] of this.staticRects) {
+            collideKinematicWithStatic(rect, staticRect, dt);
+        }
+    }
+    applyVelToPos(rect, dt) {
+        const posX = rect.targetPosition.x + rect.velocity.x * dt;
+        const posY = rect.targetPosition.y + rect.velocity.y * dt;
+        rect.setTargetPos(posX, posY);
+    }
     serverUpdate(movedRects, serverTPS) {
         if (this.serverTickAccumulator >= (1000 / serverTPS)) {
             this.serverTickAccumulator %= (1000 / serverTPS);
@@ -419,35 +501,6 @@ class PhysicsEngine {
             }
         }
     }
-    applyGravityToVel(rect, gravity, dt) {
-        if (!rect.doApplyGravity) {
-            rect;
-        }
-        rect.velocity.y += gravity * dt;
-    }
-    applyFrictionToVel(rect, friction) {
-        if (!rect.doApplyFriction) {
-            return;
-        }
-        rect.velocity.x -= rect.velocity.x * friction;
-        // also do friction on y axis if non gravitable
-        if (!rect.doApplyGravity) {
-            rect.velocity.y -= rect.velocity.y * friction;
-        }
-    }
-    applyCollisions(rect, dt) {
-        if (!rect.doApplyCollisions) {
-            return;
-        }
-        for (const [_id, staticRect] of this.staticRects) {
-            collideKinematicWithStatic(rect, staticRect, dt);
-        }
-    }
-    applyVelToPos(rect, dt) {
-        const posX = rect.targetPosition.x + rect.velocity.x * dt;
-        const posY = rect.targetPosition.y + rect.velocity.y * dt;
-        rect.setTargetPos(posX, posY);
-    }
 }
 function isPhysicalRect(obj) {
     return "position" in obj && "size" in obj && "doApplyCollisions" in obj;
@@ -455,6 +508,14 @@ function isPhysicalRect(obj) {
 function isKinematicRect(obj) {
     return isPhysicalRect(obj) && "velocity" in obj;
 }
+var Direction;
+(function (Direction) {
+    Direction[Direction["None"] = 0] = "None";
+    Direction[Direction["Up"] = 1] = "Up";
+    Direction[Direction["Down"] = 2] = "Down";
+    Direction[Direction["Left"] = 3] = "Left";
+    Direction[Direction["Right"] = 4] = "Right";
+})(Direction || (Direction = {}));
 class PhysicalRect extends Rect {
     constructor(abstractRect) {
         super(abstractRect);
@@ -488,9 +549,23 @@ class KinematicRect extends InterpolatedRect {
         this.velocity = new Vector2(abstractRect.velocity.x, abstractRect.velocity.y);
         this.doApplyGravity = abstractRect.doApplyCollisions;
         this.doApplyFriction = abstractRect.doApplyFriction;
+        this.collisionHorizontal = Direction.None;
+        this.collisionVertical = Direction.None;
     }
     setVelocity(x, y) {
         this.velocity.setPosition(x, y);
+    }
+    setCollisionDir(dir) {
+        if (dir == Direction.Down || dir == Direction.Up) {
+            this.collisionVertical = dir;
+        }
+        else if (dir == Direction.Left || dir == Direction.Right) {
+            this.collisionHorizontal = dir;
+        }
+        else {
+            this.collisionVertical = dir;
+            this.collisionHorizontal = dir;
+        }
     }
 }
 class Platformer {
@@ -617,7 +692,6 @@ class Platformer {
         this.physicsEngine.serverUpdate(body.movedRects, this.serverTPS);
     }
     handleDeleteMessage(body) {
-        console.log(body.id);
         this.canvas.deleteDrawable(body.id);
         this.physicsEngine.deleteRect(body.id);
     }

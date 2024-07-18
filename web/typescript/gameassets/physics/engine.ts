@@ -57,42 +57,6 @@ class PhysicsEngine {
         }
     }
 
-    serverUpdate(movedRects: Map<number, PhysicalRect>, serverTPS: number){
-        if(this.serverTickAccumulator >= (1000/serverTPS)){
-            this.serverTickAccumulator %= (1000/serverTPS)
-        }
-
-        for(const [_id, rect] of this.interpolatedRects){
-            rect.updateStartPos()
-        }
-
-        for(const [key, val] of Object.entries(movedRects)){
-            const id = Number(key)
-            const serverRect = val as PhysicalRect
-
-            const staticRect = this.staticRects.get(id)
-            if(staticRect){
-                staticRect.setPosition(serverRect.position.x, serverRect.position.y)
-                continue
-            }
-
-            const kinematicRect = this.kinematicRects.get(id)
-            if(kinematicRect){
-                // TODO: Correct sometimes
-                const correct = false
-                if(correct){
-                    kinematicRect.setTargetPos(serverRect.position.x, serverRect.position.y)
-                }
-                continue
-            }
-
-            const interpolatedRect = this.interpolatedRects.get(id)
-            if(interpolatedRect){
-                interpolatedRect.setTargetPos(serverRect.position.x, serverRect.position.y)
-            }
-        }
-    }
-
     applyGravityToVel(rect: KinematicRect, gravity: number, dt: number){
         if(!rect.doApplyGravity){
             rect
@@ -128,5 +92,41 @@ class PhysicsEngine {
         const posX = rect.targetPosition.x + rect.velocity.x * dt
         const posY = rect.targetPosition.y + rect.velocity.y * dt
         rect.setTargetPos(posX, posY)
+    }
+
+    serverUpdate(movedRects: Map<number, PhysicalRect>, serverTPS: number){
+        if(this.serverTickAccumulator >= (1000/serverTPS)){
+            this.serverTickAccumulator %= (1000/serverTPS)
+        }
+
+        for(const [_id, rect] of this.interpolatedRects){
+            rect.updateStartPos()
+        }
+
+        for(const [key, val] of Object.entries(movedRects)){
+            const id = Number(key)
+            const serverRect = val as PhysicalRect
+
+            const staticRect = this.staticRects.get(id)
+            if(staticRect){
+                staticRect.setPosition(serverRect.position.x, serverRect.position.y)
+                continue
+            }
+
+            const kinematicRect = this.kinematicRects.get(id)
+            if(kinematicRect){
+                // TODO: Correct sometimes
+                const correct = false
+                if(correct){
+                    kinematicRect.setTargetPos(serverRect.position.x, serverRect.position.y)
+                }
+                continue
+            }
+
+            const interpolatedRect = this.interpolatedRects.get(id)
+            if(interpolatedRect){
+                interpolatedRect.setTargetPos(serverRect.position.x, serverRect.position.y)
+            }
+        }
     }
 }

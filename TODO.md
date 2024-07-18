@@ -68,9 +68,10 @@
                 - [ ] Client State -> Server State interpolation
                     - [X] Whole level
                     - [ ] Player
-                - [ ] Physics calculations (only for player's actions) based on current state
+                - [X] Physics calculations (only for player's actions) based on current state
                     - [X] Gravity, friction, small stuff
-                    - [ ] Collisions
+                    - [X] Collisions
+                    - [ ] Player movement
 
 - [ ] Admin page
     - [ ] Front end

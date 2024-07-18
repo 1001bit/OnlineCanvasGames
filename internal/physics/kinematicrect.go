@@ -48,6 +48,17 @@ func (kr *KinematicRect) AddToVel(add Vector2f) {
 	kr.Velocity.Add(add)
 }
 
+func (kr *KinematicRect) SetCollisionDir(dir Direction) {
+	if dir == Down || dir == Up {
+		kr.collisionDir.Vertical = dir
+	} else if dir == Left || dir == Right {
+		kr.collisionDir.Horizontal = dir
+	} else {
+		kr.collisionDir.Horizontal = dir
+		kr.collisionDir.Vertical = dir
+	}
+}
+
 func (kr *KinematicRect) GetRect() Rect {
 	return kr.Rect
 }

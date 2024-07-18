@@ -190,6 +190,15 @@ class Rect {
         }
         return false;
     }
+    intersects(rect) {
+        if (this.position.x + this.size.x <= rect.position.x ||
+            this.position.x >= rect.position.x + rect.size.x ||
+            this.position.y + this.size.y <= rect.position.y ||
+            this.position.y >= rect.position.y + rect.size.y) {
+            return false;
+        }
+        return true;
+    }
     getPosition() {
         return new Vector2(this.position.x, this.position.y);
     }

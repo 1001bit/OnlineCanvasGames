@@ -6,6 +6,14 @@ function isKinematicRect(obj: any) : obj is KinematicRect{
     return isPhysicalRect(obj) && "velocity" in obj
 }
 
+enum Direction {
+    None,
+    Up,
+    Down,
+    Left,
+    Right,
+}
+
 class PhysicalRect extends Rect {
     doApplyCollisions: boolean;
 
@@ -52,6 +60,9 @@ class KinematicRect extends InterpolatedRect {
     doApplyGravity: boolean;
     doApplyFriction: boolean;
 
+    collisionVertical: Direction;
+    collisionHorizontal: Direction;
+
     constructor(abstractRect: KinematicRect){
         super(abstractRect);
 
@@ -59,9 +70,23 @@ class KinematicRect extends InterpolatedRect {
 
         this.doApplyGravity = abstractRect.doApplyCollisions;
         this.doApplyFriction = abstractRect.doApplyFriction;
+
+        this.collisionHorizontal = Direction.None
+        this.collisionVertical = Direction.None
     }
 
     setVelocity(x: number, y: number){
         this.velocity.setPosition(x, y)
+    }
+
+    setCollisionDir(dir: Direction){
+        if(dir == Direction.Down || dir == Direction.Up){
+            this.collisionVertical = dir
+        } else if (dir == Direction.Left || dir == Direction.Right){
+            this.collisionHorizontal = dir
+        } else {
+            this.collisionVertical = dir
+            this.collisionHorizontal = dir
+        }
     }
 }
