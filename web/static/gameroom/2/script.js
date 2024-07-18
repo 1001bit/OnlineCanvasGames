@@ -629,6 +629,7 @@ class Platformer {
         this.websocket.openConnection(gameID, roomID);
     }
     tick(dt) {
+        this.handleControls();
         this.physicsEngine.tick(dt, this.serverTPS, this.constants.physics);
         this.controlsAccumulator += dt;
         const maxControlsAccumulator = 1000 / (this.serverTPS * 4);
@@ -641,6 +642,21 @@ class Platformer {
             this.controlsAccumulator -= maxControlsAccumulator;
         }
         this.canvas.draw();
+    }
+    handleControls() {
+        const playerRect = this.physicsEngine.kinematicRects.get(this.playerRectID);
+        if (!playerRect) {
+            return;
+        }
+        if (this.controls.isHeld("left")) {
+            playerRect.velocity.x -= this.constants.playerSpeed;
+        }
+        if (this.controls.isHeld("right")) {
+            playerRect.velocity.x += this.constants.playerSpeed;
+        }
+        if (this.controls.isHeld("jump") && playerRect.collisionVertical == Direction.Down) {
+            playerRect.velocity.y -= this.constants.playerJump;
+        }
     }
     stopWithText(text) {
         this.canvas.stop();

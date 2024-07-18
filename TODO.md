@@ -71,7 +71,7 @@
                 - [X] Physics calculations (only for player's actions) based on current state
                     - [X] Gravity, friction, small stuff
                     - [X] Collisions
-                    - [ ] Player movement
+                    - [X] Player movement
 
 - [ ] Admin page
     - [ ] Front end
