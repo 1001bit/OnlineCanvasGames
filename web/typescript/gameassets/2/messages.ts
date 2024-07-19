@@ -13,7 +13,7 @@ interface CreateMessage {
 }
 
 interface UpdateMessage {
-    movedRects: Map<number, PhysicalRect>
+    rectsMoved: Map<number, Vector2>
 }
 
 interface GameInfoMessage {

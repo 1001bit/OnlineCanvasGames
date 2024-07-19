@@ -192,7 +192,7 @@ class Platformer {
         // physics operations
         this.serverAccumulator = 0
         this.physicsEngine.updateInterpolatedInterpolation()
-        this.physicsEngine.serverUpdate(body.movedRects)
+        this.physicsEngine.setMultiplePositions(body.rectsMoved)
 
         // send controls to server
         const controlsCoeffs = this.controls.getCoeffs()

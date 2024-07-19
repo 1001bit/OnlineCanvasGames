@@ -95,14 +95,14 @@ class PhysicsEngine {
         rect.setTargetPos(posX, posY)
     }
 
-    serverUpdate(movedRects: Map<number, PhysicalRect>){
-        for(const [key, val] of Object.entries(movedRects)){
+    setMultiplePositions(positions: Map<number, Vector2>){
+        for(const [key, val] of Object.entries(positions)){
             const id = Number(key)
-            const serverRect = val as Rect
+            const position = val as Vector2
 
             const staticRect = this.staticRects.get(id)
             if(staticRect){
-                staticRect.setPosition(serverRect.position.x, serverRect.position.y)
+                staticRect.setPosition(position.x, position.y)
                 continue
             }
 
@@ -111,14 +111,14 @@ class PhysicsEngine {
                 // TODO: Correct sometimes
                 const correct = false
                 if(correct){
-                    kinematicRect.setTargetPos(serverRect.position.x, serverRect.position.y)
+                    kinematicRect.setTargetPos(position.x, position.y)
                 }
                 continue
             }
 
             const interpolatedRect = this.interpolatedRects.get(id)
             if(interpolatedRect){
-                interpolatedRect.setTargetPos(serverRect.position.x, serverRect.position.y)
+                interpolatedRect.setTargetPos(position.x, position.y)
             }
         }
     }

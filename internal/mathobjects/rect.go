@@ -1,18 +1,14 @@
-package physics
+package mathobjects
 
 type Rect struct {
-	Position Vector2f `json:"position"`
-	Size     Vector2f `json:"size"`
-
-	DoApplyCollisions bool `json:"doApplyCollisions"`
+	Position Vector2[float64] `json:"position"`
+	Size     Vector2[float64] `json:"size"`
 }
 
-func MakeRect(x, y, w, h float64, doApplyCollisions bool) Rect {
+func MakeRect(x, y, w, h float64) Rect {
 	return Rect{
-		Position: Vector2f{x, y},
-		Size:     Vector2f{w, h},
-
-		DoApplyCollisions: doApplyCollisions,
+		Position: Vector2[float64]{x, y},
+		Size:     Vector2[float64]{w, h},
 	}
 }
 

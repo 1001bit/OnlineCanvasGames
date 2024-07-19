@@ -1,24 +1,26 @@
 package physics
 
-func (e *Engine) Tick(dtMs float64, constants PhysicsConstants) map[int]*Rect {
-	movedRects := make(map[int]*Rect)
+import "github.com/1001bit/OnlineCanvasGames/internal/mathobjects"
+
+func (e *Engine) Tick(dtMs float64, constants PhysicsConstants) map[int]mathobjects.Vector2[float64] {
+	positionsChanged := make(map[int]mathobjects.Vector2[float64])
 
 	for id, kRect := range e.kinematicRects {
-		startPos := kRect.GetRect().Position
+		startPos := kRect.GetPhysicalRect().Position
 
 		applyGravityToVel(kRect, dtMs, constants.Gravity)
 		applyFrictionToVel(kRect, constants.Friction)
 		e.applyCollisions(kRect, dtMs)
 		applyVelToPos(kRect, dtMs)
 
-		kRect.Velocity.RoundToZero(0.0001)
+		// kRect.Velocity.RoundToZero(0.0001)
 
-		if kRect.GetRect().Position != startPos {
-			movedRects[id] = &kRect.Rect
+		if kRect.GetPhysicalRect().Position != startPos {
+			positionsChanged[id] = kRect.GetPhysicalRect().Position
 		}
 	}
 
-	return movedRects
+	return positionsChanged
 }
 
 func applyGravityToVel(rect *KinematicRect, dtMs, force float64) {

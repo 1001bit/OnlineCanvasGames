@@ -1,68 +1,60 @@
 package physics
 
-// Collision direction
-type Direction uint8
-
-const (
-	None  Direction = 0
-	Left  Direction = 1
-	Right Direction = 2
-	Up    Direction = 3
-	Down  Direction = 4
-)
-
-type CollisionDirection struct {
-	Vertical   Direction
-	Horizontal Direction
-}
+import "github.com/1001bit/OnlineCanvasGames/internal/mathobjects"
 
 // Kinematic Rect
 type KinematicRect struct {
-	Rect
+	PhysicalRect
 
-	Velocity Vector2f `json:"velocity"`
+	Velocity mathobjects.Vector2[float64] `json:"velocity"`
 
-	collisionDir CollisionDirection
+	collisionVertical   mathobjects.Direction
+	collisionHorizontal mathobjects.Direction
 
 	DoApplyGravity  bool `json:"doApplyGravity"`
 	DoApplyFriction bool `json:"doApplyFriction"`
 }
 
-func NewKinematicRect(rect Rect, doGravity, doFriction bool) *KinematicRect {
+func NewKinematicRect(rect PhysicalRect, doGravity, doFriction bool) *KinematicRect {
 	return &KinematicRect{
-		Rect: rect,
+		PhysicalRect: rect,
 
-		Velocity: Vector2f{0, 0},
-
-		collisionDir: CollisionDirection{
-			Vertical:   None,
-			Horizontal: None,
+		Velocity: mathobjects.Vector2[float64]{
+			X: 0,
+			Y: 0,
 		},
+
+		collisionVertical:   mathobjects.None,
+		collisionHorizontal: mathobjects.None,
 
 		DoApplyGravity:  doGravity,
 		DoApplyFriction: doFriction,
 	}
 }
 
-func (kr *KinematicRect) AddToVel(add Vector2f) {
+func (kr *KinematicRect) AddToVel(add mathobjects.Vector2[float64]) {
 	kr.Velocity.Add(add)
 }
 
-func (kr *KinematicRect) SetCollisionDir(dir Direction) {
-	if dir == Down || dir == Up {
-		kr.collisionDir.Vertical = dir
-	} else if dir == Left || dir == Right {
-		kr.collisionDir.Horizontal = dir
+func (kr *KinematicRect) SetCollisionDir(dir mathobjects.Direction) {
+	if dir == mathobjects.Down || dir == mathobjects.Up {
+		kr.collisionVertical = dir
+	} else if dir == mathobjects.Left || dir == mathobjects.Right {
+		kr.collisionHorizontal = dir
 	} else {
-		kr.collisionDir.Horizontal = dir
-		kr.collisionDir.Vertical = dir
+		kr.collisionHorizontal = dir
+		kr.collisionVertical = dir
 	}
 }
 
-func (kr *KinematicRect) GetRect() Rect {
-	return kr.Rect
+func (kr *KinematicRect) GetPhysicalRect() PhysicalRect {
+	return kr.PhysicalRect
 }
 
-func (kr *KinematicRect) GetCollisionDir() CollisionDirection {
-	return kr.collisionDir
+func (kr *KinematicRect) GetCollisionVertical() mathobjects.Direction {
+	return kr.collisionVertical
+}
+
+func (kr *KinematicRect) GetCollisionHorizontal() mathobjects.Direction {
+	return kr.collisionHorizontal
 }

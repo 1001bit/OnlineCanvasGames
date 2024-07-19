@@ -2,7 +2,7 @@ package platformer
 
 import (
 	"github.com/1001bit/OnlineCanvasGames/internal/gamelogic"
-	"github.com/1001bit/OnlineCanvasGames/internal/physics"
+	"github.com/1001bit/OnlineCanvasGames/internal/mathobjects"
 )
 
 func (gl *PlatformerGL) handleInput() {
@@ -31,7 +31,7 @@ func (l *Level) controlPlayerRect(input gamelogic.UserInput) {
 		return
 	}
 
-	add := physics.Vector2f{
+	add := mathobjects.Vector2[float64]{
 		X: 0,
 		Y: 0,
 	}
@@ -44,7 +44,7 @@ func (l *Level) controlPlayerRect(input gamelogic.UserInput) {
 		add.X += platformerConstants.PlayerSpeed * coeff
 	}
 
-	if input.IsHeld("jump") && playerKRect.GetCollisionDir().Vertical == physics.Down {
+	if input.IsHeld("jump") && playerKRect.GetCollisionVertical() == mathobjects.Down {
 		add.Y -= platformerConstants.PlayerJump
 	}
 

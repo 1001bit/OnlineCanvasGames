@@ -506,13 +506,13 @@ class PhysicsEngine {
         const posY = rect.targetPosition.y + rect.velocity.y * dt;
         rect.setTargetPos(posX, posY);
     }
-    serverUpdate(movedRects) {
-        for (const [key, val] of Object.entries(movedRects)) {
+    setMultiplePositions(positions) {
+        for (const [key, val] of Object.entries(positions)) {
             const id = Number(key);
-            const serverRect = val;
+            const position = val;
             const staticRect = this.staticRects.get(id);
             if (staticRect) {
-                staticRect.setPosition(serverRect.position.x, serverRect.position.y);
+                staticRect.setPosition(position.x, position.y);
                 continue;
             }
             const kinematicRect = this.kinematicRects.get(id);
@@ -520,13 +520,13 @@ class PhysicsEngine {
                 // TODO: Correct sometimes
                 const correct = false;
                 if (correct) {
-                    kinematicRect.setTargetPos(serverRect.position.x, serverRect.position.y);
+                    kinematicRect.setTargetPos(position.x, position.y);
                 }
                 continue;
             }
             const interpolatedRect = this.interpolatedRects.get(id);
             if (interpolatedRect) {
-                interpolatedRect.setTargetPos(serverRect.position.x, serverRect.position.y);
+                interpolatedRect.setTargetPos(position.x, position.y);
             }
         }
     }
@@ -738,8 +738,11 @@ class Platformer {
         }
     }
     handleUpdateMessage(body) {
+        // physics operations
+        this.serverAccumulator = 0;
         this.physicsEngine.updateInterpolatedInterpolation();
-        this.physicsEngine.serverUpdate(body.movedRects);
+        this.physicsEngine.setMultiplePositions(body.rectsMoved);
+        // send controls to server
         const controlsCoeffs = this.controls.getCoeffs();
         if (controlsCoeffs.size > 0) {
             const json = JSON.stringify(Object.fromEntries(controlsCoeffs.entries()));
@@ -747,7 +750,6 @@ class Platformer {
             console.log(json);
             this.websocket.sendMessage("input", json);
         }
-        this.serverAccumulator = 0;
     }
     handleDeleteMessage(body) {
         this.canvas.deleteDrawable(body.id);

@@ -1,6 +1,7 @@
 package platformer
 
 import (
+	"github.com/1001bit/OnlineCanvasGames/internal/mathobjects"
 	"github.com/1001bit/OnlineCanvasGames/internal/physics"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
 )
@@ -12,12 +13,12 @@ type GameInfo struct {
 }
 
 type LevelData struct {
-	StaticRects    map[int]*physics.Rect          `json:"static"`
+	StaticRects    map[int]*physics.PhysicalRect  `json:"static"`
 	KinematicRects map[int]*physics.KinematicRect `json:"kinematic"`
 }
 
 type UpdateData struct {
-	MovedRects map[int]*physics.Rect `json:"movedRects"`
+	RectsMoved map[int]mathobjects.Vector2[float64] `json:"rectsMoved"`
 }
 
 type CreateData struct {
@@ -39,11 +40,11 @@ func (gl *PlatformerGL) NewLevelMessage() *message.JSON {
 	}
 }
 
-func (gl *PlatformerGL) NewUpdateMessage(movedRects map[int]*physics.Rect) *message.JSON {
+func (gl *PlatformerGL) NewUpdateMessage(movedRects map[int]mathobjects.Vector2[float64]) *message.JSON {
 	return &message.JSON{
 		Type: "update",
 		Body: UpdateData{
-			MovedRects: movedRects,
+			RectsMoved: movedRects,
 		},
 	}
 }

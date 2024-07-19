@@ -21,7 +21,7 @@ func NewPlatformerLevel() *Level {
 		playersRects: make(map[int]int),
 	}
 
-	block := physics.MakeRect(0, 500, 1000, 100, true)
+	block := physics.MakePhysicalRect(0, 500, 1000, 100, true)
 	level.physEng.InsertRect(&block, 10)
 
 	return level
