@@ -10,7 +10,7 @@ import (
 
 func InjectJWTClaims(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		claims, err := accesstoken.ClaimsFromRequest(r)
+		claims, err := accesstoken.GetClaims(r)
 
 		switch err {
 		case nil:

@@ -9,7 +9,8 @@ import (
 	"net/http"
 	"regexp"
 
-	"github.com/1001bit/OnlineCanvasGames/internal/auth"
+	"github.com/1001bit/OnlineCanvasGames/internal/auth/accesstoken"
+	"github.com/1001bit/OnlineCanvasGames/internal/auth/refreshtoken"
 	usermodel "github.com/1001bit/OnlineCanvasGames/internal/model/user"
 )
 
@@ -60,7 +61,7 @@ func HandleUserPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = auth.SetTokens(w, user.ID, user.Name)
+	err = setCookiesFromClaims(w, user.ID, user.Name)
 	if err != nil {
 		ServeTextMessage(w, "Something went wrong", http.StatusInternalServerError)
 		log.Println("jwt creation err:", err)
@@ -68,6 +69,24 @@ func HandleUserPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ServeTextMessage(w, "Success!", http.StatusOK)
+}
+
+func setCookiesFromClaims(w http.ResponseWriter, userID int, username string) error {
+	accessCookie, err := accesstoken.NewCookie(userID, username)
+	if err != nil {
+		return err
+	}
+
+	refreshCookie, err := refreshtoken.NewCookie(userID)
+	if err != nil {
+		return err
+	}
+
+	// cookies
+	http.SetCookie(w, accessCookie)
+	http.SetCookie(w, refreshCookie)
+
+	return nil
 }
 
 func validateAuthInput(username, password string) (string, error) {

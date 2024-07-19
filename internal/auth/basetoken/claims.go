@@ -1,12 +1,8 @@
 package basetoken
 
 import (
-	"errors"
-
 	"github.com/golang-jwt/jwt/v5"
 )
-
-var ErrBadToken = errors.New("invalid token")
 
 func StringToClaims(tokenStr string) (jwt.MapClaims, error) {
 	// Validate token

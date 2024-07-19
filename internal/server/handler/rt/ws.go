@@ -50,7 +50,7 @@ func HandleRoomWS(w http.ResponseWriter, r *http.Request, baseNode *basenode.Bas
 	}
 
 	// Get user from JWT
-	claims, err := auth.GetContextClaims(r.Context())
+	claims, err := auth.GetJwtClaimsFromContext(r.Context())
 	if err != nil {
 		closeConnWithMessage(conn, "Unauthorized!")
 		return

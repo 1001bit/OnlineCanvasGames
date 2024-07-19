@@ -8,7 +8,7 @@ import (
 
 func HandleAuth(w http.ResponseWriter, r *http.Request) {
 	// only unauthorized may see this page
-	_, err := auth.GetContextClaims(r.Context())
+	_, err := auth.GetJwtClaimsFromContext(r.Context())
 
 	if err == nil {
 		http.Redirect(w, r, "/", http.StatusSeeOther)

@@ -43,7 +43,7 @@ func HandleProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	claims, _ := auth.GetContextClaims(r.Context())
+	claims, _ := auth.GetJwtClaimsFromContext(r.Context())
 	data.UserName = claims.Username
 
 	serveTemplate("profile.html", data, w, r)

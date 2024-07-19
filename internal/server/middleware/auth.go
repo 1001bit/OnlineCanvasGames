@@ -11,7 +11,7 @@ import (
 // plain text for unauthorized
 func AuthJSON(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_, err := auth.GetContextClaims(r.Context())
+		_, err := auth.GetJwtClaimsFromContext(r.Context())
 		if err != nil {
 			api.ServeTextMessage(w, "unauthorized", http.StatusUnauthorized)
 			return
@@ -24,7 +24,7 @@ func AuthJSON(next http.Handler) http.Handler {
 // auth page for unauthorized
 func AuthHTML(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_, err := auth.GetContextClaims(r.Context())
+		_, err := auth.GetJwtClaimsFromContext(r.Context())
 		if err != nil {
 			page.HandleAuth(w, r)
 			return

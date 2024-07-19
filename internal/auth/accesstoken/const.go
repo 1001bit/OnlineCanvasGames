@@ -3,7 +3,7 @@ package accesstoken
 import "time"
 
 const (
-	ExpTime = time.Hour * 24 * 6 // 6h
+	ExpTime = time.Hour * 6 // 6h
 
 	Name = "access"
 )

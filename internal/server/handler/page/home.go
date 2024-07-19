@@ -16,7 +16,7 @@ type HomeData struct {
 func HandleHome(w http.ResponseWriter, r *http.Request, baseNode *basenode.BaseNode) {
 	data := HomeData{}
 
-	claims, err := auth.GetContextClaims(r.Context())
+	claims, err := auth.GetJwtClaimsFromContext(r.Context())
 	if err == nil {
 		data.Username = claims.Username
 	}

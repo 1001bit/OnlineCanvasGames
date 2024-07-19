@@ -1,4 +1,4 @@
-package refreshtoken
+package accesstoken
 
 import (
 	"net/http"
@@ -7,9 +7,10 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func ClaimsToCookie(userID int) (*http.Cookie, error) {
+func NewCookie(userID int, username string) (*http.Cookie, error) {
 	claims := Claims{
-		UserID: userID,
+		UserID:   userID,
+		Username: username,
 	}
 
 	tokenStr, err := claimsToString(claims)
@@ -22,8 +23,9 @@ func ClaimsToCookie(userID int) (*http.Cookie, error) {
 
 func claimsToString(claims Claims) (string, error) {
 	mapClaims := jwt.MapClaims{
-		"userID": claims.UserID,
-		"exp":    ExpTime,
+		"userID":   claims.UserID,
+		"username": claims.Username,
+		"exp":      ExpTime,
 	}
 
 	tokenStr, err := basetoken.ClaimsToString(mapClaims)

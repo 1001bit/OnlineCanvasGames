@@ -65,9 +65,8 @@
                 - [X] Rect Delete/Create
             - [ ] Smooth rect movements
                 - [X] Physics class, which replicates server's physics
-                - [ ] Client State -> Server State interpolation
-                    - [X] Whole level
-                    - [ ] Player
+                - [X] Client State -> Updated State interpolation
+                - [ ] Client State -> Level State interpolation 
                 - [X] Physics calculations (only for player's actions) based on current state
                     - [X] Gravity, friction, small stuff
                     - [X] Collisions

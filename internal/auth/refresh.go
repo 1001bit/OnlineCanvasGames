@@ -22,12 +22,12 @@ func RefreshTokens(w http.ResponseWriter, r *http.Request) (accesstoken.Claims, 
 	}
 
 	// cookies
-	refreshCookie, err := refreshtoken.ClaimsToCookie(user.ID)
+	refreshCookie, err := refreshtoken.NewCookie(user.ID)
 	if err != nil {
 		return accesstoken.Claims{}, err
 	}
 
-	accessCookie, err := accesstoken.ClaimsToCookie(user.ID, user.Name)
+	accessCookie, err := accesstoken.NewCookie(user.ID, user.Name)
 	if err != nil {
 		return accesstoken.Claims{}, err
 	}

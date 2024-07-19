@@ -24,7 +24,7 @@ func serveTemplate(file string, data any, w http.ResponseWriter, r *http.Request
 		Data: data,
 	}
 
-	claims, err := auth.GetContextClaims(r.Context())
+	claims, err := auth.GetJwtClaimsFromContext(r.Context())
 	if err == nil {
 		tmplData.Navigation.UserID = claims.UserID
 		tmplData.Navigation.Username = claims.Username

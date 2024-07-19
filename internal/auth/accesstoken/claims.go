@@ -11,7 +11,7 @@ type Claims struct {
 	Username string
 }
 
-func ClaimsFromRequest(r *http.Request) (Claims, error) {
+func GetClaims(r *http.Request) (Claims, error) {
 	cookie, err := r.Cookie(Name)
 	if err != nil {
 		return Claims{}, err
