@@ -81,6 +81,7 @@ class Controls {
     constructor() {
         // using map instead of set here because golang doesn't have set implementation yet
         this.heldControls = new Map();
+        this.controlsCoeffs = new Map();
         this.bindings = new Map();
         // on key press
         document.addEventListener("keypress", (e) => {
@@ -114,8 +115,20 @@ class Controls {
     isHeld(control) {
         return this.heldControls.has(control);
     }
-    getHeldControls() {
-        return this.heldControls;
+    resetCoeffs() {
+        this.controlsCoeffs.clear();
+    }
+    updateCoeffs(serverTPS, clientTPS) {
+        for (const [control, _] of this.heldControls) {
+            let coeff = this.controlsCoeffs.get(control);
+            if (coeff == undefined) {
+                coeff = 0;
+            }
+            this.controlsCoeffs.set(control, coeff + serverTPS / clientTPS);
+        }
+    }
+    getCoeffs() {
+        return this.controlsCoeffs;
     }
 }
 class DeltaTimer {
@@ -279,6 +292,26 @@ class Ticker {
         requestAnimationFrame(() => this.tick(callback));
     }
 }
+class FixedTicker {
+    constructor(tps) {
+        this.tps = tps;
+        this.accumulator = 0;
+    }
+    update(dt, callback) {
+        this.accumulator += dt;
+        const maxAccumulator = 1000 / this.tps;
+        while (this.accumulator >= maxAccumulator) {
+            callback(maxAccumulator);
+            this.accumulator -= maxAccumulator;
+        }
+    }
+    setTPS(tps) {
+        this.tps = tps;
+    }
+    getAlpha() {
+        return this.accumulator / (1000 / this.tps);
+    }
+}
 function lerpVector2(v1, v2, a) {
     return new Vector2(v1.x + a * (v2.x - v1.x), v1.y + a * (v2.y - v1.y));
 }
@@ -403,7 +436,6 @@ class PhysicsEngine {
         this.staticRects = new Map();
         this.kinematicRects = new Map();
         this.interpolatedRects = new Map();
-        this.serverTickAccumulator = 0;
     }
     insertStaticRect(id, rect) {
         this.staticRects.set(id, rect);
@@ -412,34 +444,37 @@ class PhysicsEngine {
         this.interpolatedRects.set(id, rect);
     }
     insertKinematicRect(id, rect) {
-        this.insertInterpolatedRect(id, rect);
         this.kinematicRects.set(id, rect);
     }
     deleteRect(id) {
         this.staticRects.delete(id);
         this.kinematicRects.delete(id);
+        this.interpolatedRects.delete(id);
     }
-    getRect(id) {
-        const rect = this.kinematicRects.get(id);
-        if (rect) {
-            return rect;
-        }
-        return this.staticRects.get(id);
-    }
-    tick(dt, serverTPS, constants) {
-        // HACK: Use fixed timestep for this loop
+    update(dt, constants) {
         for (const [_id, rect] of this.kinematicRects) {
             this.applyGravityToVel(rect, constants.gravity, dt);
             this.applyFrictionToVel(rect, constants.friction);
             this.applyCollisions(rect, dt);
             this.applyVelToPos(rect, dt);
         }
-        // Interpolation
-        this.serverTickAccumulator += dt;
+    }
+    updateKinematicsInterpolation() {
+        for (const [_id, rect] of this.kinematicRects) {
+            rect.updateStartPos();
+        }
+    }
+    updateInterpolatedInterpolation() {
         for (const [_id, rect] of this.interpolatedRects) {
-            let alpha = this.serverTickAccumulator / (1000 / serverTPS);
-            alpha = Math.min(1, alpha);
-            rect.interpolate(alpha);
+            rect.updateStartPos();
+        }
+    }
+    interpolate(interpolatedAlpha, kinematicAlpha) {
+        for (const [_id, rect] of this.kinematicRects) {
+            rect.interpolate(kinematicAlpha);
+        }
+        for (const [_id, rect] of this.interpolatedRects) {
+            rect.interpolate(interpolatedAlpha);
         }
     }
     applyGravityToVel(rect, gravity, dt) {
@@ -471,13 +506,7 @@ class PhysicsEngine {
         const posY = rect.targetPosition.y + rect.velocity.y * dt;
         rect.setTargetPos(posX, posY);
     }
-    serverUpdate(movedRects, serverTPS) {
-        if (this.serverTickAccumulator >= (1000 / serverTPS)) {
-            this.serverTickAccumulator %= (1000 / serverTPS);
-        }
-        for (const [_id, rect] of this.interpolatedRects) {
-            rect.updateStartPos();
-        }
+    serverUpdate(movedRects) {
         for (const [key, val] of Object.entries(movedRects)) {
             const id = Number(key);
             const serverRect = val;
@@ -580,7 +609,9 @@ class Platformer {
             playerSpeed: 0,
             playerJump: 0,
         };
-        this.controlsAccumulator = 0;
+        this.physTps = 40;
+        this.physTicker = new FixedTicker(this.physTps);
+        this.serverAccumulator = 0;
         this.serverTPS = 0;
         this.canvas = new GameCanvas("canvas", layers);
         this.canvas.setBackgroundColor(RGB(30, 100, 100));
@@ -629,18 +660,20 @@ class Platformer {
         this.websocket.openConnection(gameID, roomID);
     }
     tick(dt) {
-        this.handleControls();
-        this.physicsEngine.tick(dt, this.serverTPS, this.constants.physics);
-        this.controlsAccumulator += dt;
-        const maxControlsAccumulator = 1000 / (this.serverTPS * 4);
-        while (this.controlsAccumulator > maxControlsAccumulator) {
-            let heldControls = this.controls.getHeldControls();
-            if (heldControls.size > 0) {
-                let json = JSON.stringify(Object.fromEntries(heldControls.entries()));
-                this.websocket.sendMessage("input", json);
-            }
-            this.controlsAccumulator -= maxControlsAccumulator;
-        }
+        // physics
+        this.physTicker.update(dt, (fixedDT) => {
+            // update phys/server tps coeffs
+            this.controls.updateCoeffs(this.serverTPS, this.physTps);
+            this.physicsEngine.updateKinematicsInterpolation();
+            this.handleControls();
+            this.physicsEngine.update(fixedDT, this.constants.physics);
+        });
+        // interpolation
+        this.serverAccumulator += dt;
+        const interpolatedAlpha = Math.min(1, this.serverAccumulator / (1000 / this.serverTPS));
+        const kinematicAlpha = this.physTicker.getAlpha();
+        this.physicsEngine.interpolate(interpolatedAlpha, kinematicAlpha);
+        // draw
         this.canvas.draw();
     }
     handleControls() {
@@ -705,7 +738,16 @@ class Platformer {
         }
     }
     handleUpdateMessage(body) {
-        this.physicsEngine.serverUpdate(body.movedRects, this.serverTPS);
+        this.physicsEngine.updateInterpolatedInterpolation();
+        this.physicsEngine.serverUpdate(body.movedRects);
+        const controlsCoeffs = this.controls.getCoeffs();
+        if (controlsCoeffs.size > 0) {
+            const json = JSON.stringify(Object.fromEntries(controlsCoeffs.entries()));
+            this.controls.resetCoeffs();
+            console.log(json);
+            this.websocket.sendMessage("input", json);
+        }
+        this.serverAccumulator = 0;
     }
     handleDeleteMessage(body) {
         this.canvas.deleteDrawable(body.id);

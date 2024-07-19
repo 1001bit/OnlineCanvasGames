@@ -36,13 +36,15 @@ func (l *Level) controlPlayerRect(input gamelogic.UserInput) {
 		Y: 0,
 	}
 
-	if input.IsControlHeld("left") {
-		add.X -= platformerConstants.PlayerSpeed
+	if coeff, ok := input.GetControlCoeff("left"); ok {
+		add.X -= platformerConstants.PlayerSpeed * coeff
 	}
-	if input.IsControlHeld("right") {
-		add.X += platformerConstants.PlayerSpeed
+
+	if coeff, ok := input.GetControlCoeff("right"); ok {
+		add.X += platformerConstants.PlayerSpeed * coeff
 	}
-	if input.IsControlHeld("jump") && playerKRect.GetCollisionDir().Vertical == physics.Down {
+
+	if input.IsHeld("jump") && playerKRect.GetCollisionDir().Vertical == physics.Down {
 		add.Y -= platformerConstants.PlayerJump
 	}
 

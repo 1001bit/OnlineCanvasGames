@@ -2,7 +2,10 @@ class Platformer {
     playerRectID: number;
     constants: PlatformerConstants;
 
-    controlsAccumulator: number;
+    physTps: number;
+    physTicker: FixedTicker;
+
+    serverAccumulator: number;
     serverTPS: number;
 
     canvas: GameCanvas;
@@ -25,8 +28,11 @@ class Platformer {
             playerJump: 0,
         }
 
-        this.controlsAccumulator = 0;
-        this.serverTPS = 0
+        this.physTps = 40
+        this.physTicker = new FixedTicker(this.physTps)
+
+        this.serverAccumulator = 0;
+        this.serverTPS = 0;
 
         this.canvas = new GameCanvas("canvas", layers)
         this.canvas.setBackgroundColor(RGB(30, 100, 100))
@@ -90,20 +96,23 @@ class Platformer {
     }
 
     tick(dt: number) {
-        this.handleControls()
-        this.physicsEngine.tick(dt, this.serverTPS, this.constants.physics)
+        // physics
+        this.physTicker.update(dt, (fixedDT) => {
+            // update phys/server tps coeffs
+            this.controls.updateCoeffs(this.serverTPS, this.physTps)
 
-        this.controlsAccumulator += dt
-        const maxControlsAccumulator = 1000/(this.serverTPS*4)
-        while(this.controlsAccumulator > maxControlsAccumulator){
-            let heldControls = this.controls.getHeldControls()
-            if(heldControls.size > 0){
-                let json = JSON.stringify(Object.fromEntries(heldControls.entries()))
-                this.websocket.sendMessage("input", json)
-            }
-            this.controlsAccumulator -= maxControlsAccumulator
-        }
+            this.physicsEngine.updateKinematicsInterpolation()
+            this.handleControls()
+            this.physicsEngine.update(fixedDT, this.constants.physics)
+        })
 
+        // interpolation
+        this.serverAccumulator += dt
+        const interpolatedAlpha = Math.min(1, this.serverAccumulator/(1000/this.serverTPS))
+        const kinematicAlpha = this.physTicker.getAlpha()
+        this.physicsEngine.interpolate(interpolatedAlpha, kinematicAlpha)
+
+        // draw
         this.canvas.draw()
     }
 
@@ -180,7 +189,19 @@ class Platformer {
     }
 
     handleUpdateMessage(body: UpdateMessage){
-        this.physicsEngine.serverUpdate(body.movedRects, this.serverTPS)
+        // physics operations
+        this.serverAccumulator = 0
+        this.physicsEngine.updateInterpolatedInterpolation()
+        this.physicsEngine.serverUpdate(body.movedRects)
+
+        // send controls to server
+        const controlsCoeffs = this.controls.getCoeffs()
+        if(controlsCoeffs.size > 0){
+            const json = JSON.stringify(Object.fromEntries(controlsCoeffs.entries()))
+            this.controls.resetCoeffs()
+            console.log(json)
+            this.websocket.sendMessage("input", json)
+        }
     }
 
     handleDeleteMessage(body: DeleteMessage){

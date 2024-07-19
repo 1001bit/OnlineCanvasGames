@@ -7,25 +7,20 @@ import (
 )
 
 type PlatformerGL struct {
-	level      *Level
-	maxPlayers int
+	level *Level
 
-	tps int
+	maxPlayers int
+	tps        int
 
 	inputChan chan gamelogic.UserInput
 }
 
 func NewPlatformerGL() *PlatformerGL {
-	const (
-		maxPlayers = 2
-		tps        = 10
-	)
-
 	return &PlatformerGL{
-		level:      NewPlatformerLevel(),
-		maxPlayers: maxPlayers,
+		level: NewPlatformerLevel(),
 
-		tps: tps,
+		maxPlayers: 4,
+		tps:        20,
 
 		inputChan: make(chan gamelogic.UserInput),
 	}

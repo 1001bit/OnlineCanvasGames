@@ -1,10 +1,12 @@
 class Controls {
     heldControls: Map<string, boolean>;
+    controlsCoeffs: Map<string, number>
     bindings: Map<string, string>;
 
     constructor(){
         // using map instead of set here because golang doesn't have set implementation yet
         this.heldControls = new Map();
+        this.controlsCoeffs = new Map();
         this.bindings = new Map();
 
         // on key press
@@ -42,10 +44,25 @@ class Controls {
     }
 
     isHeld(control: string) {
-        return this.heldControls.has(control);
+        return this.heldControls.has(control)
     }
 
-    getHeldControls(){
-        return this.heldControls;
+    resetCoeffs(){
+        this.controlsCoeffs.clear()
+    }
+
+    updateCoeffs(serverTPS: number, clientTPS: number){
+        for(const [control, _] of this.heldControls){
+            let coeff = this.controlsCoeffs.get(control)
+            if(coeff == undefined){
+                coeff = 0
+            }
+
+            this.controlsCoeffs.set(control, coeff + serverTPS/clientTPS)
+        }
+    }
+
+    getCoeffs(){
+        return this.controlsCoeffs;
     }
 }

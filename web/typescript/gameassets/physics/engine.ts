@@ -3,14 +3,10 @@ class PhysicsEngine {
     kinematicRects: Map<number, KinematicRect>;
     interpolatedRects: Map<number, InterpolatedRect>;
 
-    serverTickAccumulator: number;
-
     constructor(){
         this.staticRects = new Map();
         this.kinematicRects = new Map();
         this.interpolatedRects = new Map();
-
-        this.serverTickAccumulator = 0;
     }
 
     insertStaticRect(id: number, rect: PhysicalRect){
@@ -22,40 +18,45 @@ class PhysicsEngine {
     }
 
     insertKinematicRect(id: number, rect: KinematicRect){
-        this.insertInterpolatedRect(id, rect)
         this.kinematicRects.set(id, rect)
     }
 
     deleteRect(id: number){
         this.staticRects.delete(id)
         this.kinematicRects.delete(id)
+        this.interpolatedRects.delete(id)
     }
 
-    getRect(id: number): Rect | undefined {
-        const rect = this.kinematicRects.get(id)
-        if(rect){
-            return rect
-        }
-        return this.staticRects.get(id)
-    }
-
-    tick(dt: number, serverTPS: number, constants: PhysicsConstants){
-        // HACK: Use fixed timestep for this loop
+    update(dt: number, constants: PhysicsConstants){
         for (const [_id, rect] of this.kinematicRects){
             this.applyGravityToVel(rect, constants.gravity, dt)
             this.applyFrictionToVel(rect, constants.friction)
             this.applyCollisions(rect, dt)
             this.applyVelToPos(rect, dt)
         }
+    }
 
-        // Interpolation
-        this.serverTickAccumulator += dt;
-        for (const [_id, rect] of this.interpolatedRects){
-            let alpha = this.serverTickAccumulator/(1000/serverTPS)
-            alpha = Math.min(1, alpha)
-            rect.interpolate(alpha)
+    updateKinematicsInterpolation(){
+        for (const [_id, rect] of this.kinematicRects){
+            rect.updateStartPos()
         }
     }
+
+    updateInterpolatedInterpolation(){
+        for (const [_id, rect] of this.interpolatedRects){
+            rect.updateStartPos()
+        }
+    }
+
+    interpolate(interpolatedAlpha: number, kinematicAlpha: number){
+        for (const [_id, rect] of this.kinematicRects){
+            rect.interpolate(kinematicAlpha)
+        }
+
+        for (const [_id, rect] of this.interpolatedRects){
+            rect.interpolate(interpolatedAlpha)
+        }
+    }   
 
     applyGravityToVel(rect: KinematicRect, gravity: number, dt: number){
         if(!rect.doApplyGravity){
@@ -94,18 +95,10 @@ class PhysicsEngine {
         rect.setTargetPos(posX, posY)
     }
 
-    serverUpdate(movedRects: Map<number, PhysicalRect>, serverTPS: number){
-        if(this.serverTickAccumulator >= (1000/serverTPS)){
-            this.serverTickAccumulator %= (1000/serverTPS)
-        }
-
-        for(const [_id, rect] of this.interpolatedRects){
-            rect.updateStartPos()
-        }
-
+    serverUpdate(movedRects: Map<number, PhysicalRect>){
         for(const [key, val] of Object.entries(movedRects)){
             const id = Number(key)
-            const serverRect = val as PhysicalRect
+            const serverRect = val as Rect
 
             const staticRect = this.staticRects.get(id)
             if(staticRect){
