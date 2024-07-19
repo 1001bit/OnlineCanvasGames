@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 
-	rterror "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/error"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/gameclient"
 )
 
@@ -12,7 +11,7 @@ import (
 func (baseNode *BaseNode) ConnectToGame(ctx context.Context, w http.ResponseWriter, gameID int) error {
 	gameNode, ok := baseNode.games.IDMap[gameID]
 	if !ok {
-		return rterror.ErrNoGame
+		return ErrNoGame
 	}
 
 	client := gameclient.NewGameClient(w)

@@ -8,7 +8,7 @@ import (
 	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/page"
 )
 
-// plain text for unauthorized
+// json for unauthorized
 func AuthJSON(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_, err := auth.GetJwtClaimsFromContext(r.Context())

@@ -18,7 +18,7 @@ type RoomJSON struct {
 	ID      int    `json:"id"`
 }
 
-// Layer of RT which is responsible for game hub and containing rooms
+// Layer of RT which is responsible for connections: GameNode > RoomsJson, GameNode > GameClients
 type GameNode struct {
 	Flow runflow.RunFlow
 

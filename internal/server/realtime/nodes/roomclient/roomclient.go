@@ -23,7 +23,7 @@ type RoomNodeReader interface {
 	ReadMessage(message rtclient.MessageWithClient)
 }
 
-// Layer of RT which is responsible for handling connection WS
+// Layer of RT which is responsible for handling connections: RoomClient > User, Room > Roomclient
 type RoomClient struct {
 	Flow runflow.RunFlow
 

@@ -12,7 +12,6 @@ func MakeRunFlow() RunFlow {
 	}
 }
 
-// Stop
 func (rf *RunFlow) Stopped() <-chan struct{} {
 	return rf.stopChan
 }
@@ -27,7 +26,6 @@ func (rf *RunFlow) Stop() {
 
 }
 
-// Done
 func (rf *RunFlow) Done() <-chan struct{} {
 	return rf.doneChan
 }

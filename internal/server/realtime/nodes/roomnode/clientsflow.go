@@ -5,7 +5,6 @@ import (
 	"math/rand"
 	"time"
 
-	rterror "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/error"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/roomclient"
 )
 
@@ -85,7 +84,7 @@ func (roomNode *RoomNode) disconnectClient(client *roomclient.RoomClient, stopTi
 // returns random client
 func (roomNode *RoomNode) pickRandomClient() (*roomclient.RoomClient, error) {
 	if len(roomNode.Clients.IDMap) == 0 {
-		return nil, rterror.ErrNoClients
+		return nil, ErrNoClients
 	}
 
 	k := rand.Intn(len(roomNode.Clients.IDMap))
@@ -95,5 +94,5 @@ func (roomNode *RoomNode) pickRandomClient() (*roomclient.RoomClient, error) {
 		}
 		k--
 	}
-	return nil, rterror.ErrNoClients
+	return nil, ErrNoClients
 }

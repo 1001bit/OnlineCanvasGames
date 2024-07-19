@@ -12,7 +12,7 @@ func NewEngine() *Engine {
 	}
 }
 
-func (e *Engine) InsertRect(r *PhysicalRect, id int) {
+func (e *Engine) InsertStaticRect(r *PhysicalRect, id int) {
 	e.staticRects[id] = r
 }
 

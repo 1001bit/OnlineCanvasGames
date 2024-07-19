@@ -10,8 +10,8 @@ type Config struct {
 
 func NewConfig() *Config {
 	return &Config{
-		env.GetEnvVal("DB_USER"),
-		env.GetEnvVal("DB_NAME"),
-		env.GetEnvVal("DB_PASS"),
+		user: env.GetEnvVal("DB_USER"),
+		name: env.GetEnvVal("DB_NAME"),
+		pass: env.GetEnvVal("DB_PASS"),
 	}
 }

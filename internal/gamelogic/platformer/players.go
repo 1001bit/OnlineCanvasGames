@@ -15,7 +15,7 @@ func (l *Level) CreatePlayer(userID int, playersLimit int) int {
 
 	rectID := l.getFreePlayerRectID(playersLimit)
 
-	inner := physics.MakePhysicalRect(100*float64(rectID), 100, 100, 100, true)
+	inner := physics.MakePhysicalRect(100*float64(rectID), 100, 100, 100, applyCollisions)
 	kinRect := physics.NewKinematicRect(inner, applyGravity, applyFriction)
 
 	l.physEng.InsertKinematicRect(kinRect, rectID)

@@ -20,6 +20,7 @@ func HandleGameSSE(w http.ResponseWriter, r *http.Request, baseNode *basenode.Ba
 		return
 	}
 
+	// connects client to sse (blocks the goroutine)
 	err = baseNode.ConnectToGame(r.Context(), w, gameID)
 
 	if err != nil {

@@ -12,7 +12,7 @@ import (
 
 const roomStopWait = 5 * time.Second
 
-// Layer of RT which is responsible for handling WS clients
+// Layer of RT which is responsible for connections: RoomNode > RoomClients
 type RoomNode struct {
 	Flow runflow.RunFlow
 

@@ -3,7 +3,6 @@ package usermodel
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"time"
 
 	"github.com/1001bit/OnlineCanvasGames/internal/database"
@@ -11,12 +10,6 @@ import (
 )
 
 const maxQueryTime = 5 * time.Second
-
-var (
-	ErrNoUserExists = errors.New("user with such name doesn't exist")
-	ErrNoSuchUser   = errors.New("incorrect username or password")
-	ErrUserExists   = errors.New("user with such name already exists")
-)
 
 type User struct {
 	ID   int
@@ -50,6 +43,7 @@ func GetByNameAndPassword(ctx context.Context, username, password string) (*User
 	user := NewUser()
 	var hash string
 
+	// get user row regardless of character case
 	row := database.DB.QueryRowContext(ctx, "SELECT id, name, date, hash FROM users WHERE LOWER(name) = LOWER($1)", username)
 	err := row.Scan(&user.ID, &user.Name, &user.Date, &hash)
 
@@ -57,11 +51,13 @@ func GetByNameAndPassword(ctx context.Context, username, password string) (*User
 	case nil:
 		// no error
 	case sql.ErrNoRows:
+		// incorrect username
 		return nil, ErrNoSuchUser
 	default:
 		return nil, err
 	}
 
+	// incorrect password
 	if !crypt.CheckHash(password, hash) {
 		return nil, ErrNoSuchUser
 	}
@@ -81,18 +77,19 @@ func Insert(ctx context.Context, username, password string) (*User, error) {
 		return nil, err
 	}
 
+	// user already exists, can't insert a new one
 	if exists {
 		return nil, ErrUserExists
 	}
 
 	// create new user
 	newUser := &User{Name: username}
-
+	// generate hash for user
 	hash, err := crypt.GenerateHash(password)
 	if err != nil {
 		return nil, err
 	}
-
+	// insert into a database
 	err = database.DB.QueryRowContext(ctx, "INSERT INTO users (name, hash) VALUES ($1, $2) RETURNING id", username, hash).Scan(&newUser.ID)
 	if err != nil {
 		return nil, err

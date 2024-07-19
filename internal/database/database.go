@@ -15,7 +15,8 @@ func Start() error {
 
 	connStr := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", config.user, config.pass, config.name)
 
-	DB, err := sql.Open("postgres", connStr)
+	var err error
+	DB, err = sql.Open("postgres", connStr)
 	if err != nil {
 		return err
 	}

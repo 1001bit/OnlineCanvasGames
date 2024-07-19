@@ -55,5 +55,5 @@ func (e *Engine) applyCollisions(kRect *KinematicRect, dtMs float64) {
 }
 
 func applyVelToPos(rect *KinematicRect, dtMs float64) {
-	rect.Rect.Position.Add(rect.Velocity.Scale(dtMs))
+	rect.Position.Add(rect.Velocity.Scale(dtMs))
 }

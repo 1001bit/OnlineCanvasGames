@@ -11,12 +11,11 @@ import (
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/runflow"
 )
 
-// Basic layer of RT which is responsible for handling Games and room-client connections
+// Basic layer of RT which is responsible for handling connections: BaseNode > GameNodes, BaseNode (>) RoomClients
 type BaseNode struct {
 	Flow runflow.RunFlow
 
-	games children.ChildrenWithID[gamenode.GameNode]
-
+	games        children.ChildrenWithID[gamenode.GameNode]
 	roomsClients children.ChildrenWithID[roomclient.RoomClient]
 
 	gamesJSON []gamemodel.Game
@@ -26,8 +25,7 @@ func NewBaseNode() *BaseNode {
 	return &BaseNode{
 		Flow: runflow.MakeRunFlow(),
 
-		games: children.MakeChildrenWithID[gamenode.GameNode](),
-
+		games:        children.MakeChildrenWithID[gamenode.GameNode](),
 		roomsClients: children.MakeChildrenWithID[roomclient.RoomClient](),
 
 		gamesJSON: make([]gamemodel.Game, 0),

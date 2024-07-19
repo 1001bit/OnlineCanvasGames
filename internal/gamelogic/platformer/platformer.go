@@ -12,7 +12,7 @@ type PlatformerGL struct {
 	maxPlayers int
 	tps        int
 
-	inputChan chan gamelogic.UserInput
+	inputChan chan *gamelogic.UserInput
 }
 
 func NewPlatformerGL() *PlatformerGL {
@@ -22,7 +22,7 @@ func NewPlatformerGL() *PlatformerGL {
 		maxPlayers: 4,
 		tps:        20,
 
-		inputChan: make(chan gamelogic.UserInput),
+		inputChan: make(chan *gamelogic.UserInput),
 	}
 }
 
@@ -30,14 +30,17 @@ func (gl *PlatformerGL) Run(doneChan <-chan struct{}, writer gamelogic.RoomWrite
 	go gameloop.Gameloop(func(dtMs float64) {
 		gl.tick(dtMs, writer)
 	}, gl.tps, doneChan)
-
-	<-doneChan
 }
 
 func (gl *PlatformerGL) HandleReadMessage(msg rtclient.MessageWithClient, writer gamelogic.RoomWriter) {
 	switch msg.Message.Type {
 	case "input":
-		gamelogic.ExtractInputFromMsg(msg.Message.Body, msg.Client.GetUser().ID, gl.inputChan)
+		inputMap, err := gamelogic.GetInputMapFromMsg(msg.Message.Body, msg.Client.GetUser().ID)
+		if err != nil {
+			return
+		}
+
+		gl.inputChan <- gamelogic.NewUserInput(msg.Client.GetUser().ID, inputMap)
 	}
 }
 

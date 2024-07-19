@@ -9,6 +9,7 @@ import (
 	"sync"
 )
 
+// Compile single tsconfig inside path
 func executeTscIn(path string) {
 	tsconfigPath := filepath.Join(path, "tsconfig.json")
 	if _, err := os.Stat(tsconfigPath); err != nil {
@@ -27,6 +28,7 @@ func executeTscIn(path string) {
 	log.Println("Compiled typescript from", path)
 }
 
+// Compile all the tsconfigs inside all the directories inside path
 func RecursiveCompileIn(rootPath string) {
 	var wg sync.WaitGroup
 

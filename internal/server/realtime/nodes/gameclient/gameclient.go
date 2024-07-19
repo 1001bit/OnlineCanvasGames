@@ -9,7 +9,7 @@ import (
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/runflow"
 )
 
-// Layer of RT which is responsible for handling connection with GameNode SSE
+// Layer of RT which is responsible for handling connections: GameClient > User, GameNode > GameClient
 type GameClient struct {
 	Flow runflow.RunFlow
 

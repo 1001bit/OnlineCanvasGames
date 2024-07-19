@@ -12,20 +12,21 @@ func (gl *PlatformerGL) handleInput() {
 		select {
 		case input := <-gl.inputChan:
 			// protect from handling input from same user more than once
-			if _, ok := handledClients[input.UserID]; ok {
+			if _, ok := handledClients[input.GetUserID()]; ok {
 				continue
 			}
-			handledClients[input.UserID] = true
+			handledClients[input.GetUserID()] = true
 
 			gl.level.controlPlayerRect(input)
+
 		default:
 			return
 		}
 	}
 }
 
-func (l *Level) controlPlayerRect(input gamelogic.UserInput) {
-	rectID := l.playersRects[input.UserID]
+func (l *Level) controlPlayerRect(input *gamelogic.UserInput) {
+	rectID := l.playersRects[input.GetUserID()]
 	playerKRect, ok := l.physEng.GetKinematicRects()[rectID]
 	if !ok {
 		return

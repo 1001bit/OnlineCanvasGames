@@ -6,28 +6,28 @@ import (
 	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
 )
 
+// GameInfo
 type GameInfo struct {
 	PlayerRectID int       `json:"rectID"`
 	Constants    Constants `json:"constants"`
 	TPS          int       `json:"tps"`
 }
 
+func (gl *PlatformerGL) NewGameInfoMessage(playerRectID int, tps int, constants Constants) *message.JSON {
+	return &message.JSON{
+		Type: "gameinfo",
+		Body: GameInfo{
+			PlayerRectID: playerRectID,
+			Constants:    constants,
+			TPS:          tps,
+		},
+	}
+}
+
+// Level
 type LevelData struct {
 	StaticRects    map[int]*physics.PhysicalRect  `json:"static"`
 	KinematicRects map[int]*physics.KinematicRect `json:"kinematic"`
-}
-
-type UpdateData struct {
-	RectsMoved map[int]mathobjects.Vector2[float64] `json:"rectsMoved"`
-}
-
-type CreateData struct {
-	ID   int                    `json:"id"`
-	Rect *physics.KinematicRect `json:"rect"`
-}
-
-type DeleteData struct {
-	ID int `json:"id"`
 }
 
 func (gl *PlatformerGL) NewLevelMessage() *message.JSON {
@@ -40,6 +40,11 @@ func (gl *PlatformerGL) NewLevelMessage() *message.JSON {
 	}
 }
 
+// Update
+type UpdateData struct {
+	RectsMoved map[int]mathobjects.Vector2[float64] `json:"rectsMoved"`
+}
+
 func (gl *PlatformerGL) NewUpdateMessage(movedRects map[int]mathobjects.Vector2[float64]) *message.JSON {
 	return &message.JSON{
 		Type: "update",
@@ -49,13 +54,10 @@ func (gl *PlatformerGL) NewUpdateMessage(movedRects map[int]mathobjects.Vector2[
 	}
 }
 
-func (gl *PlatformerGL) NewDeleteMessage(rectID int) *message.JSON {
-	return &message.JSON{
-		Type: "delete",
-		Body: DeleteData{
-			ID: rectID,
-		},
-	}
+// Create
+type CreateData struct {
+	ID   int                    `json:"id"`
+	Rect *physics.KinematicRect `json:"rect"`
 }
 
 func (gl *PlatformerGL) NewCreateMessage(rectID int, rect *physics.KinematicRect) *message.JSON {
@@ -68,13 +70,16 @@ func (gl *PlatformerGL) NewCreateMessage(rectID int, rect *physics.KinematicRect
 	}
 }
 
-func (gl *PlatformerGL) NewGameInfoMessage(playerRectID int, tps int, constants Constants) *message.JSON {
+// Delete
+type DeleteData struct {
+	ID int `json:"id"`
+}
+
+func (gl *PlatformerGL) NewDeleteMessage(rectID int) *message.JSON {
 	return &message.JSON{
-		Type: "gameinfo",
-		Body: GameInfo{
-			PlayerRectID: playerRectID,
-			Constants:    constants,
-			TPS:          tps,
+		Type: "delete",
+		Body: DeleteData{
+			ID: rectID,
 		},
 	}
 }

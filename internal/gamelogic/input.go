@@ -5,12 +5,19 @@ import (
 )
 
 type UserInput struct {
-	Controls map[string]float64
-	UserID   int
+	inputMap map[string]float64
+	userID   int
+}
+
+func NewUserInput(userID int, inputMap map[string]float64) *UserInput {
+	return &UserInput{
+		userID:   userID,
+		inputMap: inputMap,
+	}
 }
 
 func (input *UserInput) GetControlCoeff(id string) (float64, bool) {
-	coeff, ok := input.Controls[id]
+	coeff, ok := input.inputMap[id]
 	if coeff == 0 || !ok {
 		return 0, false
 	}
@@ -19,22 +26,21 @@ func (input *UserInput) GetControlCoeff(id string) (float64, bool) {
 }
 
 func (input *UserInput) IsHeld(id string) bool {
-	coeff, ok := input.Controls[id]
+	coeff, ok := input.inputMap[id]
 	return coeff != 0 && ok
 }
 
-func ExtractInputFromMsg(body any, userID int, inputChan chan<- UserInput) {
+func (input *UserInput) GetUserID() int {
+	return input.userID
+}
+
+func GetInputMapFromMsg(body any, userID int) (map[string]float64, error) {
 	inputMap := make(map[string]float64)
 
 	err := json.Unmarshal([]byte(body.(string)), &inputMap)
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	go func() {
-		inputChan <- UserInput{
-			Controls: inputMap,
-			UserID:   userID,
-		}
-	}()
+	return inputMap, nil
 }
