@@ -6,6 +6,7 @@ import (
 	"github.com/1001bit/OnlineCanvasGames/internal/auth/accesstoken"
 )
 
+// Extract access token claims from context
 func GetJwtClaimsFromContext(ctx context.Context) (accesstoken.Claims, error) {
 	claims, ok := ctx.Value(accesstoken.ClaimsKey).(accesstoken.Claims)
 	if !ok || claims.UserID == 0 {

@@ -4,7 +4,8 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func StringToClaims(tokenStr string) (jwt.MapClaims, error) {
+// Extract jwt claims from string
+func GetJwtClaims(tokenStr string) (jwt.MapClaims, error) {
 	// Validate token
 	token, err := stringToJWT(tokenStr)
 	if err != nil {

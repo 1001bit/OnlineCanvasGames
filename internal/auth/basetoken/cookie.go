@@ -7,6 +7,7 @@ import (
 
 const secure = false
 
+// Generate new cookie by token string, cookie name and expiration time
 func NewCookie(tokenStr string, name string, exp time.Duration) *http.Cookie {
 	cookie := &http.Cookie{
 		Name:     name,

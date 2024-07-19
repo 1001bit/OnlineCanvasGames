@@ -2,7 +2,8 @@ package basetoken
 
 import "github.com/golang-jwt/jwt/v5"
 
-func ClaimsToString(claims jwt.MapClaims) (string, error) {
+// transform jwt claims into string
+func JwtClaimsToString(claims jwt.MapClaims) (string, error) {
 	token := jwt.NewWithClaims(
 		jwt.SigningMethodHS256,
 		claims,

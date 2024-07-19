@@ -11,20 +11,23 @@ type Claims struct {
 	Username string
 }
 
+// Get access token claims from request cookie
 func GetClaims(r *http.Request) (Claims, error) {
 	cookie, err := r.Cookie(Name)
 	if err != nil {
 		return Claims{}, err
 	}
 
-	mapClaims, err := basetoken.StringToClaims(cookie.Value)
+	// extract jwt claims from cookie string
+	jwtClaims, err := basetoken.GetJwtClaims(cookie.Value)
 	if err != nil {
 		return Claims{}, err
 	}
 
+	// jwt claims -> claims
 	claims := Claims{
-		UserID:   int(mapClaims["userID"].(float64)),
-		Username: mapClaims["username"].(string),
+		UserID:   int(jwtClaims["userID"].(float64)),
+		Username: jwtClaims["username"].(string),
 	}
 
 	return claims, nil

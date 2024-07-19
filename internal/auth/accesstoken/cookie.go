@@ -7,6 +7,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+// Generate token cookie from userID and username
 func NewCookie(userID int, username string) (*http.Cookie, error) {
 	claims := Claims{
 		UserID:   userID,
@@ -28,7 +29,7 @@ func claimsToString(claims Claims) (string, error) {
 		"exp":      ExpTime,
 	}
 
-	tokenStr, err := basetoken.ClaimsToString(mapClaims)
+	tokenStr, err := basetoken.JwtClaimsToString(mapClaims)
 	if err != nil {
 		return "", err
 	}
