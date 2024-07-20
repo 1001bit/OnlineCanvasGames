@@ -22,3 +22,11 @@ func (rect *Rect) Intersects(rect2 Rect) bool {
 
 	return true
 }
+
+func (rect *Rect) GetPosition() Vector2[float64] {
+	return rect.Position
+}
+
+func (rect *Rect) GetSize() Vector2[float64] {
+	return rect.Size
+}

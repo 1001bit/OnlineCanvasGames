@@ -6,17 +6,15 @@ func (e *Engine) Tick(dtMs float64, constants PhysicsConstants) map[int]mathobje
 	positionsChanged := make(map[int]mathobjects.Vector2[float64])
 
 	for id, kRect := range e.kinematicRects {
-		startPos := kRect.GetPhysicalRect().Position
+		startPos := kRect.GetPosition()
 
 		applyGravityToVel(kRect, dtMs, constants.Gravity)
 		applyFrictionToVel(kRect, constants.Friction)
 		e.applyCollisions(kRect, dtMs)
-		applyVelToPos(kRect, dtMs)
+		kRect.ApplyVelToPos(dtMs)
 
-		// kRect.Velocity.RoundToZero(0.0001)
-
-		if kRect.GetPhysicalRect().Position != startPos {
-			positionsChanged[id] = kRect.GetPhysicalRect().Position
+		if kRect.GetPosition() != startPos {
+			positionsChanged[id] = kRect.GetPosition()
 		}
 	}
 
@@ -28,20 +26,19 @@ func applyGravityToVel(rect *KinematicRect, dtMs, force float64) {
 		return
 	}
 
-	rect.Velocity.Y += force * dtMs
+	rect.AddToVel(0, force*dtMs)
 }
 
 func applyFrictionToVel(rect *KinematicRect, friction float64) {
 	if !rect.DoApplyFriction {
 		return
 	}
+
+	rect.AddToVel(rect.GetVelocity().X*-friction, 0)
 	// for non gravitable rects
 	if !rect.DoApplyGravity {
-		rect.Velocity.Add(rect.Velocity.Scale(-friction))
-		return
+		rect.AddToVel(0, rect.GetVelocity().Y*-friction)
 	}
-
-	rect.Velocity.X -= rect.Velocity.X * friction
 }
 
 func (e *Engine) applyCollisions(kRect *KinematicRect, dtMs float64) {
@@ -52,8 +49,4 @@ func (e *Engine) applyCollisions(kRect *KinematicRect, dtMs float64) {
 	for _, rect := range e.staticRects {
 		collideKinematicWithStatic(kRect, rect, dtMs)
 	}
-}
-
-func applyVelToPos(rect *KinematicRect, dtMs float64) {
-	rect.Position.Add(rect.Velocity.Scale(dtMs))
 }

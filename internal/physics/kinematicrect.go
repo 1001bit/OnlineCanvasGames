@@ -32,8 +32,13 @@ func NewKinematicRect(rect PhysicalRect, doGravity, doFriction bool) *KinematicR
 	}
 }
 
-func (kr *KinematicRect) AddToVel(add mathobjects.Vector2[float64]) {
-	kr.Velocity.Add(add)
+func (kr *KinematicRect) AddToVel(x, y float64) {
+	kr.Velocity.X += x
+	kr.Velocity.Y += y
+}
+
+func (kr *KinematicRect) AddVectorToVel(vector mathobjects.Vector2[float64]) {
+	kr.Velocity.Add(vector)
 }
 
 func (kr *KinematicRect) SetCollisionDir(dir mathobjects.Direction) {
@@ -47,14 +52,18 @@ func (kr *KinematicRect) SetCollisionDir(dir mathobjects.Direction) {
 	}
 }
 
-func (kr *KinematicRect) GetPhysicalRect() PhysicalRect {
-	return kr.PhysicalRect
+func (kr *KinematicRect) ApplyVelToPos(dtMs float64) {
+	kr.Position.Add(kr.Velocity.Scale(dtMs))
 }
 
-func (kr *KinematicRect) GetCollisionVertical() mathobjects.Direction {
+func (kr KinematicRect) GetCollisionVertical() mathobjects.Direction {
 	return kr.collisionVertical
 }
 
-func (kr *KinematicRect) GetCollisionHorizontal() mathobjects.Direction {
+func (kr KinematicRect) GetCollisionHorizontal() mathobjects.Direction {
 	return kr.collisionHorizontal
+}
+
+func (kr KinematicRect) GetVelocity() mathobjects.Vector2[float64] {
+	return kr.Velocity
 }

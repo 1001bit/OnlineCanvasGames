@@ -32,22 +32,20 @@ func (l *Level) controlPlayerRect(input *gamelogic.UserInput) {
 		return
 	}
 
-	add := mathobjects.Vector2[float64]{
-		X: 0,
-		Y: 0,
-	}
+	addX := 0.0
+	addY := 0.0
 
 	if coeff, ok := input.GetControlCoeff("left"); ok {
-		add.X -= platformerConstants.PlayerSpeed * coeff
+		addX -= platformerConstants.PlayerSpeed * coeff
 	}
 
 	if coeff, ok := input.GetControlCoeff("right"); ok {
-		add.X += platformerConstants.PlayerSpeed * coeff
+		addX += platformerConstants.PlayerSpeed * coeff
 	}
 
 	if input.IsHeld("jump") && playerKRect.GetCollisionVertical() == mathobjects.Down {
-		add.Y -= platformerConstants.PlayerJump
+		addY -= platformerConstants.PlayerJump
 	}
 
-	playerKRect.AddToVel(add)
+	playerKRect.AddToVel(addX, addY)
 }

@@ -35,6 +35,7 @@
         - [X] Server Message
         - [X] "Show nav bar" button
     - [X] Limit players amount
+
     - [ ] Multiplayer platformer game
         - [X] Server
             - [X] Game loop
@@ -43,11 +44,14 @@
                 - [X] Kinematic and Static rect
                 - [X] Movement
                 - [X] Collisions
+                - [ ] Migrate to just KinematicRect
+                - [ ] Simplify forces application
+                - [ ] Apply SOLID principles
             - [X] Data send
                 - [X] Level
                 - [X] Info
                     - [X] Player rectID
-                    - [X] Physics Constants
+                    - [X] Constants
                     - [X] TPS
                 - [X] Rect Delete/Create
                 - [X] Moved rects
@@ -66,7 +70,8 @@
             - [ ] Smooth rect movements
                 - [X] Physics class, which replicates server's physics
                 - [X] Client State -> Updated State interpolation
-                - [ ] Client State -> Level State interpolation 
+                - [ ] Client State -> Level State interpolation
+                - [ ] Update physics engine along the server one
                 - [X] Physics calculations (only for player's actions) based on current state
                     - [X] Gravity, friction, small stuff
                     - [X] Collisions

@@ -13,16 +13,15 @@ func collideKinematicWithStatic(kinematic *KinematicRect, static *PhysicalRect, 
 	kinematic.SetCollisionDir(mathobjects.None)
 
 	// "path", that rect is going to pass
-	futureKinematic := mathobjects.MakeRect(kinematic.Position.X, kinematic.Position.Y, kinematic.Size.X, kinematic.Size.Y)
+	futureKinematic := kinematic.GetRect()
 
 	// Getting final value of velocity, which will be added to kinematicRect
-	velX := kinematic.Velocity.X * dtMs
-	velY := kinematic.Velocity.Y * dtMs
+	finalVel := kinematic.GetVelocity().Scale(dtMs)
 
 	// Vertical
-	if velY > 0 {
+	if finalVel.Y > 0 {
 		// down
-		futureKinematic.Size.Y += velY
+		futureKinematic.Size.Y += finalVel.Y
 
 		if futureKinematic.Intersects(static.Rect) {
 			kinematic.Position.Y = static.Position.Y - kinematic.Size.Y
@@ -30,10 +29,10 @@ func collideKinematicWithStatic(kinematic *KinematicRect, static *PhysicalRect, 
 
 			kinematic.SetCollisionDir(mathobjects.Down)
 		}
-	} else if velY < 0 {
+	} else if finalVel.Y < 0 {
 		// up
-		futureKinematic.Size.Y += math.Abs(velY)
-		futureKinematic.Position.Y -= math.Abs(velY)
+		futureKinematic.Size.Y += math.Abs(finalVel.Y)
+		futureKinematic.Position.Y -= math.Abs(finalVel.Y)
 
 		if futureKinematic.Intersects(static.Rect) {
 			kinematic.Position.Y = static.Position.Y + static.Size.Y
@@ -43,12 +42,12 @@ func collideKinematicWithStatic(kinematic *KinematicRect, static *PhysicalRect, 
 		}
 	}
 
-	futureKinematic = mathobjects.MakeRect(kinematic.Position.X, kinematic.Position.Y, kinematic.Size.X, kinematic.Size.Y)
+	futureKinematic = kinematic.GetRect()
 
 	// Horizontal
-	if velX > 0 {
+	if finalVel.X > 0 {
 		// Right
-		futureKinematic.Size.X += velX
+		futureKinematic.Size.X += finalVel.X
 
 		if futureKinematic.Intersects(static.Rect) {
 			kinematic.Position.X = static.Position.X - kinematic.Size.X
@@ -56,10 +55,10 @@ func collideKinematicWithStatic(kinematic *KinematicRect, static *PhysicalRect, 
 
 			kinematic.SetCollisionDir(mathobjects.Right)
 		}
-	} else if velX < 0 {
+	} else if finalVel.X < 0 {
 		// Left
-		futureKinematic.Size.X += math.Abs(velX)
-		futureKinematic.Position.X -= math.Abs(velX)
+		futureKinematic.Size.X += math.Abs(finalVel.X)
+		futureKinematic.Position.X -= math.Abs(finalVel.X)
 
 		if futureKinematic.Intersects(static.Rect) {
 			kinematic.Position.X = static.Position.X + static.Size.X
