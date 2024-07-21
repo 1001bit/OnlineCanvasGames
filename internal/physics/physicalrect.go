@@ -16,6 +16,11 @@ func MakePhysicalRect(x, y, w, h float64, doApplyCollisions bool) PhysicalRect {
 	}
 }
 
+func NewPhysicalRect(x, y, w, h float64, doApplyCollisions bool) *PhysicalRect {
+	rect := MakePhysicalRect(x, y, w, h, doApplyCollisions)
+	return &rect
+}
+
 func (rect PhysicalRect) GetRect() mathobjects.Rect {
 	return rect.Rect
 }
