@@ -1,14 +1,16 @@
 package children
 
+import "github.com/1001bit/OnlineCanvasGames/pkg/set"
+
 type Children[T any] struct {
 	Channels[T]
-	ChildMap map[*T]bool
+	ChildrenSet set.Set[*T]
 }
 
 func MakeChildren[T any]() Children[T] {
 	return Children[T]{
-		ChildMap: make(map[*T]bool),
-		Channels: MakeChannels[T](),
+		ChildrenSet: set.MakeEmptySet[*T](),
+		Channels:    MakeChannels[T](),
 	}
 }
 

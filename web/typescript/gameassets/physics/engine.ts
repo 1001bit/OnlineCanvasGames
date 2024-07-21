@@ -59,7 +59,7 @@ class PhysicsEngine {
     }   
 
     applyGravityToVel(rect: KinematicRect, gravity: number, dt: number){
-        if(!rect.doApplyGravity){
+        if(!rect.doApplyForce(ForceType.Gravity)){
             rect
         }
 
@@ -67,20 +67,20 @@ class PhysicsEngine {
     }
 
     applyFrictionToVel(rect: KinematicRect, friction: number){
-        if(!rect.doApplyFriction){
+        if(!rect.doApplyForce(ForceType.Friction)){
             return
         }
 
         rect.velocity.x -= rect.velocity.x * friction
 
         // also do friction on y axis if non gravitable
-        if(!rect.doApplyGravity){
+        if(!rect.doApplyForce(ForceType.Gravity)){
             rect.velocity.y -= rect.velocity.y * friction
         }
     }
 
     applyCollisions(rect: KinematicRect, dt: number){
-        if(!rect.doApplyCollisions){
+        if(!rect.canCollide){
             return
         }
 

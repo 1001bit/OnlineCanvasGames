@@ -179,6 +179,9 @@ const roomGui = new RoomGui();
 function lerp(a, b, alpha) {
     return a + alpha * (b - a);
 }
+function isAbstractRect(obj) {
+    return "position" in obj && "size" in obj;
+}
 class Rect {
     constructor(abstractRect) {
         this.position = new Vector2(0, 0);

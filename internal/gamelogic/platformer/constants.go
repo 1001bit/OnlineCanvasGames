@@ -8,7 +8,7 @@ type Constants struct {
 	PlayerJump  float64                  `json:"playerJump"`
 }
 
-var platformerConstants = Constants{
+var globalPlatformerConstants = Constants{
 	Physics: physics.PhysicsConstants{
 		Friction: 0.92,
 		Gravity:  0.02,

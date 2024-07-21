@@ -6,11 +6,12 @@ import (
 	"github.com/1001bit/OnlineCanvasGames/internal/mathobjects"
 )
 
-func collideKinematicWithStatic(kinematic *KinematicRect, static *PhysicalRect, dtMs float64) {
-	if !static.DoApplyCollisions {
+func CollideKinematicWithStatic(kinematic Kinematic, static Physical, dtMs float64) {
+	if !static.CanCollide() {
 		return
 	}
-	kinematic.SetCollisionDir(mathobjects.None)
+
+	// TODO: skip if kinematic->solid direction == kinematic.collisionDir
 
 	// "path", that rect is going to pass
 	futureKinematic := kinematic.GetRect()
@@ -23,9 +24,11 @@ func collideKinematicWithStatic(kinematic *KinematicRect, static *PhysicalRect, 
 		// down
 		futureKinematic.Size.Y += finalVel.Y
 
-		if futureKinematic.Intersects(static.Rect) {
-			kinematic.Position.Y = static.Position.Y - kinematic.Size.Y
-			kinematic.Velocity.Y = 0
+		if futureKinematic.Intersects(static.GetRect()) {
+			newPosY := static.GetPosition().Y - kinematic.GetSize().Y
+
+			kinematic.SetPosition(kinematic.GetPosition().X, newPosY)
+			kinematic.SetVelocity(kinematic.GetVelocity().X, 0)
 
 			kinematic.SetCollisionDir(mathobjects.Down)
 		}
@@ -34,9 +37,11 @@ func collideKinematicWithStatic(kinematic *KinematicRect, static *PhysicalRect, 
 		futureKinematic.Size.Y += math.Abs(finalVel.Y)
 		futureKinematic.Position.Y -= math.Abs(finalVel.Y)
 
-		if futureKinematic.Intersects(static.Rect) {
-			kinematic.Position.Y = static.Position.Y + static.Size.Y
-			kinematic.Velocity.Y = 0
+		if futureKinematic.Intersects(static.GetRect()) {
+			newPosY := static.GetPosition().Y + static.GetSize().Y
+
+			kinematic.SetPosition(kinematic.GetPosition().X, newPosY)
+			kinematic.SetVelocity(kinematic.GetVelocity().X, 0)
 
 			kinematic.SetCollisionDir(mathobjects.Up)
 		}
@@ -49,9 +54,11 @@ func collideKinematicWithStatic(kinematic *KinematicRect, static *PhysicalRect, 
 		// Right
 		futureKinematic.Size.X += finalVel.X
 
-		if futureKinematic.Intersects(static.Rect) {
-			kinematic.Position.X = static.Position.X - kinematic.Size.X
-			kinematic.Velocity.X = 0
+		if futureKinematic.Intersects(static.GetRect()) {
+			newPosX := static.GetPosition().X - kinematic.GetSize().X
+
+			kinematic.SetPosition(newPosX, kinematic.GetPosition().Y)
+			kinematic.SetVelocity(0, kinematic.GetVelocity().Y)
 
 			kinematic.SetCollisionDir(mathobjects.Right)
 		}
@@ -60,9 +67,11 @@ func collideKinematicWithStatic(kinematic *KinematicRect, static *PhysicalRect, 
 		futureKinematic.Size.X += math.Abs(finalVel.X)
 		futureKinematic.Position.X -= math.Abs(finalVel.X)
 
-		if futureKinematic.Intersects(static.Rect) {
-			kinematic.Position.X = static.Position.X + static.Size.X
-			kinematic.Velocity.X = 0
+		if futureKinematic.Intersects(static.GetRect()) {
+			newPosX := static.GetPosition().X + static.GetSize().X
+
+			kinematic.SetPosition(newPosX, kinematic.GetPosition().Y)
+			kinematic.SetVelocity(0, kinematic.GetVelocity().Y)
 
 			kinematic.SetCollisionDir(mathobjects.Left)
 		}

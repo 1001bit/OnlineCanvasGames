@@ -34,8 +34,8 @@ func (gl *PlatformerGL) NewLevelMessage() *message.JSON {
 	return &message.JSON{
 		Type: "level",
 		Body: LevelData{
-			StaticRects:    gl.level.physEng.GetStaticRects(),
-			KinematicRects: gl.level.physEng.GetKinematicRects(),
+			StaticRects:    gl.level.levelRects,
+			KinematicRects: gl.level.playersRects,
 		},
 	}
 }

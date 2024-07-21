@@ -41,12 +41,10 @@
             - [X] Game loop
             - [X] Client Input+Duration receive
             - [X] Physics engine
-                - [X] Kinematic and Static rect
-                - [X] Movement
+                - [X] Kinematic and Static rects
+                - [X] Forces application
                 - [X] Collisions
-                - [ ] Migrate to just KinematicRect
-                - [ ] Simplify forces application
-                - [ ] Apply SOLID principles
+                - [X] Apply SOLID principles
             - [X] Data send
                 - [X] Level
                 - [X] Info

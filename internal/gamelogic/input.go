@@ -1,41 +1,11 @@
 package gamelogic
 
-import (
-	"encoding/json"
-)
+import "encoding/json"
 
-type UserInput struct {
-	inputMap map[string]float64
-	userID   int
-}
+type InputMap map[string]float64
 
-func NewUserInput(userID int, inputMap map[string]float64) *UserInput {
-	return &UserInput{
-		userID:   userID,
-		inputMap: inputMap,
-	}
-}
-
-func (input *UserInput) GetControlCoeff(id string) (float64, bool) {
-	coeff, ok := input.inputMap[id]
-	if coeff == 0 || !ok {
-		return 0, false
-	}
-
-	return min(coeff, 1), true
-}
-
-func (input *UserInput) IsHeld(id string) bool {
-	coeff, ok := input.inputMap[id]
-	return coeff != 0 && ok
-}
-
-func (input *UserInput) GetUserID() int {
-	return input.userID
-}
-
-func GetInputMapFromMsg(body any, userID int) (map[string]float64, error) {
-	inputMap := make(map[string]float64)
+func GetInputMapFromMsg(body any, userID int) (InputMap, error) {
+	inputMap := make(InputMap)
 
 	err := json.Unmarshal([]byte(body.(string)), &inputMap)
 	if err != nil {
@@ -43,4 +13,18 @@ func GetInputMapFromMsg(body any, userID int) (map[string]float64, error) {
 	}
 
 	return inputMap, nil
+}
+
+func (inputMap InputMap) GetControlCoeff(id string) (float64, bool) {
+	coeff, ok := inputMap[id]
+	if coeff == 0 || !ok {
+		return 0, false
+	}
+
+	return min(coeff, 1), true
+}
+
+func (inputMap InputMap) IsHeld(id string) bool {
+	coeff, ok := inputMap[id]
+	return coeff != 0 && ok
 }

@@ -1,5 +1,5 @@
 function collideKinematicWithStatic(kinematicRect: KinematicRect, staticRect: PhysicalRect, dt: number){
-    if(!staticRect.doApplyCollisions){
+    if(!staticRect.canCollide){
         return
     }
     kinematicRect.setCollisionDir(Direction.None)

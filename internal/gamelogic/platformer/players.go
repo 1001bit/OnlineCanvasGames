@@ -1,51 +1,54 @@
 package platformer
 
-import "github.com/1001bit/OnlineCanvasGames/internal/physics"
+import (
+	"github.com/1001bit/OnlineCanvasGames/internal/physics"
+	"github.com/1001bit/OnlineCanvasGames/pkg/set"
+)
 
-func (l *Level) CreatePlayer(userID int, playersLimit int) int {
+func (l *Level) CreatePlayer(userID int, playersLimit int) (int, *physics.KinematicRect) {
 	const (
 		applyGravity    = true
 		applyCollisions = true
 		applyFriction   = true
 	)
 
-	if rectID, ok := l.playersRects[userID]; ok {
-		return rectID
+	if rectID, ok := l.userRectIDs[userID]; ok {
+		return rectID, l.playersRects[rectID]
 	}
 
 	rectID := l.getFreePlayerRectID(playersLimit)
 
 	inner := physics.MakePhysicalRect(100*float64(rectID), 100, 100, 100, applyCollisions)
-	kinRect := physics.NewKinematicRect(inner, applyGravity, applyFriction)
+	kinRect := physics.NewKinematicRect(inner, physics.FrictionType, physics.GravityType)
 
-	l.physEng.InsertKinematicRect(kinRect, rectID)
+	l.playersRects[rectID] = kinRect
+	l.userRectIDs[userID] = rectID
 
-	l.playersRects[userID] = rectID
-
-	return rectID
+	return rectID, kinRect
 }
 
 func (l *Level) DeletePlayer(userID int) (int, error) {
-	rectID, ok := l.playersRects[userID]
+	rectID, ok := l.userRectIDs[userID]
 	if !ok {
 		return 0, ErrNoPlayer
 	}
 
-	delete(l.playersRects, userID)
-	l.physEng.DeleteRect(rectID)
+	delete(l.userRectIDs, userID)
+	delete(l.playersRects, rectID)
 
 	return rectID, nil
 }
 
 func (l *Level) getFreePlayerRectID(playersLimit int) int {
-	occupiedIDs := make([]bool, playersLimit)
-	for _, v := range l.playersRects {
-		occupiedIDs[v] = true
+	occupiedRectIDs := set.MakeEmptySet[int]()
+
+	for _, rectID := range l.userRectIDs {
+		occupiedRectIDs.Insert(rectID)
 	}
 
-	for id, occupied := range occupiedIDs {
-		if !occupied {
-			return id
+	for newID := range playersLimit {
+		if !occupiedRectIDs.Has(newID) {
+			return newID
 		}
 	}
 	return -1

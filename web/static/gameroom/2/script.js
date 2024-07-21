@@ -179,6 +179,9 @@ const roomGui = new RoomGui();
 function lerp(a, b, alpha) {
     return a + alpha * (b - a);
 }
+function isAbstractRect(obj) {
+    return "position" in obj && "size" in obj;
+}
 class Rect {
     constructor(abstractRect) {
         this.position = new Vector2(0, 0);
@@ -382,7 +385,7 @@ class GameWebSocket {
     }
 }
 function collideKinematicWithStatic(kinematicRect, staticRect, dt) {
-    if (!staticRect.doApplyCollisions) {
+    if (!staticRect.canCollide) {
         return;
     }
     kinematicRect.setCollisionDir(Direction.None);
@@ -431,6 +434,14 @@ function collideKinematicWithStatic(kinematicRect, staticRect, dt) {
         }
     }
 }
+var Direction;
+(function (Direction) {
+    Direction[Direction["None"] = 0] = "None";
+    Direction[Direction["Up"] = 1] = "Up";
+    Direction[Direction["Down"] = 2] = "Down";
+    Direction[Direction["Left"] = 3] = "Left";
+    Direction[Direction["Right"] = 4] = "Right";
+})(Direction || (Direction = {}));
 class PhysicsEngine {
     constructor() {
         this.staticRects = new Map();
@@ -478,23 +489,23 @@ class PhysicsEngine {
         }
     }
     applyGravityToVel(rect, gravity, dt) {
-        if (!rect.doApplyGravity) {
+        if (!rect.doApplyForce(ForceType.Gravity)) {
             rect;
         }
         rect.velocity.y += gravity * dt;
     }
     applyFrictionToVel(rect, friction) {
-        if (!rect.doApplyFriction) {
+        if (!rect.doApplyForce(ForceType.Friction)) {
             return;
         }
         rect.velocity.x -= rect.velocity.x * friction;
         // also do friction on y axis if non gravitable
-        if (!rect.doApplyGravity) {
+        if (!rect.doApplyForce(ForceType.Gravity)) {
             rect.velocity.y -= rect.velocity.y * friction;
         }
     }
     applyCollisions(rect, dt) {
-        if (!rect.doApplyCollisions) {
+        if (!rect.canCollide) {
             return;
         }
         for (const [_id, staticRect] of this.staticRects) {
@@ -531,26 +542,21 @@ class PhysicsEngine {
         }
     }
 }
-function isPhysicalRect(obj) {
-    return "position" in obj && "size" in obj && "doApplyCollisions" in obj;
+var ForceType;
+(function (ForceType) {
+    ForceType["Friction"] = "friction";
+    ForceType["Gravity"] = "gravity";
+})(ForceType || (ForceType = {}));
+function isAbstractPhysicalRect(obj) {
+    return isAbstractRect(obj) && "canCollide" in obj;
 }
-function isKinematicRect(obj) {
-    return isPhysicalRect(obj) && "velocity" in obj;
-}
-var Direction;
-(function (Direction) {
-    Direction[Direction["None"] = 0] = "None";
-    Direction[Direction["Up"] = 1] = "Up";
-    Direction[Direction["Down"] = 2] = "Down";
-    Direction[Direction["Left"] = 3] = "Left";
-    Direction[Direction["Right"] = 4] = "Right";
-})(Direction || (Direction = {}));
 class PhysicalRect extends Rect {
     constructor(abstractRect) {
         super(abstractRect);
-        this.doApplyCollisions = abstractRect.doApplyCollisions;
+        this.canCollide = abstractRect.canCollide;
     }
 }
+/// <reference path="physicalrect.ts"/>
 class InterpolatedRect extends PhysicalRect {
     constructor(abstractRect) {
         super(abstractRect);
@@ -572,12 +578,18 @@ class InterpolatedRect extends PhysicalRect {
         this.setPosition(newPos.x, newPos.y);
     }
 }
+/// <reference path="interpolatedrect.ts"/>
+function isAbstractKinematicRect(obj) {
+    return isAbstractPhysicalRect(obj) && "velocity" in obj;
+}
 class KinematicRect extends InterpolatedRect {
     constructor(abstractRect) {
         super(abstractRect);
         this.velocity = new Vector2(abstractRect.velocity.x, abstractRect.velocity.y);
-        this.doApplyGravity = abstractRect.doApplyCollisions;
-        this.doApplyFriction = abstractRect.doApplyFriction;
+        this.forcesToApply = new Set();
+        for (const [key, _val] of Object.entries(abstractRect.forcesToApply)) {
+            this.forcesToApply.add(key);
+        }
         this.collisionHorizontal = Direction.None;
         this.collisionVertical = Direction.None;
     }
@@ -596,6 +608,9 @@ class KinematicRect extends InterpolatedRect {
             this.collisionHorizontal = dir;
         }
     }
+    doApplyForce(force) {
+        return this.forcesToApply.has(force);
+    }
 }
 class Platformer {
     constructor() {
@@ -609,7 +624,7 @@ class Platformer {
             playerSpeed: 0,
             playerJump: 0,
         };
-        this.physTps = 40;
+        this.physTps = 30;
         this.physTicker = new FixedTicker(this.physTps);
         this.serverAccumulator = 0;
         this.serverTPS = 0;
@@ -701,19 +716,19 @@ class Platformer {
             return;
         }
         let rectangle;
-        if (isKinematicRect(serverRect) && rectID == this.playerRectID) {
+        if (isAbstractKinematicRect(serverRect) && rectID == this.playerRectID) {
             // Doing physics prediction only for player rect
             const rect = new KinematicRect(serverRect);
             this.physicsEngine.insertKinematicRect(rectID, rect);
             rectangle = new RectangleShape(rect);
         }
-        else if (isKinematicRect(serverRect)) {
+        else if (isAbstractKinematicRect(serverRect)) {
             // Interpolated rect for other kinematic rects
             const rect = new InterpolatedRect(serverRect);
             this.physicsEngine.insertInterpolatedRect(rectID, rect);
             rectangle = new RectangleShape(rect);
         }
-        else if (isPhysicalRect(serverRect)) {
+        else if (isAbstractPhysicalRect(serverRect)) {
             // Static rects
             const rect = new PhysicalRect(serverRect);
             this.physicsEngine.insertStaticRect(rectID, rect);
@@ -747,7 +762,6 @@ class Platformer {
         if (controlsCoeffs.size > 0) {
             const json = JSON.stringify(Object.fromEntries(controlsCoeffs.entries()));
             this.controls.resetCoeffs();
-            console.log(json);
             this.websocket.sendMessage("input", json);
         }
     }

@@ -2,11 +2,26 @@ function lerp(a: number, b: number, alpha: number): number{
     return a + alpha * (b - a);
 }
 
+interface AbstractRect {
+    position: {
+        x: number,
+        y: number,
+    }
+    size: {
+        x: number,
+        y: number,
+    }
+}
+
+function isAbstractRect(obj: any): obj is AbstractRect {
+    return "position" in obj && "size" in obj
+}
+
 class Rect {
     position: Vector2;
     size: Vector2;
 
-    constructor(abstractRect?: Rect){
+    constructor(abstractRect?: AbstractRect){
         this.position = new Vector2(0, 0);
         this.size = new Vector2(0, 0);
 

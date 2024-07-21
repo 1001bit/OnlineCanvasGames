@@ -28,8 +28,8 @@ class Platformer {
             playerJump: 0,
         }
 
-        this.physTps = 40
-        this.physTicker = new FixedTicker(this.physTps)
+        this.physTps = 30;
+        this.physTicker = new FixedTicker(this.physTps);
 
         this.serverAccumulator = 0;
         this.serverTPS = 0;
@@ -146,19 +146,19 @@ class Platformer {
 
         let rectangle: RectangleShape;
 
-        if(isKinematicRect(serverRect) && rectID == this.playerRectID){
+        if(isAbstractKinematicRect(serverRect) && rectID == this.playerRectID){
             // Doing physics prediction only for player rect
             const rect = new KinematicRect(serverRect)
             this.physicsEngine.insertKinematicRect(rectID, rect)
 
             rectangle = new RectangleShape(rect)
-        } else if(isKinematicRect(serverRect)) {
+        } else if(isAbstractKinematicRect(serverRect)) {
             // Interpolated rect for other kinematic rects
             const rect = new InterpolatedRect(serverRect)
             this.physicsEngine.insertInterpolatedRect(rectID, rect)
 
             rectangle = new RectangleShape(rect)
-        } else if(isPhysicalRect(serverRect)) {
+        } else if(isAbstractPhysicalRect(serverRect)) {
             // Static rects
             const rect = new PhysicalRect(serverRect)
             this.physicsEngine.insertStaticRect(rectID, rect)
@@ -199,7 +199,6 @@ class Platformer {
         if(controlsCoeffs.size > 0){
             const json = JSON.stringify(Object.fromEntries(controlsCoeffs.entries()))
             this.controls.resetCoeffs()
-            console.log(json)
             this.websocket.sendMessage("input", json)
         }
     }
