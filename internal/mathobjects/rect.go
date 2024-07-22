@@ -23,6 +23,11 @@ func (rect *Rect) Intersects(rect2 Rect) bool {
 	return true
 }
 
+func (rect *Rect) SetPosition(x, y float64) {
+	rect.Position.X = x
+	rect.Position.Y = y
+}
+
 func (rect *Rect) GetPosition() Vector2[float64] {
 	return rect.Position
 }

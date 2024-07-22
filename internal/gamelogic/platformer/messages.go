@@ -2,84 +2,87 @@ package platformer
 
 import (
 	"github.com/1001bit/OnlineCanvasGames/internal/mathobjects"
-	"github.com/1001bit/OnlineCanvasGames/internal/physics"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
 )
 
 // GameInfo
 type GameInfo struct {
-	PlayerRectID int       `json:"rectID"`
-	Constants    Constants `json:"constants"`
-	TPS          int       `json:"tps"`
+	TPS int `json:"tps"`
 }
 
-func (gl *PlatformerGL) NewGameInfoMessage(playerRectID int, tps int, constants Constants) *message.JSON {
+func NewGameInfoMessage(gl *PlatformerGL) *message.JSON {
 	return &message.JSON{
 		Type: "gameinfo",
 		Body: GameInfo{
-			PlayerRectID: playerRectID,
-			Constants:    constants,
-			TPS:          tps,
+			TPS: gl.tps,
 		},
 	}
 }
 
 // Level
 type LevelData struct {
-	StaticRects    map[int]*physics.PhysicalRect  `json:"static"`
-	KinematicRects map[int]*physics.KinematicRect `json:"kinematic"`
+	Blocks  map[int]*Block  `json:"blocks"`
+	Players map[int]*Player `json:"players"`
+
+	Config LevelConfig `json:"config"`
+
+	PlayerRectID int `json:"playerRectId"`
 }
 
-func (gl *PlatformerGL) NewLevelMessage() *message.JSON {
+func NewLevelMessage(level *Level, userID int) *message.JSON {
 	return &message.JSON{
 		Type: "level",
 		Body: LevelData{
-			StaticRects:    gl.level.levelRects,
-			KinematicRects: gl.level.playersRects,
+			Blocks:  level.blocks,
+			Players: level.players,
+
+			Config: level.config,
+
+			PlayerRectID: level.userRectIDs[userID],
 		},
 	}
 }
 
-// Update
-type UpdateData struct {
-	RectsMoved map[int]mathobjects.Vector2[float64] `json:"rectsMoved"`
+// Players movement
+type PlayerMovementData struct {
+	PlayersMoved map[int]mathobjects.Vector2[float64] `json:"playersMoved"`
 }
 
-func (gl *PlatformerGL) NewUpdateMessage(movedRects map[int]mathobjects.Vector2[float64]) *message.JSON {
+func NewPlayerMovementMessage(movedPlayers map[int]mathobjects.Vector2[float64]) *message.JSON {
 	return &message.JSON{
-		Type: "update",
-		Body: UpdateData{
-			RectsMoved: movedRects,
+		Type: "playerMovement",
+		Body: PlayerMovementData{
+			PlayersMoved: movedPlayers,
 		},
 	}
 }
 
-// Create
-type CreateData struct {
-	ID   int                    `json:"id"`
-	Rect *physics.KinematicRect `json:"rect"`
+// Connect
+type ConnectData struct {
+	RectID int     `json:"rectId"`
+	Player *Player `json:"rect"`
 }
 
-func (gl *PlatformerGL) NewCreateMessage(rectID int, rect *physics.KinematicRect) *message.JSON {
+func NewConnectMessage(rectID int, player *Player) *message.JSON {
 	return &message.JSON{
-		Type: "create",
-		Body: CreateData{
-			ID:   rectID,
-			Rect: rect,
+		Type: "connect",
+		Body: ConnectData{
+			RectID: rectID,
+			Player: player,
 		},
 	}
 }
 
-// Delete
-type DeleteData struct {
-	ID int `json:"id"`
+// Disconnect
+type DisconnectData struct {
+	RectID int `json:"rectId"`
 }
 
-func (gl *PlatformerGL) NewDeleteMessage(rectID int) *message.JSON {
+func NewDisconnectMessage(rectID int) *message.JSON {
 	return &message.JSON{
-		Type: "delete",
-		Body: DeleteData{
-			ID: rectID,
+		Type: "disconnect",
+		Body: DisconnectData{
+			RectID: rectID,
 		},
 	}
 }

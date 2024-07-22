@@ -1,38 +1,20 @@
 class Platformer {
-    playerRectID: number;
-    constants: PlatformerConstants;
-
-    physTps: number;
-    physTicker: FixedTicker;
-
-    serverAccumulator: number;
     serverTPS: number;
+
+    ticker: Ticker;
+
+    level: Level;
 
     canvas: GameCanvas;
     controls: Controls;
     websocket: GameWebSocket;
-    ticker: Ticker;
-
-    physicsEngine: PhysicsEngine;
 
     constructor(){
         const layers = 2
 
-        this.playerRectID = 0
-        this.constants = {
-            physics: {
-                friction: 0,
-                gravity: 0,
-            },
-            playerSpeed: 0,
-            playerJump: 0,
-        }
-
-        this.physTps = 30;
-        this.physTicker = new FixedTicker(this.physTps);
-
-        this.serverAccumulator = 0;
         this.serverTPS = 0;
+
+        this.level = new Level()
 
         this.canvas = new GameCanvas("canvas", layers)
         this.canvas.setBackgroundColor(RGB(30, 100, 100))
@@ -44,8 +26,6 @@ class Platformer {
         const gameID = $("main").data("game-id")
         const roomID = $("main").data("room-id")
         this.initWebsocket(gameID, roomID)
-        
-        this.physicsEngine = new PhysicsEngine()
 
         this.ticker = new Ticker()
         this.ticker.tick(dt => this.tick(dt))
@@ -71,16 +51,16 @@ class Platformer {
                     this.handleLevelMessage(body);
                     break;
 
-                case "update":
-                    this.handleUpdateMessage(body);
+                case "playerMovement":
+                    this.handlePlayerMovementMessage(body);
                     break;
-        
-                case "delete":
-                    this.handleDeleteMessage(body);
+                
+                case "connect":
+                    this.handleConnectMessage(body);
                     break;
-        
-                case "create":
-                    this.handleCreateMessage(body);
+
+                case "disconnect":
+                    this.handleDisconnectMessage(body);
                     break;
         
                 default:
@@ -96,41 +76,14 @@ class Platformer {
     }
 
     tick(dt: number) {
-        // physics
-        this.physTicker.update(dt, (fixedDT) => {
-            // update phys/server tps coeffs
-            this.controls.updateCoeffs(this.serverTPS, this.physTps)
+        // controls
+        this.controls.updateCoeffs(this.serverTPS, 1000/dt)
 
-            this.physicsEngine.updateKinematicsInterpolation()
-            this.handleControls()
-            this.physicsEngine.update(fixedDT, this.constants.physics)
-        })
-
-        // interpolation
-        this.serverAccumulator += dt
-        const interpolatedAlpha = Math.min(1, this.serverAccumulator/(1000/this.serverTPS))
-        const kinematicAlpha = this.physTicker.getAlpha()
-        this.physicsEngine.interpolate(interpolatedAlpha, kinematicAlpha)
+        // level
+        this.level.tick(dt, this.serverTPS, this.controls)
 
         // draw
         this.canvas.draw()
-    }
-
-    handleControls(){
-        const playerRect = this.physicsEngine.kinematicRects.get(this.playerRectID)
-        if(!playerRect){
-            return
-        }
-
-        if(this.controls.isHeld("left")){
-            playerRect.velocity.x -= this.constants.playerSpeed
-        }
-        if(this.controls.isHeld("right")){
-            playerRect.velocity.x += this.constants.playerSpeed
-        }
-        if(this.controls.isHeld("jump") && playerRect.collisionVertical == Direction.Down){
-            playerRect.velocity.y -= this.constants.playerJump
-        }
     }
 
     stopWithText(text: string){
@@ -139,60 +92,34 @@ class Platformer {
         roomGui.setNavBarVisibility(true)
     }
 
-    createRectangleShape(serverRect: Rect | KinematicRect, rectID: number){
-        if(this.canvas.getDrawable(rectID)){
-            return
-        }
-
-        let rectangle: RectangleShape;
-
-        if(isAbstractKinematicRect(serverRect) && rectID == this.playerRectID){
-            // Doing physics prediction only for player rect
-            const rect = new KinematicRect(serverRect)
-            this.physicsEngine.insertKinematicRect(rectID, rect)
-
-            rectangle = new RectangleShape(rect)
-        } else if(isAbstractKinematicRect(serverRect)) {
-            // Interpolated rect for other kinematic rects
-            const rect = new InterpolatedRect(serverRect)
-            this.physicsEngine.insertInterpolatedRect(rectID, rect)
-
-            rectangle = new RectangleShape(rect)
-        } else if(isAbstractPhysicalRect(serverRect)) {
-            // Static rects
-            const rect = new PhysicalRect(serverRect)
-            this.physicsEngine.insertStaticRect(rectID, rect)
-
-            rectangle = new RectangleShape(rect)
-        } else {
-            // non rects
-            return
-        }
-
-        this.canvas.insertDrawable(rectangle, 0, rectID)
-    }
-
     handleLevelMessage(body: LevelMessage){
-        for (const [key, val] of Object.entries(body.kinematic)){
-            const id = Number(key)
-            const serverRect = val as KinematicRect
+        this.level.setConfig(body.config)
+        this.level.setPlayerRectID(body.playerRectId)
 
-            this.createRectangleShape(serverRect, id)
+        for (const [key, val] of Object.entries(body.players)){
+            const id = Number(key)
+            const serverRect = val as AbstractPlayer
+
+            const rectangle = this.level.createPlayerRectangle(serverRect, id)
+            if (rectangle){
+                this.canvas.insertDrawable(rectangle, 0, id)
+            }
         }
 
-        for (const [key, val] of Object.entries(body.static)){
+        for (const [key, val] of Object.entries(body.blocks)){
             const id = Number(key)
-            const serverRect = val as Rect
+            const serverRect = val as AbstractBlock
 
-            this.createRectangleShape(serverRect, id)
+            const rectangle = this.level.createBlockRectangle(serverRect, id)
+            if (rectangle){
+                this.canvas.insertDrawable(rectangle, 0, id)
+            }
         }
     }
 
-    handleUpdateMessage(body: UpdateMessage){
-        // physics operations
-        this.serverAccumulator = 0
-        this.physicsEngine.updateInterpolatedInterpolation()
-        this.physicsEngine.setMultiplePositions(body.rectsMoved)
+    handlePlayerMovementMessage(body: PlayerMovementMessage){
+        // level
+        this.level.handlePlayerMovement(body.playersMoved)
 
         // send controls to server
         const controlsCoeffs = this.controls.getCoeffs()
@@ -203,22 +130,23 @@ class Platformer {
         }
     }
 
-    handleDeleteMessage(body: DeleteMessage){
-        this.canvas.deleteDrawable(body.id)
-        this.physicsEngine.deleteRect(body.id)
+    handleDisconnectMessage(body: DisconnectMessage){
+        this.canvas.deleteDrawable(body.rectId)
+        this.level.disconnectPlayer(body.rectId)
     }
 
-    handleCreateMessage(body: CreateMessage){
+    handleConnectMessage(body: ConnectMessage){
         let serverRect = body.rect
-        let rectID = body.id
+        let rectID = body.rectId
         
-        this.createRectangleShape(serverRect, rectID)
+        const rectangle = this.level.createPlayerRectangle(serverRect, rectID)
+        if(rectangle){
+            this.canvas.insertDrawable(rectangle, 0, rectID)
+        }
     }
 
     handleGameInfoMessage(body: GameInfoMessage){
-        this.playerRectID = body.rectID
         this.serverTPS = body.tps
-        this.constants = body.constants
     }
 }
 

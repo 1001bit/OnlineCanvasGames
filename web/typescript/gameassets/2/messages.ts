@@ -1,23 +1,25 @@
-interface LevelMessage {
-    kinematic: Map<number, KinematicRect>
-    static: Map<number, PhysicalRect>
-}
-
-interface DeleteMessage {
-    id: number;
-}
-
-interface CreateMessage {
-    rect: PhysicalRect | KinematicRect;
-    id: number;
-}
-
-interface UpdateMessage {
-    rectsMoved: Map<number, Vector2>
-}
-
 interface GameInfoMessage {
-    rectID: number;
     tps: number;
-    constants: PlatformerConstants;
+}
+
+interface LevelMessage {
+    blocks: Map<number, AbstractBlock>
+    players: Map<number, AbstractPlayer>
+
+    config: LevelConfig
+
+    playerRectId: number
+}
+
+interface PlayerMovementMessage {
+    playersMoved: Map<number, {x: number, y: number}>
+}
+
+interface ConnectMessage {
+    rect: AbstractPlayer;
+    rectId: number;
+}
+
+interface DisconnectMessage {
+    rectId: number;
 }

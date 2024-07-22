@@ -1,30 +1,21 @@
 package platformer
 
 import (
-	"github.com/1001bit/OnlineCanvasGames/internal/physics"
 	"github.com/1001bit/OnlineCanvasGames/pkg/set"
 )
 
-func (l *Level) CreatePlayer(userID int, playersLimit int) (int, *physics.KinematicRect) {
-	const (
-		applyGravity    = true
-		applyCollisions = true
-		applyFriction   = true
-	)
-
+func (l *Level) CreatePlayer(userID int, playersLimit int) (int, *Player) {
 	if rectID, ok := l.userRectIDs[userID]; ok {
-		return rectID, l.playersRects[rectID]
+		return rectID, l.players[rectID]
 	}
 
 	rectID := l.getFreePlayerRectID(playersLimit)
-
-	inner := physics.MakePhysicalRect(100*float64(rectID), 100, 100, 100, applyCollisions)
-	kinRect := physics.NewKinematicRect(inner, physics.FrictionType, physics.GravityType)
-
-	l.playersRects[rectID] = kinRect
 	l.userRectIDs[userID] = rectID
 
-	return rectID, kinRect
+	player := NewPlayer(rectID)
+	l.players[rectID] = player
+
+	return rectID, player
 }
 
 func (l *Level) DeletePlayer(userID int) (int, error) {
@@ -34,7 +25,7 @@ func (l *Level) DeletePlayer(userID int) (int, error) {
 	}
 
 	delete(l.userRectIDs, userID)
-	delete(l.playersRects, rectID)
+	delete(l.players, rectID)
 
 	return rectID, nil
 }

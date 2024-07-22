@@ -39,12 +39,9 @@
     - [ ] Multiplayer platformer game
         - [X] Server
             - [X] Game loop
+            - [X] Player and blocks
+            - [X] Forces and collisions
             - [X] Client Input+Duration receive
-            - [X] Physics engine
-                - [X] Kinematic and Static rects
-                - [X] Forces application
-                - [X] Collisions
-                - [X] Apply SOLID principles
             - [X] Data send
                 - [X] Level
                 - [X] Info
@@ -59,21 +56,16 @@
             - [X] Level Draw
             - [X] Game loop
             - [X] Controls
-                - [X] Frontend controls bindings
-                - [X] Send input right after server message
-            - [X] Messages handling:
-                - [X] Level
-                - [X] GameInfo
-                - [X] Rect Delete/Create
+                - [X] Frontend
+                - [X] Send to Backend
+            - [X] Messages handling
             - [ ] Smooth rect movements
-                - [X] Physics class, which replicates server's physics
                 - [X] Client State -> Updated State interpolation
+                - [ ] Player physics replication
+                    - [X] Forces
+                    - [X] Movement
+                    - [ ] Collisions
                 - [ ] Client State -> Level State interpolation
-                - [ ] Update physics engine along the server one
-                - [X] Physics calculations (only for player's actions) based on current state
-                    - [X] Gravity, friction, small stuff
-                    - [X] Collisions
-                    - [X] Player movement
 
 - [ ] Admin page
     - [ ] Front end

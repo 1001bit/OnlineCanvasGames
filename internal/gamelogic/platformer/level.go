@@ -3,28 +3,45 @@ package platformer
 import (
 	"github.com/1001bit/OnlineCanvasGames/internal/gamelogic"
 	"github.com/1001bit/OnlineCanvasGames/internal/mathobjects"
-	"github.com/1001bit/OnlineCanvasGames/internal/physics"
 )
+
+type LevelConfig struct {
+	PlayerSpeed    float64 `json:"playerSpeed"`
+	PlayerJump     float64 `json:"playerJump"`
+	PlayerGravity  float64 `json:"playerGravity"`
+	PlayerFriction float64 `json:"playerFriction"`
+}
 
 type Level struct {
 	// [rectID]rect
-	playersRects map[int]*physics.KinematicRect
-	levelRects   map[int]*physics.PhysicalRect
+	players map[int]*Player
+	blocks  map[int]*Block
+
+	config LevelConfig
 
 	// [userID]rectID
 	userRectIDs map[int]int
 }
 
 func NewPlatformerLevel() *Level {
+	config := LevelConfig{
+		PlayerSpeed:    3,
+		PlayerJump:     5,
+		PlayerGravity:  0.03,
+		PlayerFriction: 0.3,
+	}
+
 	level := &Level{
-		playersRects: make(map[int]*physics.KinematicRect),
-		levelRects:   make(map[int]*physics.PhysicalRect),
+		players: make(map[int]*Player),
+		blocks:  make(map[int]*Block),
+
+		config: config,
 
 		userRectIDs: make(map[int]int),
 	}
 
-	block := physics.NewPhysicalRect(0, 500, 1000, 100, true)
-	level.levelRects[10] = block
+	block := NewBlock(0, 500, 1000, 100)
+	level.blocks[10] = block
 
 	return level
 }
@@ -32,57 +49,42 @@ func NewPlatformerLevel() *Level {
 func (l *Level) Tick(dtMs float64, fullInputMap map[int]gamelogic.InputMap) map[int]mathobjects.Vector2[float64] {
 	moved := make(map[int]mathobjects.Vector2[float64])
 
+	// TODO: Fixed Timestep
+
 	// control player rects
 	for userID, inputMap := range fullInputMap {
-		l.controlPlayerRect(userID, inputMap)
+		rectID, ok := l.userRectIDs[userID]
+		if !ok {
+			continue
+		}
+		player, ok := l.players[rectID]
+		if !ok {
+			continue
+		}
+
+		player.Control(l.config.PlayerSpeed, l.config.PlayerJump, inputMap)
 	}
 
 	// apply physics on player rects
-	for rectID, kinematicRect := range l.playersRects {
-		startPos := kinematicRect.GetPosition()
+	for rectID, player := range l.players {
+		startPos := player.GetPosition()
 
 		// apply forces
-		physics.ApplyForcesOn(kinematicRect, dtMs, globalPlatformerConstants.Physics)
+		player.ApplyGravity(l.config.PlayerGravity, dtMs)
+		player.ApplyFriction(l.config.PlayerFriction)
 
-		// apply collisions
-		if kinematicRect.CanCollide() {
-			kinematicRect.SetCollisionDir(mathobjects.None)
-			for _, staticRect := range l.levelRects {
-				physics.CollideKinematicWithStatic(kinematicRect, staticRect, dtMs)
-			}
+		// apply collision
+		player.SetCollisionDir(mathobjects.None)
+		for _, block := range l.blocks {
+			CollidePlayerWithBlock(player, block, dtMs)
 		}
 
 		// move rect
-		kinematicRect.ApplyVelToPos(dtMs)
-		if startPos != kinematicRect.GetPosition() {
-			moved[rectID] = kinematicRect.GetPosition()
+		player.ApplyVelToPos(dtMs)
+		if startPos != player.GetPosition() {
+			moved[rectID] = player.GetPosition()
 		}
 	}
 
 	return moved
-}
-
-func (l *Level) controlPlayerRect(userID int, inputMap gamelogic.InputMap) {
-	rectID := l.userRectIDs[userID]
-	playerKRect, ok := l.playersRects[rectID]
-	if !ok {
-		return
-	}
-
-	addX := 0.0
-	addY := 0.0
-
-	if coeff, ok := inputMap.GetControlCoeff("left"); ok {
-		addX -= globalPlatformerConstants.PlayerSpeed * coeff
-	}
-
-	if coeff, ok := inputMap.GetControlCoeff("right"); ok {
-		addX += globalPlatformerConstants.PlayerSpeed * coeff
-	}
-
-	if inputMap.IsHeld("jump") && playerKRect.IsCollisionInDirection(mathobjects.Down) {
-		addY -= globalPlatformerConstants.PlayerJump
-	}
-
-	playerKRect.AddToVel(addX, addY)
 }

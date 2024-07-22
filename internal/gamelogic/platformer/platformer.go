@@ -25,7 +25,7 @@ func NewPlatformerGL() *PlatformerGL {
 		level: NewPlatformerLevel(),
 
 		maxPlayers: 4,
-		tps:        20,
+		tps:        30,
 
 		inputChan: make(chan UserInput),
 	}
@@ -55,16 +55,16 @@ func (gl *PlatformerGL) HandleReadMessage(msg rtclient.MessageWithClient, writer
 func (gl *PlatformerGL) JoinClient(userID int, writer gamelogic.RoomWriter) {
 	rectID, rect := gl.level.CreatePlayer(userID, gl.maxPlayers)
 
-	writer.WriteMessageTo(gl.NewGameInfoMessage(rectID, gl.tps, globalPlatformerConstants), userID)
-	writer.WriteMessageTo(gl.NewLevelMessage(), userID)
+	writer.WriteMessageTo(NewGameInfoMessage(gl), userID)
+	writer.WriteMessageTo(NewLevelMessage(gl.level, rectID), userID)
 
-	writer.GlobalWriteMessage(gl.NewCreateMessage(rectID, rect))
+	writer.GlobalWriteMessage(NewConnectMessage(rectID, rect))
 }
 
 func (gl *PlatformerGL) DeleteClient(userID int, writer gamelogic.RoomWriter) {
 	rectID, err := gl.level.DeletePlayer(userID)
 	if err == nil {
-		writer.GlobalWriteMessage(gl.NewDeleteMessage(rectID))
+		writer.GlobalWriteMessage(NewDisconnectMessage(rectID))
 	}
 }
 

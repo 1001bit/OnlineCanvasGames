@@ -384,54 +384,12 @@ class GameWebSocket {
         }));
     }
 }
-function collideKinematicWithStatic(kinematicRect, staticRect, dt) {
-    if (!staticRect.canCollide) {
-        return;
-    }
-    kinematicRect.setCollisionDir(Direction.None);
-    let futureKinematic = new Rect(kinematicRect);
-    futureKinematic.setPosition(kinematicRect.targetPosition.x, kinematicRect.targetPosition.y);
-    const velX = kinematicRect.velocity.x * dt;
-    const velY = kinematicRect.velocity.y * dt;
-    if (velY > 0) {
-        // down
-        futureKinematic.size.y += velY;
-        if (futureKinematic.intersects(staticRect)) {
-            kinematicRect.setTargetPos(kinematicRect.targetPosition.x, staticRect.position.y - kinematicRect.size.y, true);
-            kinematicRect.velocity.y = 0;
-            kinematicRect.setCollisionDir(Direction.Down);
-        }
-    }
-    else if (velY < 0) {
-        // up
-        futureKinematic.size.y += Math.abs(velY);
-        futureKinematic.position.y -= Math.abs(velY);
-        if (futureKinematic.intersects(staticRect)) {
-            kinematicRect.setTargetPos(kinematicRect.targetPosition.x, staticRect.position.y + staticRect.size.y, true);
-            kinematicRect.velocity.y = 0;
-            kinematicRect.setCollisionDir(Direction.Up);
-        }
-    }
-    futureKinematic = new Rect(kinematicRect);
-    futureKinematic.setPosition(kinematicRect.targetPosition.x, kinematicRect.targetPosition.y);
-    if (velX > 0) {
-        // right
-        futureKinematic.size.x += velX;
-        if (futureKinematic.intersects(staticRect)) {
-            kinematicRect.setTargetPos(staticRect.position.x - kinematicRect.size.x, kinematicRect.targetPosition.y, true);
-            kinematicRect.velocity.x = 0;
-            kinematicRect.setCollisionDir(Direction.Right);
-        }
-    }
-    else if (velX < 0) {
-        // left
-        futureKinematic.size.x += Math.abs(velX);
-        futureKinematic.position.x -= Math.abs(velX);
-        if (futureKinematic.intersects(staticRect)) {
-            kinematicRect.setTargetPos(staticRect.position.x + staticRect.size.x, kinematicRect.targetPosition.y, true);
-            kinematicRect.velocity.x = 0;
-            kinematicRect.setCollisionDir(Direction.Left);
-        }
+function isAbstractBlock(obj) {
+    return isAbstractRect(obj);
+}
+class Block extends Rect {
+    constructor(abstract) {
+        super(abstract);
     }
 }
 var Direction;
@@ -442,192 +400,120 @@ var Direction;
     Direction[Direction["Left"] = 3] = "Left";
     Direction[Direction["Right"] = 4] = "Right";
 })(Direction || (Direction = {}));
-class PhysicsEngine {
+class Level {
     constructor() {
-        this.staticRects = new Map();
-        this.kinematicRects = new Map();
-        this.interpolatedRects = new Map();
+        this.blocks = new Map();
+        this.interpolatedPlayers = new Map();
+        this.kinematicPlayers = new Map();
+        this.config = {
+            playerSpeed: 0,
+            playerJump: 0,
+            playerGravity: 0,
+            playerFriction: 0,
+        },
+            this.playerRectID = 0;
+        this.fixedTicker = new FixedTicker(20);
+        this.serverAccumulator = 0;
     }
-    insertStaticRect(id, rect) {
-        this.staticRects.set(id, rect);
+    setConfig(config) {
+        this.config = config;
     }
-    insertInterpolatedRect(id, rect) {
-        this.interpolatedRects.set(id, rect);
+    setPlayerRectID(id) {
+        this.playerRectID = id;
     }
-    insertKinematicRect(id, rect) {
-        this.kinematicRects.set(id, rect);
-    }
-    deleteRect(id) {
-        this.staticRects.delete(id);
-        this.kinematicRects.delete(id);
-        this.interpolatedRects.delete(id);
-    }
-    update(dt, constants) {
-        for (const [_id, rect] of this.kinematicRects) {
-            this.applyGravityToVel(rect, constants.gravity, dt);
-            this.applyFrictionToVel(rect, constants.friction);
-            this.applyCollisions(rect, dt);
-            this.applyVelToPos(rect, dt);
-        }
-    }
-    updateKinematicsInterpolation() {
-        for (const [_id, rect] of this.kinematicRects) {
-            rect.updateStartPos();
-        }
-    }
-    updateInterpolatedInterpolation() {
-        for (const [_id, rect] of this.interpolatedRects) {
-            rect.updateStartPos();
-        }
-    }
-    interpolate(interpolatedAlpha, kinematicAlpha) {
-        for (const [_id, rect] of this.kinematicRects) {
-            rect.interpolate(kinematicAlpha);
-        }
-        for (const [_id, rect] of this.interpolatedRects) {
-            rect.interpolate(interpolatedAlpha);
-        }
-    }
-    applyGravityToVel(rect, gravity, dt) {
-        if (!rect.doApplyForce(ForceType.Gravity)) {
-            rect;
-        }
-        rect.velocity.y += gravity * dt;
-    }
-    applyFrictionToVel(rect, friction) {
-        if (!rect.doApplyForce(ForceType.Friction)) {
+    createPlayerRectangle(serverRect, rectID) {
+        if (this.interpolatedPlayers.has(rectID) || this.kinematicPlayers.has(rectID)) {
             return;
         }
-        rect.velocity.x -= rect.velocity.x * friction;
-        // also do friction on y axis if non gravitable
-        if (!rect.doApplyForce(ForceType.Gravity)) {
-            rect.velocity.y -= rect.velocity.y * friction;
-        }
-    }
-    applyCollisions(rect, dt) {
-        if (!rect.canCollide) {
-            return;
-        }
-        for (const [_id, staticRect] of this.staticRects) {
-            collideKinematicWithStatic(rect, staticRect, dt);
-        }
-    }
-    applyVelToPos(rect, dt) {
-        const posX = rect.targetPosition.x + rect.velocity.x * dt;
-        const posY = rect.targetPosition.y + rect.velocity.y * dt;
-        rect.setTargetPos(posX, posY);
-    }
-    setMultiplePositions(positions) {
-        for (const [key, val] of Object.entries(positions)) {
-            const id = Number(key);
-            const position = val;
-            const staticRect = this.staticRects.get(id);
-            if (staticRect) {
-                staticRect.setPosition(position.x, position.y);
-                continue;
-            }
-            const kinematicRect = this.kinematicRects.get(id);
-            if (kinematicRect) {
-                // TODO: Correct sometimes
-                const correct = false;
-                if (correct) {
-                    kinematicRect.setTargetPos(position.x, position.y);
-                }
-                continue;
-            }
-            const interpolatedRect = this.interpolatedRects.get(id);
-            if (interpolatedRect) {
-                interpolatedRect.setTargetPos(position.x, position.y);
-            }
-        }
-    }
-}
-var ForceType;
-(function (ForceType) {
-    ForceType["Friction"] = "friction";
-    ForceType["Gravity"] = "gravity";
-})(ForceType || (ForceType = {}));
-function isAbstractPhysicalRect(obj) {
-    return isAbstractRect(obj) && "canCollide" in obj;
-}
-class PhysicalRect extends Rect {
-    constructor(abstractRect) {
-        super(abstractRect);
-        this.canCollide = abstractRect.canCollide;
-    }
-}
-/// <reference path="physicalrect.ts"/>
-class InterpolatedRect extends PhysicalRect {
-    constructor(abstractRect) {
-        super(abstractRect);
-        this.startPosition = this.getPosition();
-        this.targetPosition = this.getPosition();
-    }
-    setTargetPos(x, y, teleport) {
-        this.targetPosition.setPosition(x, y);
-        if (teleport) {
-            this.setPosition(x, y);
-            this.startPosition.setPosition(x, y);
-        }
-    }
-    updateStartPos() {
-        this.startPosition.setPosition(this.targetPosition.x, this.targetPosition.y);
-    }
-    interpolate(alpha) {
-        const newPos = lerpVector2(this.startPosition, this.targetPosition, alpha);
-        this.setPosition(newPos.x, newPos.y);
-    }
-}
-/// <reference path="interpolatedrect.ts"/>
-function isAbstractKinematicRect(obj) {
-    return isAbstractPhysicalRect(obj) && "velocity" in obj;
-}
-class KinematicRect extends InterpolatedRect {
-    constructor(abstractRect) {
-        super(abstractRect);
-        this.velocity = new Vector2(abstractRect.velocity.x, abstractRect.velocity.y);
-        this.forcesToApply = new Set();
-        for (const [key, _val] of Object.entries(abstractRect.forcesToApply)) {
-            this.forcesToApply.add(key);
-        }
-        this.collisionHorizontal = Direction.None;
-        this.collisionVertical = Direction.None;
-    }
-    setVelocity(x, y) {
-        this.velocity.setPosition(x, y);
-    }
-    setCollisionDir(dir) {
-        if (dir == Direction.Down || dir == Direction.Up) {
-            this.collisionVertical = dir;
-        }
-        else if (dir == Direction.Left || dir == Direction.Right) {
-            this.collisionHorizontal = dir;
+        let rectangle;
+        if (rectID == this.playerRectID) {
+            const rect = new KinematicPlayer(serverRect);
+            this.kinematicPlayers.set(rectID, rect);
+            rectangle = new RectangleShape(rect);
         }
         else {
-            this.collisionVertical = dir;
-            this.collisionHorizontal = dir;
+            const rect = new InterpolatedPlayer(serverRect);
+            this.interpolatedPlayers.set(rectID, rect);
+            rectangle = new RectangleShape(rect);
         }
+        return rectangle;
     }
-    doApplyForce(force) {
-        return this.forcesToApply.has(force);
+    disconnectPlayer(rectId) {
+        this.interpolatedPlayers.delete(rectId);
+        this.kinematicPlayers.delete(rectId);
+    }
+    createBlockRectangle(serverRect, rectID) {
+        if (this.blocks.has(rectID)) {
+            return;
+        }
+        const rect = new Block(serverRect);
+        this.blocks.set(rectID, rect);
+        const rectangle = new RectangleShape(rect);
+        return rectangle;
+    }
+    tick(dt, serverTPS, controls) {
+        this.serverAccumulator += dt;
+        // interpolate kinematic players
+        const kinematicAlpha = this.fixedTicker.getAlpha();
+        for (const [_, player] of this.kinematicPlayers) {
+            player.interpolate(kinematicAlpha);
+        }
+        // interpolate interpolated players
+        const interpolatedAlpha = this.serverAccumulator / (1000 / serverTPS);
+        for (const [_, player] of this.interpolatedPlayers) {
+            player.interpolate(interpolatedAlpha);
+        }
+        // update kinematic players
+        this.fixedTicker.update(dt, fixedDT => {
+            controls.updateCoeffs(serverTPS, 1000 / fixedDT);
+            for (const [_, player] of this.kinematicPlayers) {
+                // update interpolation
+                player.updateStartPos();
+                // forces
+                player.applyGravity(this.config.playerGravity, fixedDT);
+                player.applyFriction(this.config.playerFriction);
+                // control
+                player.control(this.config.playerSpeed, this.config.playerJump, controls);
+                // TODO: Collisions
+                for (const [_, _block] of this.blocks) {
+                    // Here
+                }
+                player.setCollisionDir(Direction.None);
+                // Move rect
+                player.applyVelToPos(fixedDT);
+            }
+        });
+    }
+    handlePlayerMovement(moved) {
+        // update interpolated rects interpolation
+        for (const [_, player] of this.interpolatedPlayers) {
+            player.updateStartPos();
+        }
+        // set position
+        for (const [key, val] of Object.entries(moved)) {
+            const rectID = Number(key);
+            const pos = val;
+            const interpolated = this.interpolatedPlayers.get(rectID);
+            if (interpolated) {
+                interpolated.setTargetPos(pos.x, pos.y);
+                continue;
+            }
+            const kinematic = this.kinematicPlayers.get(rectID);
+            if (kinematic) {
+                // TODO: Correction
+                const correct = false;
+                if (correct) {
+                    kinematic.setTargetPos(pos.x, pos.y);
+                }
+            }
+        }
     }
 }
 class Platformer {
     constructor() {
         const layers = 2;
-        this.playerRectID = 0;
-        this.constants = {
-            physics: {
-                friction: 0,
-                gravity: 0,
-            },
-            playerSpeed: 0,
-            playerJump: 0,
-        };
-        this.physTps = 30;
-        this.physTicker = new FixedTicker(this.physTps);
-        this.serverAccumulator = 0;
         this.serverTPS = 0;
+        this.level = new Level();
         this.canvas = new GameCanvas("canvas", layers);
         this.canvas.setBackgroundColor(RGB(30, 100, 100));
         this.controls = new Controls();
@@ -636,7 +522,6 @@ class Platformer {
         const gameID = $("main").data("game-id");
         const roomID = $("main").data("room-id");
         this.initWebsocket(gameID, roomID);
-        this.physicsEngine = new PhysicsEngine();
         this.ticker = new Ticker();
         this.ticker.tick(dt => this.tick(dt));
     }
@@ -656,14 +541,14 @@ class Platformer {
                 case "level":
                     this.handleLevelMessage(body);
                     break;
-                case "update":
-                    this.handleUpdateMessage(body);
+                case "playerMovement":
+                    this.handlePlayerMovementMessage(body);
                     break;
-                case "delete":
-                    this.handleDeleteMessage(body);
+                case "connect":
+                    this.handleConnectMessage(body);
                     break;
-                case "create":
-                    this.handleCreateMessage(body);
+                case "disconnect":
+                    this.handleDisconnectMessage(body);
                     break;
                 default:
                     break;
@@ -675,88 +560,41 @@ class Platformer {
         this.websocket.openConnection(gameID, roomID);
     }
     tick(dt) {
-        // physics
-        this.physTicker.update(dt, (fixedDT) => {
-            // update phys/server tps coeffs
-            this.controls.updateCoeffs(this.serverTPS, this.physTps);
-            this.physicsEngine.updateKinematicsInterpolation();
-            this.handleControls();
-            this.physicsEngine.update(fixedDT, this.constants.physics);
-        });
-        // interpolation
-        this.serverAccumulator += dt;
-        const interpolatedAlpha = Math.min(1, this.serverAccumulator / (1000 / this.serverTPS));
-        const kinematicAlpha = this.physTicker.getAlpha();
-        this.physicsEngine.interpolate(interpolatedAlpha, kinematicAlpha);
+        // controls
+        this.controls.updateCoeffs(this.serverTPS, 1000 / dt);
+        // level
+        this.level.tick(dt, this.serverTPS, this.controls);
         // draw
         this.canvas.draw();
-    }
-    handleControls() {
-        const playerRect = this.physicsEngine.kinematicRects.get(this.playerRectID);
-        if (!playerRect) {
-            return;
-        }
-        if (this.controls.isHeld("left")) {
-            playerRect.velocity.x -= this.constants.playerSpeed;
-        }
-        if (this.controls.isHeld("right")) {
-            playerRect.velocity.x += this.constants.playerSpeed;
-        }
-        if (this.controls.isHeld("jump") && playerRect.collisionVertical == Direction.Down) {
-            playerRect.velocity.y -= this.constants.playerJump;
-        }
     }
     stopWithText(text) {
         this.canvas.stop();
         roomGui.showMessage(text);
         roomGui.setNavBarVisibility(true);
     }
-    createRectangleShape(serverRect, rectID) {
-        if (this.canvas.getDrawable(rectID)) {
-            return;
-        }
-        let rectangle;
-        if (isAbstractKinematicRect(serverRect) && rectID == this.playerRectID) {
-            // Doing physics prediction only for player rect
-            const rect = new KinematicRect(serverRect);
-            this.physicsEngine.insertKinematicRect(rectID, rect);
-            rectangle = new RectangleShape(rect);
-        }
-        else if (isAbstractKinematicRect(serverRect)) {
-            // Interpolated rect for other kinematic rects
-            const rect = new InterpolatedRect(serverRect);
-            this.physicsEngine.insertInterpolatedRect(rectID, rect);
-            rectangle = new RectangleShape(rect);
-        }
-        else if (isAbstractPhysicalRect(serverRect)) {
-            // Static rects
-            const rect = new PhysicalRect(serverRect);
-            this.physicsEngine.insertStaticRect(rectID, rect);
-            rectangle = new RectangleShape(rect);
-        }
-        else {
-            // non rects
-            return;
-        }
-        this.canvas.insertDrawable(rectangle, 0, rectID);
-    }
     handleLevelMessage(body) {
-        for (const [key, val] of Object.entries(body.kinematic)) {
+        this.level.setConfig(body.config);
+        this.level.setPlayerRectID(body.playerRectId);
+        for (const [key, val] of Object.entries(body.players)) {
             const id = Number(key);
             const serverRect = val;
-            this.createRectangleShape(serverRect, id);
+            const rectangle = this.level.createPlayerRectangle(serverRect, id);
+            if (rectangle) {
+                this.canvas.insertDrawable(rectangle, 0, id);
+            }
         }
-        for (const [key, val] of Object.entries(body.static)) {
+        for (const [key, val] of Object.entries(body.blocks)) {
             const id = Number(key);
             const serverRect = val;
-            this.createRectangleShape(serverRect, id);
+            const rectangle = this.level.createBlockRectangle(serverRect, id);
+            if (rectangle) {
+                this.canvas.insertDrawable(rectangle, 0, id);
+            }
         }
     }
-    handleUpdateMessage(body) {
-        // physics operations
-        this.serverAccumulator = 0;
-        this.physicsEngine.updateInterpolatedInterpolation();
-        this.physicsEngine.setMultiplePositions(body.rectsMoved);
+    handlePlayerMovementMessage(body) {
+        // level
+        this.level.handlePlayerMovement(body.playersMoved);
         // send controls to server
         const controlsCoeffs = this.controls.getCoeffs();
         if (controlsCoeffs.size > 0) {
@@ -765,19 +603,86 @@ class Platformer {
             this.websocket.sendMessage("input", json);
         }
     }
-    handleDeleteMessage(body) {
-        this.canvas.deleteDrawable(body.id);
-        this.physicsEngine.deleteRect(body.id);
+    handleDisconnectMessage(body) {
+        this.canvas.deleteDrawable(body.rectId);
+        this.level.disconnectPlayer(body.rectId);
     }
-    handleCreateMessage(body) {
+    handleConnectMessage(body) {
         let serverRect = body.rect;
-        let rectID = body.id;
-        this.createRectangleShape(serverRect, rectID);
+        let rectID = body.rectId;
+        const rectangle = this.level.createPlayerRectangle(serverRect, rectID);
+        if (rectangle) {
+            this.canvas.insertDrawable(rectangle, 0, rectID);
+        }
     }
     handleGameInfoMessage(body) {
-        this.playerRectID = body.rectID;
         this.serverTPS = body.tps;
-        this.constants = body.constants;
     }
 }
 new Platformer();
+function isAbstractPlayer(obj) {
+    return isAbstractRect(obj);
+}
+class InterpolatedPlayer extends Rect {
+    constructor(abstract) {
+        super(abstract);
+        this.startPosition = this.getPosition();
+        this.targetPosition = this.getPosition();
+    }
+    setTargetPos(x, y, teleport) {
+        this.targetPosition.setPosition(x, y);
+        if (teleport) {
+            this.setPosition(x, y);
+            this.startPosition.setPosition(x, y);
+        }
+    }
+    updateStartPos() {
+        this.startPosition.setPosition(this.targetPosition.x, this.targetPosition.y);
+    }
+    interpolate(alpha) {
+        const newPos = lerpVector2(this.startPosition, this.targetPosition, alpha);
+        this.setPosition(newPos.x, newPos.y);
+    }
+}
+class KinematicPlayer extends InterpolatedPlayer {
+    constructor(abstract) {
+        super(abstract);
+        this.velocity = new Vector2(0, 0);
+        this.collisionHorizontal = Direction.None;
+        this.collisionVertical = Direction.None;
+    }
+    control(speed, jump, controls) {
+        if (controls.isHeld("left")) {
+            this.velocity.x -= speed;
+        }
+        if (controls.isHeld("right")) {
+            this.velocity.x += speed;
+        }
+        if (controls.isHeld("jump") && this.collisionVertical == Direction.Down) {
+            this.velocity.y -= jump;
+        }
+    }
+    applyGravity(force, dt) {
+        this.velocity.y += force * dt;
+    }
+    applyFriction(force) {
+        this.velocity.x *= force;
+        // this.velocity.y *= force
+    }
+    applyVelToPos(dt) {
+        this.targetPosition.x += this.velocity.x * dt;
+        this.targetPosition.y += this.velocity.y * dt;
+    }
+    setCollisionDir(dir) {
+        if (dir == Direction.Down || dir == Direction.Up) {
+            this.collisionVertical = dir;
+        }
+        else if (dir == Direction.Left || dir == Direction.Right) {
+            this.collisionHorizontal = dir;
+        }
+        else {
+            this.collisionHorizontal = dir;
+            this.collisionVertical = dir;
+        }
+    }
+}
