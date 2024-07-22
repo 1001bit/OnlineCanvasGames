@@ -63,9 +63,9 @@
                 - [X] Client State -> Updated State interpolation
                 - [ ] Player physics replication
                     - [X] Forces
-                    - [X] Movement
+                    - [X] Control
                     - [ ] Collisions
-                - [ ] Client State -> Level State interpolation
+                - [ ] Kinematic Players position correction
 
 - [ ] Admin page
     - [ ] Front end
