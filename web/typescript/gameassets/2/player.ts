@@ -83,4 +83,72 @@ class KinematicPlayer extends InterpolatedPlayer {
             this.collisionVertical = dir
         }
     }
+
+    detectHorizontalCollision(block: Block, dtMs: number){
+        if(this.velocity.x == 0){
+            return Direction.None
+        }
+
+        const playerPath = new Rect(this)
+        playerPath.setPosition(this.targetPosition.x, this.targetPosition.y)
+        playerPath.extend(this.velocity.x * dtMs, 0)
+
+        if(!playerPath.intersects(block)){
+            return Direction.None
+        }
+
+        if(this.velocity.x > 0){
+            return Direction.Right
+        } else {
+            return Direction.Left
+        }
+    }
+
+    detectVerticalCollision(block: Block, dtMs: number){
+        if(this.velocity.y == 0){
+            return Direction.None
+        }
+
+        const playerPath = new Rect(this)
+        playerPath.setPosition(this.targetPosition.x, this.targetPosition.y)
+        playerPath.extend(0, this.velocity.y * dtMs)
+
+        if(!playerPath.intersects(block)){
+            return Direction.None
+        }
+
+        if(this.velocity.y > 0){
+            return Direction.Down
+        } else {
+            return Direction.Up
+        }
+    }
+
+    resolveCollision(block: Block, dir: Direction){
+        if(dir == Direction.None){
+            return
+        }
+
+        this.setCollisionDir(dir)
+
+        switch(dir){
+            case Direction.Up:
+                this.velocity.y = 0
+                this.targetPosition.y = block.getPosition().y + block.getSize().y
+                break
+            case Direction.Down:
+                this.velocity.y = 0
+                this.targetPosition.y = block.getPosition().y - this.getSize().y
+                break
+
+            case Direction.Left:
+                this.velocity.x = 0
+                this.targetPosition.x = block.getPosition().x + block.getSize().x
+                break
+            case Direction.Right:
+                this.velocity.x = 0
+                this.targetPosition.x = block.getPosition().x - this.getSize().x
+                break
+        }
+    }
 }

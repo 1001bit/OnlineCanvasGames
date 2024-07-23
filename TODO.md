@@ -42,7 +42,7 @@
             - [X] Player and blocks
             - [X] Forces and collisions
             - [X] Client Input+Duration receive
-            - [X] Data send
+            - [ ] Data send
                 - [X] Level
                 - [X] Info
                     - [X] Player rectID
@@ -61,11 +61,13 @@
             - [X] Messages handling
             - [ ] Smooth rect movements
                 - [X] Client State -> Updated State interpolation
-                - [ ] Player physics replication
+                - [X] Player physics replication
                     - [X] Forces
                     - [X] Control
-                    - [ ] Collisions
+                    - [X] Collisions
                 - [ ] Kinematic Players position correction
+
+        - [ ] Fix inconsistencies in controls
 
 - [ ] Admin page
     - [ ] Front end

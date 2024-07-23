@@ -29,7 +29,7 @@ type LevelData struct {
 	PlayerRectID int `json:"playerRectId"`
 }
 
-func NewLevelMessage(level *Level, userID int) *message.JSON {
+func NewLevelMessage(level *Level, playerRectID int) *message.JSON {
 	return &message.JSON{
 		Type: "level",
 		Body: LevelData{
@@ -38,7 +38,7 @@ func NewLevelMessage(level *Level, userID int) *message.JSON {
 
 			Config: level.config,
 
-			PlayerRectID: level.userRectIDs[userID],
+			PlayerRectID: playerRectID,
 		},
 	}
 }

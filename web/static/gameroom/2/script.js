@@ -197,6 +197,16 @@ class Rect {
     setSize(x, y) {
         this.size.setPosition(x, y);
     }
+    extend(extX, extY) {
+        this.size.x += Math.abs(extX);
+        this.size.y += Math.abs(extY);
+        if (extX < 0) {
+            this.position.x -= Math.abs(extX);
+        }
+        if (extY < 0) {
+            this.position.y -= Math.abs(extY);
+        }
+    }
     containsPoint(x, y) {
         let pos = this.position;
         let size = this.size;
@@ -412,7 +422,7 @@ class Level {
             playerFriction: 0,
         },
             this.playerRectID = 0;
-        this.fixedTicker = new FixedTicker(20);
+        this.fixedTicker = new FixedTicker(50);
         this.serverAccumulator = 0;
     }
     setConfig(config) {
@@ -479,15 +489,23 @@ class Level {
                 // Collisions and movement
                 player.setCollisionDir(Direction.None);
                 // Horizontal
-                for (const [_, _block] of this.blocks) {
-                    // TODO: Collisions and resolution
+                for (const [_, block] of this.blocks) {
+                    const dir = player.detectHorizontalCollision(block, fixedDT);
+                    if (dir != Direction.None) {
+                        player.resolveCollision(block, dir);
+                        break;
+                    }
                 }
-                player.targetPosition.x += player.velocity.x * dt;
+                player.targetPosition.x += player.velocity.x * fixedDT;
                 // Vertical
-                for (const [_, _block] of this.blocks) {
-                    // TODO: Collisions and resolution
+                for (const [_, block] of this.blocks) {
+                    const dir = player.detectVerticalCollision(block, fixedDT);
+                    if (dir != Direction.None) {
+                        player.resolveCollision(block, dir);
+                        break;
+                    }
                 }
-                player.targetPosition.y += player.velocity.y * dt;
+                player.targetPosition.y += player.velocity.y * fixedDT;
             }
         });
     }
@@ -687,6 +705,64 @@ class KinematicPlayer extends InterpolatedPlayer {
         else {
             this.collisionHorizontal = dir;
             this.collisionVertical = dir;
+        }
+    }
+    detectHorizontalCollision(block, dtMs) {
+        if (this.velocity.x == 0) {
+            return Direction.None;
+        }
+        const playerPath = new Rect(this);
+        playerPath.setPosition(this.targetPosition.x, this.targetPosition.y);
+        playerPath.extend(this.velocity.x * dtMs, 0);
+        if (!playerPath.intersects(block)) {
+            return Direction.None;
+        }
+        if (this.velocity.x > 0) {
+            return Direction.Right;
+        }
+        else {
+            return Direction.Left;
+        }
+    }
+    detectVerticalCollision(block, dtMs) {
+        if (this.velocity.y == 0) {
+            return Direction.None;
+        }
+        const playerPath = new Rect(this);
+        playerPath.setPosition(this.targetPosition.x, this.targetPosition.y);
+        playerPath.extend(0, this.velocity.y * dtMs);
+        if (!playerPath.intersects(block)) {
+            return Direction.None;
+        }
+        if (this.velocity.y > 0) {
+            return Direction.Down;
+        }
+        else {
+            return Direction.Up;
+        }
+    }
+    resolveCollision(block, dir) {
+        if (dir == Direction.None) {
+            return;
+        }
+        this.setCollisionDir(dir);
+        switch (dir) {
+            case Direction.Up:
+                this.velocity.y = 0;
+                this.targetPosition.y = block.getPosition().y + block.getSize().y;
+                break;
+            case Direction.Down:
+                this.velocity.y = 0;
+                this.targetPosition.y = block.getPosition().y - this.getSize().y;
+                break;
+            case Direction.Left:
+                this.velocity.x = 0;
+                this.targetPosition.x = block.getPosition().x + block.getSize().x;
+                break;
+            case Direction.Right:
+                this.velocity.x = 0;
+                this.targetPosition.x = block.getPosition().x - this.getSize().x;
+                break;
         }
     }
 }

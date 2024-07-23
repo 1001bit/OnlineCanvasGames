@@ -29,7 +29,7 @@ class Level {
         },
         this.playerRectID = 0
 
-        this.fixedTicker = new FixedTicker(20)
+        this.fixedTicker = new FixedTicker(50)
         this.serverAccumulator = 0
     }
 
@@ -116,16 +116,24 @@ class Level {
                 player.setCollisionDir(Direction.None)
 
                 // Horizontal
-                for(const [_, _block] of this.blocks){
-                    // TODO: Collisions and resolution
+                for(const [_, block] of this.blocks){
+                    const dir = player.detectHorizontalCollision(block, fixedDT)
+                    if(dir != Direction.None){
+                        player.resolveCollision(block, dir)
+                        break
+                    }
                 }
-                player.targetPosition.x += player.velocity.x * dt
+                player.targetPosition.x += player.velocity.x * fixedDT
 
                 // Vertical
-                for(const [_, _block] of this.blocks){
-                    // TODO: Collisions and resolution
+                for(const [_, block] of this.blocks){
+                    const dir = player.detectVerticalCollision(block, fixedDT)
+                    if(dir != Direction.None){
+                        player.resolveCollision(block, dir)
+                        break
+                    }
                 }
-                player.targetPosition.y += player.velocity.y * dt
+                player.targetPosition.y += player.velocity.y * fixedDT
             }
         })
     }

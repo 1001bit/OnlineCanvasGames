@@ -39,6 +39,17 @@ class Rect {
         this.size.setPosition(x, y);
     }
 
+    extend(extX: number, extY: number){
+        this.size.x += Math.abs(extX)
+        this.size.y += Math.abs(extY)
+        if (extX < 0){
+            this.position.x -= Math.abs(extX)
+        }
+        if (extY < 0){
+            this.position.y -= Math.abs(extY)
+        }
+    }
+
     containsPoint(x: number, y: number){
         let pos = this.position;
         let size = this.size;
@@ -70,4 +81,6 @@ class Rect {
     getSize(){
         return new Vector2(this.size.x, this.size.y);
     }
+
+
 }

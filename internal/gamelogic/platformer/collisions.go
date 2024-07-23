@@ -1,8 +1,6 @@
 package platformer
 
 import (
-	"math"
-
 	"github.com/1001bit/OnlineCanvasGames/internal/mathobjects"
 )
 
@@ -11,28 +9,18 @@ func (p *Player) DetectHorizontalCollision(block *Block, dtMs float64) mathobjec
 		return mathobjects.None
 	}
 
-	// "path", that rect is going to pass
-	futurePlayer := p.Rect
-	finalVelX := p.velocity.X * dtMs
+	playerPath := p.Rect
+	playerPath.Extend(p.velocity.X*dtMs, 0)
 
-	if finalVelX > 0 {
-		// right
-		futurePlayer.Size.X += finalVelX
-
-		if futurePlayer.Intersects(block.Rect) {
-			return mathobjects.Right
-		}
-	} else {
-		// left
-		futurePlayer.Size.X += math.Abs(finalVelX)
-		futurePlayer.Position.X -= math.Abs(finalVelX)
-
-		if futurePlayer.Intersects(block.Rect) {
-			return mathobjects.Left
-		}
+	if !playerPath.Intersects(block.Rect) {
+		return mathobjects.None
 	}
 
-	return mathobjects.None
+	if p.velocity.X > 0 {
+		return mathobjects.Right
+	} else {
+		return mathobjects.Left
+	}
 }
 
 func (p *Player) DetectVerticalCollision(block *Block, dtMs float64) mathobjects.Direction {
@@ -40,28 +28,18 @@ func (p *Player) DetectVerticalCollision(block *Block, dtMs float64) mathobjects
 		return mathobjects.None
 	}
 
-	// "path", that rect is going to pass
-	futurePlayer := p.Rect
-	finalVelY := p.velocity.Y * dtMs
+	playerPath := p.Rect
+	playerPath.Extend(0, p.velocity.Y*dtMs)
 
-	if finalVelY > 0 {
-		// down
-		futurePlayer.Size.Y += finalVelY
-
-		if futurePlayer.Intersects(block.Rect) {
-			return mathobjects.Down
-		}
-	} else {
-		// up
-		futurePlayer.Size.Y += math.Abs(finalVelY)
-		futurePlayer.Position.Y -= math.Abs(finalVelY)
-
-		if futurePlayer.Intersects(block.Rect) {
-			return mathobjects.Up
-		}
+	if !playerPath.Intersects(block.Rect) {
+		return mathobjects.None
 	}
 
-	return mathobjects.None
+	if p.velocity.Y > 0 {
+		return mathobjects.Down
+	} else {
+		return mathobjects.Up
+	}
 }
 
 func (p *Player) ResolveCollision(block *Block, dir mathobjects.Direction) {

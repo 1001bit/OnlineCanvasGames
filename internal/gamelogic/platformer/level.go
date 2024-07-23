@@ -53,12 +53,8 @@ func (l *Level) Tick(dtMs float64, fullInputMap map[int]gamelogic.InputMap) map[
 
 	// Control
 	for userID, inputMap := range fullInputMap {
-		rectID, ok := l.userRectIDs[userID]
-		if !ok {
-			continue
-		}
-		player, ok := l.players[rectID]
-		if !ok {
+		player := l.getPlayer(userID)
+		if player == nil {
 			continue
 		}
 
@@ -103,4 +99,16 @@ func (l *Level) Tick(dtMs float64, fullInputMap map[int]gamelogic.InputMap) map[
 	}
 
 	return moved
+}
+
+func (l *Level) getPlayer(userID int) *Player {
+	rectID, ok := l.userRectIDs[userID]
+	if !ok {
+		return nil
+	}
+	player, ok := l.players[rectID]
+	if !ok {
+		return nil
+	}
+	return player
 }

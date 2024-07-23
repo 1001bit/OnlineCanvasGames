@@ -25,7 +25,7 @@ func NewPlatformerGL() *PlatformerGL {
 		level: NewPlatformerLevel(),
 
 		maxPlayers: 4,
-		tps:        30,
+		tps:        25,
 
 		inputChan: make(chan UserInput),
 	}
