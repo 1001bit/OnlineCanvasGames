@@ -6,63 +6,84 @@ import (
 	"github.com/1001bit/OnlineCanvasGames/internal/mathobjects"
 )
 
-func CollidePlayerWithBlock(player *Player, block *Block, dtMs float64) {
-	// TODO: skip if player->block direction == player.collisionDir
-	// TODO: use interfaces for collided objects
+func (p *Player) DetectHorizontalCollision(block *Block, dtMs float64) mathobjects.Direction {
+	if p.velocity.X == 0 {
+		return mathobjects.None
+	}
 
 	// "path", that rect is going to pass
-	futurePlayer := player.Rect
+	futurePlayer := p.Rect
+	finalVelX := p.velocity.X * dtMs
 
-	// Getting final value of velocity, which will be added to kinematicRect
-	finalVel := player.velocity.Scale(dtMs)
-
-	// Vertical
-	if finalVel.Y > 0 {
-		// down
-		futurePlayer.Size.Y += finalVel.Y
+	if finalVelX > 0 {
+		// right
+		futurePlayer.Size.X += finalVelX
 
 		if futurePlayer.Intersects(block.Rect) {
-			player.Position.Y = block.GetPosition().Y - player.GetSize().Y
-			player.velocity.Y = 0
-
-			player.SetCollisionDir(mathobjects.Down)
+			return mathobjects.Right
 		}
-	} else if finalVel.Y < 0 {
-		// up
-		futurePlayer.Size.Y += math.Abs(finalVel.Y)
-		futurePlayer.Position.Y -= math.Abs(finalVel.Y)
+	} else {
+		// left
+		futurePlayer.Size.X += math.Abs(finalVelX)
+		futurePlayer.Position.X -= math.Abs(finalVelX)
 
 		if futurePlayer.Intersects(block.Rect) {
-			player.Position.Y = block.GetPosition().Y + block.GetSize().Y
-			player.velocity.Y = 0
-
-			player.SetCollisionDir(mathobjects.Up)
+			return mathobjects.Left
 		}
 	}
 
-	futurePlayer = player.Rect
+	return mathobjects.None
+}
 
-	// Horizontal
-	if finalVel.X > 0 {
-		// Right
-		futurePlayer.Size.X += finalVel.X
+func (p *Player) DetectVerticalCollision(block *Block, dtMs float64) mathobjects.Direction {
+	if p.velocity.Y == 0 {
+		return mathobjects.None
+	}
 
-		if futurePlayer.Intersects(block.Rect) {
-			player.Position.X = block.GetPosition().X - player.GetSize().X
-			player.velocity.X = 0
+	// "path", that rect is going to pass
+	futurePlayer := p.Rect
+	finalVelY := p.velocity.Y * dtMs
 
-			player.SetCollisionDir(mathobjects.Right)
-		}
-	} else if finalVel.X < 0 {
-		// Left
-		futurePlayer.Size.X += math.Abs(finalVel.X)
-		futurePlayer.Position.X -= math.Abs(finalVel.X)
+	if finalVelY > 0 {
+		// down
+		futurePlayer.Size.Y += finalVelY
 
 		if futurePlayer.Intersects(block.Rect) {
-			player.Position.X = block.GetPosition().X + block.GetSize().X
-			player.velocity.X = 0
-
-			player.SetCollisionDir(mathobjects.Left)
+			return mathobjects.Down
 		}
+	} else {
+		// up
+		futurePlayer.Size.Y += math.Abs(finalVelY)
+		futurePlayer.Position.Y -= math.Abs(finalVelY)
+
+		if futurePlayer.Intersects(block.Rect) {
+			return mathobjects.Up
+		}
+	}
+
+	return mathobjects.None
+}
+
+func (p *Player) ResolveCollision(block *Block, dir mathobjects.Direction) {
+	if dir == mathobjects.None {
+		return
+	}
+
+	p.SetCollisionDir(dir)
+
+	switch dir {
+	case mathobjects.Down:
+		p.velocity.Y = 0
+		p.Position.Y = block.GetPosition().Y - p.GetSize().Y
+	case mathobjects.Up:
+		p.velocity.Y = 0
+		p.Position.Y = block.GetPosition().Y + block.GetSize().Y
+
+	case mathobjects.Right:
+		p.velocity.X = 0
+		p.Position.X = block.GetPosition().X - p.GetSize().X
+	case mathobjects.Left:
+		p.velocity.X = 0
+		p.Position.X = block.GetPosition().X + block.GetSize().X
 	}
 }

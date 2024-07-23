@@ -51,7 +51,7 @@ func (l *Level) Tick(dtMs float64, fullInputMap map[int]gamelogic.InputMap) map[
 
 	// TODO: Fixed Timestep
 
-	// control player rects
+	// Control
 	for userID, inputMap := range fullInputMap {
 		rectID, ok := l.userRectIDs[userID]
 		if !ok {
@@ -65,22 +65,38 @@ func (l *Level) Tick(dtMs float64, fullInputMap map[int]gamelogic.InputMap) map[
 		player.Control(l.config.PlayerSpeed, l.config.PlayerJump, inputMap)
 	}
 
-	// apply physics on player rects
+	// Physics
 	for rectID, player := range l.players {
 		startPos := player.GetPosition()
 
-		// apply forces
+		// Forces
 		player.ApplyGravity(l.config.PlayerGravity, dtMs)
 		player.ApplyFriction(l.config.PlayerFriction)
 
-		// apply collision
+		// Collisions and movement
 		player.SetCollisionDir(mathobjects.None)
-		for _, block := range l.blocks {
-			CollidePlayerWithBlock(player, block, dtMs)
-		}
 
-		// move rect
-		player.ApplyVelToPos(dtMs)
+		// Horizontal
+		for _, block := range l.blocks {
+			dir := player.DetectHorizontalCollision(block, dtMs)
+			if dir != mathobjects.None {
+				player.ResolveCollision(block, dir)
+				break
+			}
+		}
+		player.Position.X += player.velocity.X * dtMs
+
+		// Vertical
+		for _, block := range l.blocks {
+			dir := player.DetectVerticalCollision(block, dtMs)
+			if dir != mathobjects.None {
+				player.ResolveCollision(block, dir)
+				break
+			}
+		}
+		player.Position.Y += player.velocity.Y * dtMs
+
+		// Register to moved rects
 		if startPos != player.GetPosition() {
 			moved[rectID] = player.GetPosition()
 		}

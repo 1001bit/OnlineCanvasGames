@@ -90,7 +90,7 @@ class Level {
         }
 
         // interpolate interpolated players
-        const interpolatedAlpha = this.serverAccumulator/(1000/serverTPS)
+        const interpolatedAlpha = Math.min(this.serverAccumulator/(1000/serverTPS), 1)
         for (const [_, player] of this.interpolatedPlayers){
             player.interpolate(interpolatedAlpha)
         }
@@ -99,31 +99,41 @@ class Level {
         this.fixedTicker.update(dt, fixedDT => {
             controls.updateCoeffs(serverTPS, 1000/fixedDT)
 
-            for(const [_, player] of this.kinematicPlayers){
+            for(const [rectID, player] of this.kinematicPlayers){
                 // update interpolation
                 player.updateStartPos()
 
-                // forces
+                // Control
+                if(rectID == this.playerRectID){
+                    player.control(this.config.playerSpeed, this.config.playerJump, controls)
+                }
+
+                // Forces
                 player.applyGravity(this.config.playerGravity, fixedDT)
                 player.applyFriction(this.config.playerFriction)
 
-                // control
-                player.control(this.config.playerSpeed, this.config.playerJump, controls)
-
-                // TODO: Collisions
-                for(const [_, _block] of this.blocks){
-                    // Here
-                }
+                // Collisions and movement
                 player.setCollisionDir(Direction.None)
-                
-                // Move rect
-                player.applyVelToPos(fixedDT)
+
+                // Horizontal
+                for(const [_, _block] of this.blocks){
+                    // TODO: Collisions and resolution
+                }
+                player.targetPosition.x += player.velocity.x * dt
+
+                // Vertical
+                for(const [_, _block] of this.blocks){
+                    // TODO: Collisions and resolution
+                }
+                player.targetPosition.y += player.velocity.y * dt
             }
         })
     }
 
     handlePlayerMovement(moved: Map<number, {x: number, y: number}>){
         // update interpolated rects interpolation
+        this.serverAccumulator = 0
+        
         for (const [_, player] of this.interpolatedPlayers){
             player.updateStartPos()
         }

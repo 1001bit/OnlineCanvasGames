@@ -73,11 +73,6 @@ class KinematicPlayer extends InterpolatedPlayer {
 	    // this.velocity.y *= force
     }
 
-    applyVelToPos(dt: number){
-        this.targetPosition.x += this.velocity.x * dt
-        this.targetPosition.y += this.velocity.y * dt
-    }
-
     setCollisionDir(dir: Direction){
         if (dir == Direction.Down || dir == Direction.Up){
             this.collisionVertical = dir

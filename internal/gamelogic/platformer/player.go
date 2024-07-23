@@ -63,7 +63,3 @@ func (p *Player) SetCollisionDir(dir mathobjects.Direction) {
 		p.collisionVertical = dir
 	}
 }
-
-func (p *Player) ApplyVelToPos(dtMs float64) {
-	p.Position.Add(p.velocity.Scale(dtMs))
-}
