@@ -81,7 +81,6 @@ class Controls {
     constructor() {
         // using map instead of set here because golang doesn't have set implementation yet
         this.heldControls = new Map();
-        this.controlsCoeffs = new Map();
         this.bindings = new Map();
         // on key press
         document.addEventListener("keypress", (e) => {
@@ -114,21 +113,6 @@ class Controls {
     }
     isHeld(control) {
         return this.heldControls.has(control);
-    }
-    resetCoeffs() {
-        this.controlsCoeffs.clear();
-    }
-    updateCoeffs(serverTPS, clientTPS) {
-        for (const [control, _] of this.heldControls) {
-            let coeff = this.controlsCoeffs.get(control);
-            if (coeff == undefined) {
-                coeff = 0;
-            }
-            this.controlsCoeffs.set(control, coeff + serverTPS / clientTPS);
-        }
-    }
-    getCoeffs() {
-        return this.controlsCoeffs;
     }
 }
 class DeltaTimer {

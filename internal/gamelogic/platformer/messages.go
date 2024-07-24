@@ -1,23 +1,8 @@
 package platformer
 
 import (
-	"github.com/1001bit/OnlineCanvasGames/internal/mathobjects"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
 )
-
-// GameInfo
-type GameInfo struct {
-	TPS int `json:"tps"`
-}
-
-func NewGameInfoMessage(gl *PlatformerGL) *message.JSON {
-	return &message.JSON{
-		Type: "gameinfo",
-		Body: GameInfo{
-			TPS: gl.tps,
-		},
-	}
-}
 
 // Level
 type LevelData struct {
@@ -25,6 +10,8 @@ type LevelData struct {
 	Players map[int]*Player `json:"players"`
 
 	Config LevelConfig `json:"config"`
+
+	TPS float64 `json:"tps"`
 
 	PlayerRectID int `json:"playerRectId"`
 }
@@ -38,21 +25,9 @@ func NewLevelMessage(level *Level, playerRectID int) *message.JSON {
 
 			Config: level.config,
 
+			TPS: level.fixedTicker.GetTPS(),
+
 			PlayerRectID: playerRectID,
-		},
-	}
-}
-
-// Players movement
-type PlayerMovementData struct {
-	PlayersMoved map[int]mathobjects.Vector2[float64] `json:"playersMoved"`
-}
-
-func NewPlayerMovementMessage(movedPlayers map[int]mathobjects.Vector2[float64]) *message.JSON {
-	return &message.JSON{
-		Type: "playerMovement",
-		Body: PlayerMovementData{
-			PlayersMoved: movedPlayers,
 		},
 	}
 }

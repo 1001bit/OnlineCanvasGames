@@ -21,7 +21,7 @@ class FixedTicker {
         this.accumulator = 0
     }
 
-    update(dt: number, callback: (dt: number) => void){
+    update(dt: number, callback: (fixedDT: number) => void){
         this.accumulator += dt
         const maxAccumulator = 1000/this.tps
 

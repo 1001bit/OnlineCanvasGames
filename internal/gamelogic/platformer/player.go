@@ -1,7 +1,6 @@
 package platformer
 
 import (
-	"github.com/1001bit/OnlineCanvasGames/internal/gamelogic"
 	"github.com/1001bit/OnlineCanvasGames/internal/mathobjects"
 )
 
@@ -30,16 +29,18 @@ func NewPlayer(rectID int) *Player {
 	}
 }
 
-func (p *Player) Control(speed, jump float64, inputMap gamelogic.InputMap) {
-	if coeff, ok := inputMap.GetControlCoeff("left"); ok {
-		p.velocity.X -= speed * coeff
+func (p *Player) Control(speed, jump float64) {
+	// TODO: Controls
+
+	if false {
+		p.velocity.X -= speed
 	}
 
-	if coeff, ok := inputMap.GetControlCoeff("right"); ok {
-		p.velocity.X += speed * coeff
+	if false {
+		p.velocity.X += speed
 	}
 
-	if inputMap.IsHeld("jump") && p.collisionVertical == mathobjects.Down {
+	if false && p.collisionVertical == mathobjects.Down {
 		p.velocity.Y -= jump
 	}
 }

@@ -41,7 +41,7 @@
             - [X] Game loop
             - [X] Player and blocks
             - [X] Forces and collisions
-            - [X] Client Input+Duration receive
+            - [ ] Client receive
             - [ ] Data send
                 - [X] Level
                 - [X] Info
@@ -49,15 +49,15 @@
                     - [X] Constants
                     - [X] TPS
                 - [X] Rect Delete/Create
-                - [X] Moved rects
-                - [ ] Level state every 10 seconds
+                - [ ] Level update
+                - [ ] Level correction state
 
         - [X] Client
             - [X] Level Draw
             - [X] Game loop
-            - [X] Controls
+            - [ ] Controls
                 - [X] Frontend
-                - [X] Send to Backend
+                - [ ] Send to Backend
             - [X] Messages handling
             - [ ] Smooth rect movements
                 - [X] Client State -> Updated State interpolation
@@ -66,8 +66,6 @@
                     - [X] Control
                     - [X] Collisions
                 - [ ] Kinematic Players position correction
-
-        - [ ] Fix inconsistencies in controls
 
 - [ ] Admin page
     - [ ] Front end

@@ -1,18 +1,12 @@
-interface GameInfoMessage {
-    tps: number;
-}
-
 interface LevelMessage {
     blocks: Map<number, AbstractBlock>
     players: Map<number, AbstractPlayer>
 
     config: LevelConfig
 
-    playerRectId: number
-}
+    tps: number;
 
-interface PlayerMovementMessage {
-    playersMoved: Map<number, {x: number, y: number}>
+    playerRectId: number
 }
 
 interface ConnectMessage {

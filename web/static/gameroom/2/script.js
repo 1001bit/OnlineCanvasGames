@@ -81,7 +81,6 @@ class Controls {
     constructor() {
         // using map instead of set here because golang doesn't have set implementation yet
         this.heldControls = new Map();
-        this.controlsCoeffs = new Map();
         this.bindings = new Map();
         // on key press
         document.addEventListener("keypress", (e) => {
@@ -114,21 +113,6 @@ class Controls {
     }
     isHeld(control) {
         return this.heldControls.has(control);
-    }
-    resetCoeffs() {
-        this.controlsCoeffs.clear();
-    }
-    updateCoeffs(serverTPS, clientTPS) {
-        for (const [control, _] of this.heldControls) {
-            let coeff = this.controlsCoeffs.get(control);
-            if (coeff == undefined) {
-                coeff = 0;
-            }
-            this.controlsCoeffs.set(control, coeff + serverTPS / clientTPS);
-        }
-    }
-    getCoeffs() {
-        return this.controlsCoeffs;
     }
 }
 class DeltaTimer {
@@ -475,7 +459,6 @@ class Level {
         }
         // update kinematic players
         this.fixedTicker.update(dt, fixedDT => {
-            controls.updateCoeffs(serverTPS, 1000 / fixedDT);
             for (const [rectID, player] of this.kinematicPlayers) {
                 // update interpolation
                 player.updateStartPos();
@@ -561,14 +544,8 @@ class Platformer {
     initWebsocket(gameID, roomID) {
         this.websocket.handleMessage = (type, body) => {
             switch (type) {
-                case "gameinfo":
-                    this.handleGameInfoMessage(body);
-                    break;
                 case "level":
                     this.handleLevelMessage(body);
-                    break;
-                case "playerMovement":
-                    this.handlePlayerMovementMessage(body);
                     break;
                 case "connect":
                     this.handleConnectMessage(body);
@@ -586,8 +563,6 @@ class Platformer {
         this.websocket.openConnection(gameID, roomID);
     }
     tick(dt) {
-        // controls
-        this.controls.updateCoeffs(this.serverTPS, 1000 / dt);
         // level
         this.level.tick(dt, this.serverTPS, this.controls);
         // draw
@@ -601,6 +576,7 @@ class Platformer {
     handleLevelMessage(body) {
         this.level.setConfig(body.config);
         this.level.setPlayerRectID(body.playerRectId);
+        this.serverTPS = body.tps;
         for (const [key, val] of Object.entries(body.players)) {
             const id = Number(key);
             const serverRect = val;
@@ -618,17 +594,6 @@ class Platformer {
             }
         }
     }
-    handlePlayerMovementMessage(body) {
-        // level
-        this.level.handlePlayerMovement(body.playersMoved);
-        // send controls to server
-        const controlsCoeffs = this.controls.getCoeffs();
-        if (controlsCoeffs.size > 0) {
-            const json = JSON.stringify(Object.fromEntries(controlsCoeffs.entries()));
-            this.controls.resetCoeffs();
-            this.websocket.sendMessage("input", json);
-        }
-    }
     handleDisconnectMessage(body) {
         this.canvas.deleteDrawable(body.rectId);
         this.level.disconnectPlayer(body.rectId);
@@ -640,9 +605,6 @@ class Platformer {
         if (rectangle) {
             this.canvas.insertDrawable(rectangle, 0, rectID);
         }
-    }
-    handleGameInfoMessage(body) {
-        this.serverTPS = body.tps;
     }
 }
 new Platformer();

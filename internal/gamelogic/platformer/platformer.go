@@ -6,28 +6,19 @@ import (
 	"github.com/1001bit/OnlineCanvasGames/pkg/gameloop"
 )
 
-type UserInput struct {
-	InputMap gamelogic.InputMap
-	UserID   int
-}
-
 type PlatformerGL struct {
 	level *Level
 
 	maxPlayers int
 	tps        int
-
-	inputChan chan UserInput
 }
 
 func NewPlatformerGL() *PlatformerGL {
 	return &PlatformerGL{
 		level: NewPlatformerLevel(),
 
-		maxPlayers: 4,
+		maxPlayers: 8,
 		tps:        25,
-
-		inputChan: make(chan UserInput),
 	}
 }
 
@@ -38,24 +29,12 @@ func (gl *PlatformerGL) Run(doneChan <-chan struct{}, writer gamelogic.RoomWrite
 }
 
 func (gl *PlatformerGL) HandleReadMessage(msg rtclient.MessageWithClient, writer gamelogic.RoomWriter) {
-	switch msg.Message.Type {
-	case "input":
-		inputMap, err := gamelogic.GetInputMapFromMsg(msg.Message.Body, msg.Client.GetUser().ID)
-		if err != nil {
-			return
-		}
-
-		gl.inputChan <- UserInput{
-			UserID:   msg.Client.GetUser().ID,
-			InputMap: inputMap,
-		}
-	}
+	// TODO: Handle Input
 }
 
 func (gl *PlatformerGL) JoinClient(userID int, writer gamelogic.RoomWriter) {
 	rectID, rect := gl.level.CreatePlayer(userID, gl.maxPlayers)
 
-	writer.WriteMessageTo(NewGameInfoMessage(gl), userID)
 	writer.WriteMessageTo(NewLevelMessage(gl.level, rectID), userID)
 
 	writer.GlobalWriteMessage(NewConnectMessage(rectID, rect))

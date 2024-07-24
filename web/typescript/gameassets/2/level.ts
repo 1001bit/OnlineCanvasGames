@@ -97,8 +97,6 @@ class Level {
 
         // update kinematic players
         this.fixedTicker.update(dt, fixedDT => {
-            controls.updateCoeffs(serverTPS, 1000/fixedDT)
-
             for(const [rectID, player] of this.kinematicPlayers){
                 // update interpolation
                 player.updateStartPos()

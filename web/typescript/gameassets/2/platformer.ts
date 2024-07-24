@@ -43,16 +43,8 @@ class Platformer {
     initWebsocket(gameID: number, roomID: number){
         this.websocket.handleMessage = (type, body) => {
             switch (type) {
-                case "gameinfo":
-                    this.handleGameInfoMessage(body);
-                    break;
-        
                 case "level":
                     this.handleLevelMessage(body);
-                    break;
-
-                case "playerMovement":
-                    this.handlePlayerMovementMessage(body);
                     break;
                 
                 case "connect":
@@ -76,9 +68,6 @@ class Platformer {
     }
 
     tick(dt: number) {
-        // controls
-        this.controls.updateCoeffs(this.serverTPS, 1000/dt)
-
         // level
         this.level.tick(dt, this.serverTPS, this.controls)
 
@@ -95,6 +84,7 @@ class Platformer {
     handleLevelMessage(body: LevelMessage){
         this.level.setConfig(body.config)
         this.level.setPlayerRectID(body.playerRectId)
+        this.serverTPS = body.tps
 
         for (const [key, val] of Object.entries(body.players)){
             const id = Number(key)
@@ -117,19 +107,6 @@ class Platformer {
         }
     }
 
-    handlePlayerMovementMessage(body: PlayerMovementMessage){
-        // level
-        this.level.handlePlayerMovement(body.playersMoved)
-
-        // send controls to server
-        const controlsCoeffs = this.controls.getCoeffs()
-        if(controlsCoeffs.size > 0){
-            const json = JSON.stringify(Object.fromEntries(controlsCoeffs.entries()))
-            this.controls.resetCoeffs()
-            this.websocket.sendMessage("input", json)
-        }
-    }
-
     handleDisconnectMessage(body: DisconnectMessage){
         this.canvas.deleteDrawable(body.rectId)
         this.level.disconnectPlayer(body.rectId)
@@ -143,10 +120,6 @@ class Platformer {
         if(rectangle){
             this.canvas.insertDrawable(rectangle, 0, rectID)
         }
-    }
-
-    handleGameInfoMessage(body: GameInfoMessage){
-        this.serverTPS = body.tps
     }
 }
 
