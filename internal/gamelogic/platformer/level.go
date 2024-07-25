@@ -1,6 +1,7 @@
 package platformer
 
 import (
+	"github.com/1001bit/OnlineCanvasGames/internal/gamelogic"
 	"github.com/1001bit/OnlineCanvasGames/internal/mathobjects"
 	"github.com/1001bit/OnlineCanvasGames/pkg/fixedticker"
 )
@@ -26,14 +27,16 @@ type Level struct {
 }
 
 func NewPlatformerLevel() *Level {
-	config := LevelConfig{
-		PlayerSpeed:    3,
-		PlayerJump:     5,
-		PlayerGravity:  0.03,
-		PlayerFriction: 0.3,
-	}
+	var (
+		config = LevelConfig{
+			PlayerSpeed:    3,
+			PlayerJump:     5,
+			PlayerGravity:  0.03,
+			PlayerFriction: 0.3,
+		}
 
-	tps := 20.0
+		tps = 20.0
+	)
 
 	level := &Level{
 		players: make(map[int]*Player),
@@ -52,15 +55,19 @@ func NewPlatformerLevel() *Level {
 	return level
 }
 
-func (l *Level) Tick(dtMs float64) {
+func (l *Level) Tick(dtMs float64, writer gamelogic.RoomWriter) {
 	l.fixedTicker.Update(dtMs, func(fixedDtMs float64) {
+		movedPlayers := make(map[int]mathobjects.Vector2[float64])
+
 		// Physics
-		for _, player := range l.players {
+		for rectID, player := range l.players {
+			startPos := player.GetPosition()
+
 			// Forces
 			player.ApplyGravity(l.config.PlayerGravity, fixedDtMs)
 			player.ApplyFriction(l.config.PlayerFriction)
 
-			// Collisions and movement
+			// Collisions and displacement
 			player.SetCollisionDir(mathobjects.None)
 
 			// Horizontal
@@ -82,7 +89,14 @@ func (l *Level) Tick(dtMs float64) {
 				}
 			}
 			player.Position.Y += player.velocity.Y * fixedDtMs
+
+			if startPos != player.GetPosition() {
+				movedPlayers[rectID] = player.GetPosition()
+			}
 		}
+
+		// Level Update Message
+		writer.GlobalWriteMessage(NewLevelUpdateMessage(movedPlayers))
 	})
 }
 

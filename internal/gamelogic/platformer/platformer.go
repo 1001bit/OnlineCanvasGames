@@ -24,7 +24,7 @@ func NewPlatformerGL() *PlatformerGL {
 
 func (gl *PlatformerGL) Run(doneChan <-chan struct{}, writer gamelogic.RoomWriter) {
 	go gameloop.Gameloop(func(dtMs float64) {
-		gl.tick(dtMs, writer)
+		gl.level.Tick(dtMs, writer)
 	}, gl.tps, doneChan)
 }
 

@@ -1,6 +1,7 @@
 package platformer
 
 import (
+	"github.com/1001bit/OnlineCanvasGames/internal/mathobjects"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
 )
 
@@ -28,6 +29,20 @@ func NewLevelMessage(level *Level, playerRectID int) *message.JSON {
 			TPS: level.fixedTicker.GetTPS(),
 
 			PlayerRectID: playerRectID,
+		},
+	}
+}
+
+// Level Update
+type LevelUpdateDate struct {
+	MovedPlayers map[int]mathobjects.Vector2[float64] `json:"movedPlayers"`
+}
+
+func NewLevelUpdateMessage(movedPlayers map[int]mathobjects.Vector2[float64]) *message.JSON {
+	return &message.JSON{
+		Type: "levelUpdate",
+		Body: LevelUpdateDate{
+			MovedPlayers: movedPlayers,
 		},
 	}
 }

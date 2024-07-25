@@ -1,12 +1,16 @@
 interface LevelMessage {
-    blocks: Map<number, AbstractBlock>
-    players: Map<number, AbstractPlayer>
+    blocks: {};
+    players: {};
 
-    config: LevelConfig
+    config: LevelConfig;
 
     tps: number;
 
-    playerRectId: number
+    playerRectId: number;
+}
+
+interface LevelUpdateMessage {
+    movedPlayers: {};
 }
 
 interface ConnectMessage {

@@ -32,7 +32,7 @@ func (client *RoomClient) readFlow(r RoomNodeReader) {
 			// no error
 
 		case io.ErrUnexpectedEOF:
-			// unmarshaling error
+			// unmarshaling error, probably bad message from client
 			continue
 
 		default:

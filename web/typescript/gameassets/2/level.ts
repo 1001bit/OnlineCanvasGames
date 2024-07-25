@@ -136,7 +136,7 @@ class Level {
         })
     }
 
-    handlePlayerMovement(moved: Map<number, {x: number, y: number}>){
+    handlePlayerMovement(moved: {}){
         // update interpolated rects interpolation
         this.serverAccumulator = 0
         

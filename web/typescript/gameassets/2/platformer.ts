@@ -46,6 +46,10 @@ class Platformer {
                 case "level":
                     this.handleLevelMessage(body);
                     break;
+
+                case "levelUpdate":
+                    this.handleLevelUpdateMessage(body);
+                    break;
                 
                 case "connect":
                     this.handleConnectMessage(body);
@@ -107,9 +111,8 @@ class Platformer {
         }
     }
 
-    handleDisconnectMessage(body: DisconnectMessage){
-        this.canvas.deleteDrawable(body.rectId)
-        this.level.disconnectPlayer(body.rectId)
+    handleLevelUpdateMessage(body: LevelUpdateMessage){
+        this.level.handlePlayerMovement(body.movedPlayers)
     }
 
     handleConnectMessage(body: ConnectMessage){
@@ -120,6 +123,11 @@ class Platformer {
         if(rectangle){
             this.canvas.insertDrawable(rectangle, 0, rectID)
         }
+    }
+
+    handleDisconnectMessage(body: DisconnectMessage){
+        this.canvas.deleteDrawable(body.rectId)
+        this.level.disconnectPlayer(body.rectId)
     }
 }
 
