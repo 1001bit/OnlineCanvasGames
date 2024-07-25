@@ -36,12 +36,17 @@
         - [X] "Show nav bar" button
     - [X] Limit players amount
 
+    - [ ] Fix bug: concurrent map iteration and map write: roomnode/public.go:28
+        - [ ] Self-make concurrent map
+        - [ ] Put concurrent map inside all realtime nodes
+
     - [ ] Multiplayer platformer game
         - [X] Server
             - [X] Game loop
             - [X] Player and blocks
             - [X] Forces and collisions
-            - [ ] Client receive
+            - [X] Client controls handling
+            - [ ] Fixed Timestep (non crucial)
             - [ ] Data send
                 - [X] Level
                 - [X] Info
@@ -49,15 +54,15 @@
                     - [X] Constants
                     - [X] TPS
                 - [X] Rect Delete/Create
-                - [ ] Level update
+                - [X] Level update
                 - [ ] Level correction state
 
         - [X] Client
             - [X] Level Draw
             - [X] Game loop
-            - [ ] Controls
+            - [X] Controls
                 - [X] Frontend
-                - [ ] Send to Backend
+                - [X] Send to Backend
             - [X] Messages handling
             - [ ] Smooth rect movements
                 - [X] Client State -> Updated State interpolation

@@ -1,6 +1,4 @@
 class Platformer {
-    serverTPS: number;
-
     ticker: Ticker;
 
     level: Level;
@@ -9,10 +7,10 @@ class Platformer {
     controls: Controls;
     websocket: GameWebSocket;
 
+    DebugServerDeltaTime: DeltaTimer;
+
     constructor(){
         const layers = 2
-
-        this.serverTPS = 0;
 
         this.level = new Level()
 
@@ -26,6 +24,8 @@ class Platformer {
         const gameID = $("main").data("game-id")
         const roomID = $("main").data("room-id")
         this.initWebsocket(gameID, roomID)
+
+        this.DebugServerDeltaTime = new DeltaTimer();
 
         this.ticker = new Ticker()
         this.ticker.tick(dt => this.tick(dt))
@@ -73,7 +73,7 @@ class Platformer {
 
     tick(dt: number) {
         // level
-        this.level.tick(dt, this.serverTPS, this.controls)
+        this.level.tick(dt, this.controls)
 
         // draw
         this.canvas.draw()
@@ -88,7 +88,7 @@ class Platformer {
     handleLevelMessage(body: LevelMessage){
         this.level.setConfig(body.config)
         this.level.setPlayerRectID(body.playerRectId)
-        this.serverTPS = body.tps
+        this.level.setTPS(body.clientTps, body.tps)
 
         for (const [key, val] of Object.entries(body.players)){
             const id = Number(key)
@@ -112,7 +112,16 @@ class Platformer {
     }
 
     handleLevelUpdateMessage(body: LevelUpdateMessage){
+        // console.log(this.DebugServerDeltaTime.getDeltaTime(), 1000/this.level.serverTPS, body)
+
         this.level.handlePlayerMovement(body.movedPlayers)
+
+        const heldControlsTicks = this.controls.getHeldControlsTicks()
+        if(heldControlsTicks.size != 0){
+            const json = JSON.stringify(Object.fromEntries(heldControlsTicks))
+            this.websocket.sendMessage("input", json)
+            this.controls.clearHeldControlsTicks()
+        }
     }
 
     handleConnectMessage(body: ConnectMessage){

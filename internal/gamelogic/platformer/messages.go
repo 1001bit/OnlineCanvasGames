@@ -12,7 +12,8 @@ type LevelData struct {
 
 	Config LevelConfig `json:"config"`
 
-	TPS float64 `json:"tps"`
+	TPS       float64 `json:"tps"`
+	ClientTPS float64 `json:"clientTps"`
 
 	PlayerRectID int `json:"playerRectId"`
 }
@@ -26,7 +27,8 @@ func NewLevelMessage(level *Level, playerRectID int) *message.JSON {
 
 			Config: level.config,
 
-			TPS: level.fixedTicker.GetTPS(),
+			TPS:       level.tps,
+			ClientTPS: level.clientTPS,
 
 			PlayerRectID: playerRectID,
 		},

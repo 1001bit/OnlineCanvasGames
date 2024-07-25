@@ -31,7 +31,7 @@ func (l *Level) DeletePlayer(userID int) (int, error) {
 }
 
 func (l *Level) getFreePlayerRectID(playersLimit int) int {
-	occupiedRectIDs := set.MakeEmptySet[int]()
+	occupiedRectIDs := make(set.Set[int])
 
 	for _, rectID := range l.userRectIDs {
 		occupiedRectIDs.Insert(rectID)

@@ -53,14 +53,17 @@ class KinematicPlayer extends InterpolatedPlayer {
     control(speed: number, jump: number, controls: Controls){
         if(controls.isHeld("left")){
             this.velocity.x -= speed
+            controls.addTick("left")
         }
 
         if(controls.isHeld("right")){
             this.velocity.x += speed
+            controls.addTick("right")
         }
 
         if(controls.isHeld("jump") && this.collisionVertical == Direction.Down){
             this.velocity.y -= jump
+            controls.addTick("jump")
         }
     }
 

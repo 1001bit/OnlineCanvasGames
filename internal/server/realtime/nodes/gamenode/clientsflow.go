@@ -43,5 +43,5 @@ func (gameNode *GameNode) connectClient(client *gameclient.GameClient) {
 
 // disconnect GameNode client from gameNode
 func (gameNode *GameNode) disconnectClient(client *gameclient.GameClient) {
-	gameNode.Clients.ChildrenSet.Delete(client)
+	delete(gameNode.Clients.ChildrenSet, client)
 }

@@ -1,9 +1,10 @@
 package platformer
 
 import (
+	"sync"
+
 	"github.com/1001bit/OnlineCanvasGames/internal/gamelogic"
 	"github.com/1001bit/OnlineCanvasGames/internal/mathobjects"
-	"github.com/1001bit/OnlineCanvasGames/pkg/fixedticker"
 )
 
 type LevelConfig struct {
@@ -20,7 +21,12 @@ type Level struct {
 
 	config LevelConfig
 
-	fixedTicker *fixedticker.FixedTicker
+	tps       float64
+	clientTPS float64
+
+	// userID[input]
+	userInput      map[int]*CoeffInputMap
+	userInputMutex sync.RWMutex
 
 	// [userID]rectID
 	userRectIDs map[int]int
@@ -35,7 +41,8 @@ func NewPlatformerLevel() *Level {
 			PlayerFriction: 0.3,
 		}
 
-		tps = 20.0
+		tps       = 20.0
+		clientTPS = 50.0
 	)
 
 	level := &Level{
@@ -44,7 +51,11 @@ func NewPlatformerLevel() *Level {
 
 		config: config,
 
-		fixedTicker: fixedticker.NewFixedTicker(tps),
+		tps:       tps,
+		clientTPS: clientTPS,
+
+		userInput:      make(map[int]*CoeffInputMap),
+		userInputMutex: sync.RWMutex{},
 
 		userRectIDs: make(map[int]int),
 	}
@@ -56,48 +67,57 @@ func NewPlatformerLevel() *Level {
 }
 
 func (l *Level) Tick(dtMs float64, writer gamelogic.RoomWriter) {
-	l.fixedTicker.Update(dtMs, func(fixedDtMs float64) {
-		movedPlayers := make(map[int]mathobjects.Vector2[float64])
+	movedPlayers := make(map[int]mathobjects.Vector2[float64])
 
-		// Physics
-		for rectID, player := range l.players {
-			startPos := player.GetPosition()
+	// Controls
+	for userID, inputMap := range l.userInput {
+		player := l.getPlayer(userID)
+		if player == nil {
+			continue
+		}
+		player.Control(l.config.PlayerSpeed, l.config.PlayerJump, inputMap)
+	}
+	// Clear user input
+	l.ClearUserInput()
 
-			// Forces
-			player.ApplyGravity(l.config.PlayerGravity, fixedDtMs)
-			player.ApplyFriction(l.config.PlayerFriction)
+	// Physics
+	for rectID, player := range l.players {
+		startPos := player.GetPosition()
 
-			// Collisions and displacement
-			player.SetCollisionDir(mathobjects.None)
+		// Forces
+		player.ApplyGravity(l.config.PlayerGravity, dtMs)
+		player.ApplyFriction(l.config.PlayerFriction)
 
-			// Horizontal
-			for _, block := range l.blocks {
-				dir := player.DetectHorizontalCollision(block, fixedDtMs)
-				if dir != mathobjects.None {
-					player.ResolveCollision(block, dir)
-					break
-				}
-			}
-			player.Position.X += player.velocity.X * fixedDtMs
+		// Collisions and displacement
+		player.SetCollisionDir(mathobjects.None)
 
-			// Vertical
-			for _, block := range l.blocks {
-				dir := player.DetectVerticalCollision(block, fixedDtMs)
-				if dir != mathobjects.None {
-					player.ResolveCollision(block, dir)
-					break
-				}
-			}
-			player.Position.Y += player.velocity.Y * fixedDtMs
-
-			if startPos != player.GetPosition() {
-				movedPlayers[rectID] = player.GetPosition()
+		// Horizontal
+		for _, block := range l.blocks {
+			dir := player.DetectHorizontalCollision(block, dtMs)
+			if dir != mathobjects.None {
+				player.ResolveCollision(block, dir)
+				break
 			}
 		}
+		player.Position.X += player.velocity.X * dtMs
 
-		// Level Update Message
-		writer.GlobalWriteMessage(NewLevelUpdateMessage(movedPlayers))
-	})
+		// Vertical
+		for _, block := range l.blocks {
+			dir := player.DetectVerticalCollision(block, dtMs)
+			if dir != mathobjects.None {
+				player.ResolveCollision(block, dir)
+				break
+			}
+		}
+		player.Position.Y += player.velocity.Y * dtMs
+
+		if startPos != player.GetPosition() {
+			movedPlayers[rectID] = player.GetPosition()
+		}
+	}
+
+	// Level Update Message
+	writer.GlobalWriteMessage(NewLevelUpdateMessage(movedPlayers))
 }
 
 func (l *Level) getPlayer(userID int) *Player {

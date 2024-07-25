@@ -14,6 +14,7 @@ class Level {
     playerRectID: number
 
     fixedTicker: FixedTicker;
+    serverTPS: number;
     serverAccumulator: number;
 
     constructor(){
@@ -30,6 +31,7 @@ class Level {
         this.playerRectID = 0
 
         this.fixedTicker = new FixedTicker(50)
+        this.serverTPS = 0
         this.serverAccumulator = 0
     }
 
@@ -39,6 +41,11 @@ class Level {
 
     setPlayerRectID(id: number){
         this.playerRectID = id
+    }
+
+    setTPS(client: number, server: number){
+        this.serverTPS = server
+        this.fixedTicker.setTPS(client)
     }
 
     createPlayerRectangle(serverRect: AbstractPlayer, rectID: number){
@@ -80,7 +87,7 @@ class Level {
         return rectangle
     }
 
-    tick(dt: number, serverTPS: number, controls: Controls){
+    tick(dt: number, controls: Controls){
         this.serverAccumulator += dt
 
         // interpolate kinematic players
@@ -90,7 +97,7 @@ class Level {
         }
 
         // interpolate interpolated players
-        const interpolatedAlpha = Math.min(this.serverAccumulator/(1000/serverTPS), 1)
+        const interpolatedAlpha = Math.min(this.serverAccumulator/(1000/this.serverTPS), 1)
         for (const [_, player] of this.interpolatedPlayers){
             player.interpolate(interpolatedAlpha)
         }

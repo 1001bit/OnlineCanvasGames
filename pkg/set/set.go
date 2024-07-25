@@ -12,10 +12,6 @@ func MakeSet[T comparable](slice []T) Set[T] {
 	return set
 }
 
-func MakeEmptySet[T comparable]() Set[T] {
-	return make(Set[T])
-}
-
 func (s Set[T]) Has(elem T) bool {
 	_, ok := s[elem]
 	return ok
@@ -23,12 +19,4 @@ func (s Set[T]) Has(elem T) bool {
 
 func (s Set[T]) Insert(elem T) {
 	s[elem] = struct{}{}
-}
-
-func (s Set[T]) Delete(elem T) {
-	delete(s, elem)
-}
-
-func (s Set[T]) Clear() {
-	clear(s)
 }

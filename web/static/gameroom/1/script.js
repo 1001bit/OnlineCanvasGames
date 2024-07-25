@@ -79,9 +79,9 @@ class GameCanvas {
 }
 class Controls {
     constructor() {
-        // using map instead of set here because golang doesn't have set implementation yet
         this.heldControls = new Map();
         this.bindings = new Map();
+        this.heldControlsTicks = new Map();
         // on key press
         document.addEventListener("keypress", (e) => {
             // only single press
@@ -113,6 +113,23 @@ class Controls {
     }
     isHeld(control) {
         return this.heldControls.has(control);
+    }
+    addTick(control) {
+        if (!this.heldControls.has(control)) {
+            return;
+        }
+        const ticks = this.heldControlsTicks.get(control);
+        if (!ticks) {
+            this.heldControlsTicks.set(control, 1);
+            return;
+        }
+        this.heldControlsTicks.set(control, ticks + 1);
+    }
+    clearHeldControlsTicks() {
+        this.heldControlsTicks.clear();
+    }
+    getHeldControlsTicks() {
+        return this.heldControlsTicks;
     }
 }
 class DeltaTimer {

@@ -9,7 +9,7 @@ type Children[T any] struct {
 
 func MakeChildren[T any]() Children[T] {
 	return Children[T]{
-		ChildrenSet: set.MakeEmptySet[*T](),
+		ChildrenSet: make(set.Set[*T]),
 		Channels:    MakeChannels[T](),
 	}
 }

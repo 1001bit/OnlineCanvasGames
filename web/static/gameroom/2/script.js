@@ -79,9 +79,9 @@ class GameCanvas {
 }
 class Controls {
     constructor() {
-        // using map instead of set here because golang doesn't have set implementation yet
         this.heldControls = new Map();
         this.bindings = new Map();
+        this.heldControlsTicks = new Map();
         // on key press
         document.addEventListener("keypress", (e) => {
             // only single press
@@ -113,6 +113,23 @@ class Controls {
     }
     isHeld(control) {
         return this.heldControls.has(control);
+    }
+    addTick(control) {
+        if (!this.heldControls.has(control)) {
+            return;
+        }
+        const ticks = this.heldControlsTicks.get(control);
+        if (!ticks) {
+            this.heldControlsTicks.set(control, 1);
+            return;
+        }
+        this.heldControlsTicks.set(control, ticks + 1);
+    }
+    clearHeldControlsTicks() {
+        this.heldControlsTicks.clear();
+    }
+    getHeldControlsTicks() {
+        return this.heldControlsTicks;
     }
 }
 class DeltaTimer {
@@ -407,6 +424,7 @@ class Level {
         },
             this.playerRectID = 0;
         this.fixedTicker = new FixedTicker(50);
+        this.serverTPS = 0;
         this.serverAccumulator = 0;
     }
     setConfig(config) {
@@ -414,6 +432,10 @@ class Level {
     }
     setPlayerRectID(id) {
         this.playerRectID = id;
+    }
+    setTPS(client, server) {
+        this.serverTPS = server;
+        this.fixedTicker.setTPS(client);
     }
     createPlayerRectangle(serverRect, rectID) {
         if (this.interpolatedPlayers.has(rectID) || this.kinematicPlayers.has(rectID)) {
@@ -445,7 +467,7 @@ class Level {
         const rectangle = new RectangleShape(rect);
         return rectangle;
     }
-    tick(dt, serverTPS, controls) {
+    tick(dt, controls) {
         this.serverAccumulator += dt;
         // interpolate kinematic players
         const kinematicAlpha = this.fixedTicker.getAlpha();
@@ -453,7 +475,7 @@ class Level {
             player.interpolate(kinematicAlpha);
         }
         // interpolate interpolated players
-        const interpolatedAlpha = Math.min(this.serverAccumulator / (1000 / serverTPS), 1);
+        const interpolatedAlpha = Math.min(this.serverAccumulator / (1000 / this.serverTPS), 1);
         for (const [_, player] of this.interpolatedPlayers) {
             player.interpolate(interpolatedAlpha);
         }
@@ -521,7 +543,6 @@ class Level {
 class Platformer {
     constructor() {
         const layers = 2;
-        this.serverTPS = 0;
         this.level = new Level();
         this.canvas = new GameCanvas("canvas", layers);
         this.canvas.setBackgroundColor(RGB(30, 100, 100));
@@ -531,6 +552,7 @@ class Platformer {
         const gameID = $("main").data("game-id");
         const roomID = $("main").data("room-id");
         this.initWebsocket(gameID, roomID);
+        this.DebugServerDeltaTime = new DeltaTimer();
         this.ticker = new Ticker();
         this.ticker.tick(dt => this.tick(dt));
     }
@@ -567,7 +589,7 @@ class Platformer {
     }
     tick(dt) {
         // level
-        this.level.tick(dt, this.serverTPS, this.controls);
+        this.level.tick(dt, this.controls);
         // draw
         this.canvas.draw();
     }
@@ -579,7 +601,7 @@ class Platformer {
     handleLevelMessage(body) {
         this.level.setConfig(body.config);
         this.level.setPlayerRectID(body.playerRectId);
-        this.serverTPS = body.tps;
+        this.level.setTPS(body.clientTps, body.tps);
         for (const [key, val] of Object.entries(body.players)) {
             const id = Number(key);
             const serverRect = val;
@@ -598,7 +620,14 @@ class Platformer {
         }
     }
     handleLevelUpdateMessage(body) {
+        // console.log(this.DebugServerDeltaTime.getDeltaTime(), 1000/this.level.serverTPS, body)
         this.level.handlePlayerMovement(body.movedPlayers);
+        const heldControlsTicks = this.controls.getHeldControlsTicks();
+        if (heldControlsTicks.size != 0) {
+            const json = JSON.stringify(Object.fromEntries(heldControlsTicks));
+            this.websocket.sendMessage("input", json);
+            this.controls.clearHeldControlsTicks();
+        }
     }
     handleConnectMessage(body) {
         let serverRect = body.rect;
@@ -648,12 +677,15 @@ class KinematicPlayer extends InterpolatedPlayer {
     control(speed, jump, controls) {
         if (controls.isHeld("left")) {
             this.velocity.x -= speed;
+            controls.addTick("left");
         }
         if (controls.isHeld("right")) {
             this.velocity.x += speed;
+            controls.addTick("right");
         }
         if (controls.isHeld("jump") && this.collisionVertical == Direction.Down) {
             this.velocity.y -= jump;
+            controls.addTick("jump");
         }
     }
     applyGravity(force, dt) {
