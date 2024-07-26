@@ -28,7 +28,7 @@ type Level struct {
 	userInput      map[int]*CoeffInputMap
 	userInputMutex sync.RWMutex
 
-	// [userID]rectID
+	// userID[rectID]
 	userRectIDs map[int]int
 }
 

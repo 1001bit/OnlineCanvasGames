@@ -31,8 +31,7 @@ class InterpolatedPlayer extends Rect {
     }
 
     interpolate(alpha: number){
-        const newPos = lerpVector2(this.startPosition, this.targetPosition, alpha)
-        this.setPosition(newPos.x, newPos.y)
+        this.position.interpolateBetween(this.startPosition, this.targetPosition, alpha)
     }
 }
 

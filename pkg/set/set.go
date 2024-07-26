@@ -2,7 +2,7 @@ package set
 
 type Set[T comparable] map[T]struct{}
 
-func MakeSet[T comparable](slice []T) Set[T] {
+func Make[T comparable](slice []T) Set[T] {
 	set := make(Set[T])
 
 	for i := range slice {

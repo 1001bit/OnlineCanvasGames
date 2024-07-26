@@ -90,12 +90,6 @@ class Level {
     tick(dt: number, controls: Controls){
         this.serverAccumulator += dt
 
-        // interpolate kinematic players
-        const kinematicAlpha = this.fixedTicker.getAlpha()
-        for (const [_, player] of this.kinematicPlayers){
-            player.interpolate(kinematicAlpha)
-        }
-
         // interpolate interpolated players
         const interpolatedAlpha = Math.min(this.serverAccumulator/(1000/this.serverTPS), 1)
         for (const [_, player] of this.interpolatedPlayers){
@@ -141,6 +135,12 @@ class Level {
                 player.targetPosition.y += player.velocity.y * fixedDT
             }
         })
+
+        // interpolate kinematic players
+        const kinematicAlpha = this.fixedTicker.getAlpha()
+        for (const [_, player] of this.kinematicPlayers){
+            player.interpolate(kinematicAlpha)
+        }
     }
 
     handlePlayerMovement(moved: {}){

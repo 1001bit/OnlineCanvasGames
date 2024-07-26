@@ -1,10 +1,3 @@
-function lerpVector2(v1: Vector2, v2: Vector2, a: number){
-    return new Vector2(
-        v1.x + a * (v2.x - v1.x), 
-        v1.y + a * (v2.y - v1.y)
-    )
-}
-
 class Vector2 {
     x: number;
     y: number;
@@ -17,5 +10,10 @@ class Vector2 {
     setPosition(x: number, y: number){
         this.x = x;
         this.y = y;
+    }
+
+    interpolateBetween(v1: Vector2, v2: Vector2, a: number){
+        this.x = lerp(v1.x, v2.x, a)
+        this.y = lerp(v1.y, v2.y, a)
     }
 }

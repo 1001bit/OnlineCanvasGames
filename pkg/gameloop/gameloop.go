@@ -1,6 +1,8 @@
 package gameloop
 
-import "time"
+import (
+	"time"
+)
 
 func Gameloop(callback func(dtMs float64), tps int, doneChan <-chan struct{}) {
 	ticker := time.NewTicker(time.Second / time.Duration(tps))

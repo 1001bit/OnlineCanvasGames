@@ -1,8 +1,6 @@
 package platformer
 
 import (
-	"math"
-
 	"github.com/1001bit/OnlineCanvasGames/internal/gamelogic"
 )
 
@@ -12,8 +10,6 @@ type CoeffInputMap struct {
 
 	// serverTPS/clientTPS
 	serverClientTpsRatio float64
-	// max amount of ticks, which can be held in inputMap
-	maxTicks int
 }
 
 func NewCoeffInputMap(inputMap gamelogic.InputMap, serverTPS, clientTPS float64) *CoeffInputMap {
@@ -21,7 +17,6 @@ func NewCoeffInputMap(inputMap gamelogic.InputMap, serverTPS, clientTPS float64)
 		InputMap: inputMap,
 
 		serverClientTpsRatio: serverTPS / clientTPS,
-		maxTicks:             int(math.Ceil(clientTPS/serverTPS)) + 1,
 	}
 }
 
@@ -31,7 +26,6 @@ func (inputMap *CoeffInputMap) GetHoldCoeff(control string) (float64, bool) {
 		return 0, false
 	}
 
-	ticks = min(ticks, inputMap.maxTicks)
 	return float64(ticks) * inputMap.serverClientTpsRatio, true
 }
 

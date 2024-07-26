@@ -10,6 +10,9 @@
     - [X] Compiler
     - [X] Static scripts
     - [X] Game scripts
+- [ ] Use custom types for:
+    - [ ] UserID
+    - [ ] RectID
 
 - [X] Home page
     - [X] Use BaseNode's gamesJSON instead of database table for games list
@@ -37,15 +40,18 @@
     - [X] Limit players amount
 
     - [ ] Fix bug: concurrent map iteration and map write: roomnode/public.go:28
-        - [ ] Self-make concurrent map
+        - [ ] Concurrent map
         - [ ] Put concurrent map inside all realtime nodes
 
     - [ ] Multiplayer platformer game
-        - [X] Server
+        - [ ] Server
             - [X] Game loop
             - [X] Player and blocks
             - [X] Forces and collisions
-            - [X] Client controls handling
+            - [ ] Client controls handling
+                - [X] Controls receive
+                - [X] Player control
+                - [ ] Limit input ticks based on time since last control
             - [ ] Fixed Timestep (non crucial)
             - [ ] Data send
                 - [X] Level
@@ -57,7 +63,7 @@
                 - [X] Level update
                 - [ ] Level correction state
 
-        - [X] Client
+        - [ ] Client
             - [X] Level Draw
             - [X] Game loop
             - [X] Controls

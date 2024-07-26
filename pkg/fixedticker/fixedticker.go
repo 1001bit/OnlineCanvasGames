@@ -5,7 +5,7 @@ type FixedTicker struct {
 	tps         float64
 }
 
-func NewFixedTicker(tps float64) *FixedTicker {
+func New(tps float64) *FixedTicker {
 	return &FixedTicker{
 		accumulator: 0,
 		tps:         tps,

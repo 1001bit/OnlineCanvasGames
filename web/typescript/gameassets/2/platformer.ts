@@ -7,8 +7,6 @@ class Platformer {
     controls: Controls;
     websocket: GameWebSocket;
 
-    DebugServerDeltaTime: DeltaTimer;
-
     constructor(){
         const layers = 2
 
@@ -25,10 +23,8 @@ class Platformer {
         const roomID = $("main").data("room-id")
         this.initWebsocket(gameID, roomID)
 
-        this.DebugServerDeltaTime = new DeltaTimer();
-
         this.ticker = new Ticker()
-        this.ticker.tick(dt => this.tick(dt))
+        this.ticker.start(dt => this.tick(dt))
     }
 
     bindControls(){
@@ -72,11 +68,11 @@ class Platformer {
     }
 
     tick(dt: number) {
-        // level
-        this.level.tick(dt, this.controls)
-
         // draw
         this.canvas.draw()
+
+        // level
+        this.level.tick(dt, this.controls)
     }
 
     stopWithText(text: string){
@@ -112,8 +108,6 @@ class Platformer {
     }
 
     handleLevelUpdateMessage(body: LevelUpdateMessage){
-        // console.log(this.DebugServerDeltaTime.getDeltaTime(), 1000/this.level.serverTPS, body)
-
         this.level.handlePlayerMovement(body.movedPlayers)
 
         const heldControlsTicks = this.controls.getHeldControlsTicks()

@@ -24,7 +24,7 @@ class Clicker {
         this.initDrawables()
 
         this.ticker = new Ticker()
-        this.ticker.tick(dt => this.tick(dt))
+        this.ticker.start(dt => this.tick(dt))
     }
 
     tick(_dt: number){

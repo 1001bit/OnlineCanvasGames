@@ -298,12 +298,20 @@ class DrawableText extends Drawable {
 }
 class Ticker {
     constructor() {
-        this.timer = new DeltaTimer();
+        this.previousTime = 0;
     }
-    tick(callback) {
-        let dt = this.timer.getDeltaTime();
+    start(callback) {
+        requestAnimationFrame((time) => {
+            this.tick(callback, time);
+        });
+    }
+    tick(callback, time) {
+        const dt = time - this.previousTime;
+        this.previousTime = time;
         callback(dt);
-        requestAnimationFrame(() => this.tick(callback));
+        requestAnimationFrame((time) => {
+            this.tick(callback, time);
+        });
     }
 }
 class FixedTicker {
@@ -326,9 +334,6 @@ class FixedTicker {
         return this.accumulator / (1000 / this.tps);
     }
 }
-function lerpVector2(v1, v2, a) {
-    return new Vector2(v1.x + a * (v2.x - v1.x), v1.y + a * (v2.y - v1.y));
-}
 class Vector2 {
     constructor(x, y) {
         this.x = x;
@@ -337,6 +342,10 @@ class Vector2 {
     setPosition(x, y) {
         this.x = x;
         this.y = y;
+    }
+    interpolateBetween(v1, v2, a) {
+        this.x = lerp(v1.x, v2.x, a);
+        this.y = lerp(v1.y, v2.y, a);
     }
 }
 class GameWebSocket {
@@ -408,7 +417,7 @@ class Clicker {
         this.drawables = new Map();
         this.initDrawables();
         this.ticker = new Ticker();
-        this.ticker.tick(dt => this.tick(dt));
+        this.ticker.start(dt => this.tick(dt));
     }
     tick(_dt) {
         this.canvas.draw();

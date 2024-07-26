@@ -298,12 +298,20 @@ class DrawableText extends Drawable {
 }
 class Ticker {
     constructor() {
-        this.timer = new DeltaTimer();
+        this.previousTime = 0;
     }
-    tick(callback) {
-        let dt = this.timer.getDeltaTime();
+    start(callback) {
+        requestAnimationFrame((time) => {
+            this.tick(callback, time);
+        });
+    }
+    tick(callback, time) {
+        const dt = time - this.previousTime;
+        this.previousTime = time;
         callback(dt);
-        requestAnimationFrame(() => this.tick(callback));
+        requestAnimationFrame((time) => {
+            this.tick(callback, time);
+        });
     }
 }
 class FixedTicker {
@@ -326,9 +334,6 @@ class FixedTicker {
         return this.accumulator / (1000 / this.tps);
     }
 }
-function lerpVector2(v1, v2, a) {
-    return new Vector2(v1.x + a * (v2.x - v1.x), v1.y + a * (v2.y - v1.y));
-}
 class Vector2 {
     constructor(x, y) {
         this.x = x;
@@ -337,6 +342,10 @@ class Vector2 {
     setPosition(x, y) {
         this.x = x;
         this.y = y;
+    }
+    interpolateBetween(v1, v2, a) {
+        this.x = lerp(v1.x, v2.x, a);
+        this.y = lerp(v1.y, v2.y, a);
     }
 }
 class GameWebSocket {
@@ -469,11 +478,6 @@ class Level {
     }
     tick(dt, controls) {
         this.serverAccumulator += dt;
-        // interpolate kinematic players
-        const kinematicAlpha = this.fixedTicker.getAlpha();
-        for (const [_, player] of this.kinematicPlayers) {
-            player.interpolate(kinematicAlpha);
-        }
         // interpolate interpolated players
         const interpolatedAlpha = Math.min(this.serverAccumulator / (1000 / this.serverTPS), 1);
         for (const [_, player] of this.interpolatedPlayers) {
@@ -513,6 +517,11 @@ class Level {
                 player.targetPosition.y += player.velocity.y * fixedDT;
             }
         });
+        // interpolate kinematic players
+        const kinematicAlpha = this.fixedTicker.getAlpha();
+        for (const [_, player] of this.kinematicPlayers) {
+            player.interpolate(kinematicAlpha);
+        }
     }
     handlePlayerMovement(moved) {
         // update interpolated rects interpolation
@@ -552,9 +561,8 @@ class Platformer {
         const gameID = $("main").data("game-id");
         const roomID = $("main").data("room-id");
         this.initWebsocket(gameID, roomID);
-        this.DebugServerDeltaTime = new DeltaTimer();
         this.ticker = new Ticker();
-        this.ticker.tick(dt => this.tick(dt));
+        this.ticker.start(dt => this.tick(dt));
     }
     bindControls() {
         const controls = this.controls;
@@ -588,10 +596,10 @@ class Platformer {
         this.websocket.openConnection(gameID, roomID);
     }
     tick(dt) {
-        // level
-        this.level.tick(dt, this.controls);
         // draw
         this.canvas.draw();
+        // level
+        this.level.tick(dt, this.controls);
     }
     stopWithText(text) {
         this.canvas.stop();
@@ -620,7 +628,6 @@ class Platformer {
         }
     }
     handleLevelUpdateMessage(body) {
-        // console.log(this.DebugServerDeltaTime.getDeltaTime(), 1000/this.level.serverTPS, body)
         this.level.handlePlayerMovement(body.movedPlayers);
         const heldControlsTicks = this.controls.getHeldControlsTicks();
         if (heldControlsTicks.size != 0) {
@@ -663,8 +670,7 @@ class InterpolatedPlayer extends Rect {
         this.startPosition.setPosition(this.targetPosition.x, this.targetPosition.y);
     }
     interpolate(alpha) {
-        const newPos = lerpVector2(this.startPosition, this.targetPosition, alpha);
-        this.setPosition(newPos.x, newPos.y);
+        this.position.interpolateBetween(this.startPosition, this.targetPosition, alpha);
     }
 }
 class KinematicPlayer extends InterpolatedPlayer {
