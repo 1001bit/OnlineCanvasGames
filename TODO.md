@@ -39,9 +39,9 @@
         - [X] "Show nav bar" button
     - [X] Limit players amount
 
-    - [ ] Fix bug: concurrent map iteration and map write: roomnode/public.go:28
-        - [ ] Concurrent map
-        - [ ] Put concurrent map inside all realtime nodes
+    - [X] Fix bug: concurrent map iteration and map write: roomnode/public.go:28
+        - [X] Concurrent map
+        - [X] Concurrent set
 
     - [ ] Multiplayer platformer game
         - [ ] Server

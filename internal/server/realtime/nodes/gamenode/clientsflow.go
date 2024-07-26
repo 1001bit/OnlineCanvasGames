@@ -23,12 +23,12 @@ func (gameNode *GameNode) clientsFlow() {
 				Body: gameNode.roomsJSON,
 			})
 
-			log.Println("<GameNode +Client>:", len(gameNode.Clients.ChildrenSet))
+			log.Println("<GameNode +Client>:", gameNode.Clients.ChildrenSet.Length())
 
 		case client := <-gameNode.Clients.ToDisconnect():
 			// When server asked to disconnect a client
 			gameNode.disconnectClient(client)
-			log.Println("<GameNode -Client>:", len(gameNode.Clients.ChildrenSet))
+			log.Println("<GameNode -Client>:", gameNode.Clients.ChildrenSet.Length())
 
 		case <-gameNode.Flow.Done():
 			return
@@ -43,5 +43,5 @@ func (gameNode *GameNode) connectClient(client *gameclient.GameClient) {
 
 // disconnect GameNode client from gameNode
 func (gameNode *GameNode) disconnectClient(client *gameclient.GameClient) {
-	delete(gameNode.Clients.ChildrenSet, client)
+	gameNode.Clients.ChildrenSet.Delete(client)
 }

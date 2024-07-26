@@ -9,7 +9,7 @@ import (
 
 // handle SSE endpoint
 func (baseNode *BaseNode) ConnectToGame(ctx context.Context, w http.ResponseWriter, gameID int) error {
-	gameNode, ok := baseNode.games.IDMap[gameID]
+	gameNode, ok := baseNode.games.IDMap.Get(gameID)
 	if !ok {
 		return ErrNoGame
 	}

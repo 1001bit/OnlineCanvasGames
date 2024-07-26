@@ -14,7 +14,7 @@ func (baseNode *BaseNode) ConnectNewRoom(ctx context.Context, gameID int) (*room
 	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
 	defer cancel()
 
-	gameNode, ok := baseNode.games.IDMap[gameID]
+	gameNode, ok := baseNode.games.IDMap.Get(gameID)
 	if !ok {
 		return nil, ErrNoGame
 	}
@@ -44,8 +44,7 @@ func (baseNode *BaseNode) ConnectNewRoom(ctx context.Context, gameID int) (*room
 }
 
 func (baseNode *BaseNode) GetGameByID(id int) (*gamenode.GameNode, bool) {
-	game, ok := baseNode.games.IDMap[id]
-	return game, ok
+	return baseNode.games.IDMap.Get(id)
 }
 
 func (baseNode *BaseNode) GetGamesJSON() []gamemodel.Game {

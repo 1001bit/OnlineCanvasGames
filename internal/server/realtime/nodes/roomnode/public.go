@@ -25,14 +25,17 @@ func (roomNode *RoomNode) ReadMessage(msg rtclient.MessageWithClient) {
 
 // write a message to every client
 func (roomNode *RoomNode) GlobalWriteMessage(msg *message.JSON) {
-	for _, client := range roomNode.Clients.IDMap {
+	idMap, rUnlockFunc := roomNode.Clients.IDMap.GetMapForRead()
+	defer rUnlockFunc()
+
+	for _, client := range idMap {
 		go client.WriteMessage(msg)
 	}
 }
 
 // write a message to a single client
 func (roomNode *RoomNode) WriteMessageTo(msg *message.JSON, id int) {
-	client, ok := roomNode.Clients.IDMap[id]
+	client, ok := roomNode.Clients.IDMap.Get(id)
 	if !ok {
 		return
 	}
