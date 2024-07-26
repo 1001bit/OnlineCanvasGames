@@ -25,7 +25,7 @@ type Level struct {
 	clientTPS float64
 
 	// userID[input]
-	userInput      map[int]*CoeffInputMap
+	userInput      map[int]*PlayerInput
 	userInputMutex sync.RWMutex
 
 	// userID[rectID]
@@ -54,7 +54,7 @@ func NewPlatformerLevel() *Level {
 		tps:       tps,
 		clientTPS: clientTPS,
 
-		userInput:      make(map[int]*CoeffInputMap),
+		userInput:      make(map[int]*PlayerInput),
 		userInputMutex: sync.RWMutex{},
 
 		userRectIDs: make(map[int]int),

@@ -125,8 +125,17 @@ class Controls {
         }
         this.heldControlsTicks.set(control, ticks + 1);
     }
-    clearHeldControlsTicks() {
-        this.heldControlsTicks.clear();
+    resetHeldControlsTicks(serverTPS, clientTPS) {
+        const maxTicks = Math.ceil(clientTPS / serverTPS);
+        for (const [control, ticks] of this.heldControlsTicks) {
+            if (ticks <= maxTicks) {
+                // delete controls, that didn't bypass the limit
+                this.heldControlsTicks.delete(control);
+                continue;
+            }
+            // postpone ticks, that are beyond for the future, since can't send any more.
+            this.heldControlsTicks.set(control, ticks - maxTicks);
+        }
     }
     getHeldControlsTicks() {
         return this.heldControlsTicks;

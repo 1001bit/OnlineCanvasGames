@@ -125,8 +125,17 @@ class Controls {
         }
         this.heldControlsTicks.set(control, ticks + 1);
     }
-    clearHeldControlsTicks() {
-        this.heldControlsTicks.clear();
+    resetHeldControlsTicks(serverTPS, clientTPS) {
+        const maxTicks = Math.ceil(clientTPS / serverTPS);
+        for (const [control, ticks] of this.heldControlsTicks) {
+            if (ticks <= maxTicks) {
+                // delete controls, that didn't bypass the limit
+                this.heldControlsTicks.delete(control);
+                continue;
+            }
+            // postpone ticks, that are beyond for the future, since can't send any more.
+            this.heldControlsTicks.set(control, ticks - maxTicks);
+        }
     }
     getHeldControlsTicks() {
         return this.heldControlsTicks;
@@ -561,6 +570,8 @@ class Platformer {
         const gameID = $("main").data("game-id");
         const roomID = $("main").data("room-id");
         this.initWebsocket(gameID, roomID);
+        this.serverTPS = 0;
+        this.clientTPS = 0;
         this.ticker = new Ticker();
         this.ticker.start(dt => this.tick(dt));
     }
@@ -610,6 +621,8 @@ class Platformer {
         this.level.setConfig(body.config);
         this.level.setPlayerRectID(body.playerRectId);
         this.level.setTPS(body.clientTps, body.tps);
+        this.serverTPS = body.tps;
+        this.clientTPS = body.clientTps;
         for (const [key, val] of Object.entries(body.players)) {
             const id = Number(key);
             const serverRect = val;
@@ -629,11 +642,14 @@ class Platformer {
     }
     handleLevelUpdateMessage(body) {
         this.level.handlePlayerMovement(body.movedPlayers);
+        // send controls right after level message, because server allows sending messages right after sending level message
         const heldControlsTicks = this.controls.getHeldControlsTicks();
         if (heldControlsTicks.size != 0) {
+            // no need of cutting ticks in map, that is being sent to server, since ticks are being limited there
             const json = JSON.stringify(Object.fromEntries(heldControlsTicks));
             this.websocket.sendMessage("input", json);
-            this.controls.clearHeldControlsTicks();
+            // cutting ticks after sending
+            this.controls.resetHeldControlsTicks(this.serverTPS, this.clientTPS);
         }
     }
     handleConnectMessage(body) {

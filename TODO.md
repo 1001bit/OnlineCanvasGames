@@ -48,10 +48,10 @@
             - [X] Game loop
             - [X] Player and blocks
             - [X] Forces and collisions
-            - [ ] Client controls handling
+            - [X] Client controls handling
                 - [X] Controls receive
                 - [X] Player control
-                - [ ] Limit input ticks based on time since last control
+                - [X] Limit input ticks
             - [ ] Fixed Timestep (non crucial)
             - [ ] Data send
                 - [X] Level
@@ -69,6 +69,7 @@
             - [X] Controls
                 - [X] Frontend
                 - [X] Send to Backend
+                - [X] Postpone input ticks to next iteration, if the limit was bypassed
             - [X] Messages handling
             - [ ] Smooth rect movements
                 - [X] Client State -> Updated State interpolation

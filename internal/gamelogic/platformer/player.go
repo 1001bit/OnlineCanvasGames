@@ -29,7 +29,7 @@ func NewPlayer(rectID int) *Player {
 	}
 }
 
-func (p *Player) Control(speed, jump float64, inputMap *CoeffInputMap) {
+func (p *Player) Control(speed, jump float64, inputMap *PlayerInput) {
 	if coeff, ok := inputMap.GetHoldCoeff("left"); ok {
 		p.velocity.X -= speed * coeff
 	}
