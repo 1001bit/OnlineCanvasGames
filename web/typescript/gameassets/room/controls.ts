@@ -1,12 +1,12 @@
 class Controls {
     // controls that are held right now (control -> bool (set))
     // using map instead of set here because golang doesn't have set implementation yet
-    heldControls: Map<string, boolean>;
+    private heldControls: Map<string, boolean>;
     // controls bindings (key -> control)
-    bindings: Map<string, string>;
+    private bindings: Map<string, string>;
 
     // shows what controls were held and for how many ticks (control -> ticks)
-    heldControlsTicks: Map<string, number>
+    private heldControlsTicks: Map<string, number>
 
     constructor(){
         this.heldControls = new Map();

@@ -1,14 +1,14 @@
 class Platformer {
-    ticker: Ticker;
+    private ticker: Ticker;
 
-    level: Level;
+    private level: Level;
 
-    canvas: GameCanvas;
-    controls: Controls;
-    websocket: GameWebSocket;
+    private canvas: GameCanvas;
+    private controls: Controls;
+    private websocket: GameWebSocket;
 
-    serverTPS: number;
-    clientTPS: number;
+    private serverTPS: number;
+    private clientTPS: number;
 
     constructor(){
         const layers = 2
@@ -33,7 +33,7 @@ class Platformer {
         this.ticker.start(dt => this.tick(dt))
     }
 
-    bindControls(){
+    private bindControls(){
         const controls = this.controls
 
         controls.bindControl("d", "right")
@@ -42,7 +42,7 @@ class Platformer {
         controls.bindControl(" ", "jump")
     }
 
-    initWebsocket(gameID: number, roomID: number){
+    private initWebsocket(gameID: number, roomID: number){
         this.websocket.handleMessage = (type, body) => {
             switch (type) {
                 case "level":
@@ -73,7 +73,7 @@ class Platformer {
         this.websocket.openConnection(gameID, roomID)
     }
 
-    tick(dt: number) {
+    private tick(dt: number) {
         // draw
         this.canvas.draw()
 
@@ -81,13 +81,13 @@ class Platformer {
         this.level.tick(dt, this.controls)
     }
 
-    stopWithText(text: string){
+    private stopWithText(text: string){
         this.canvas.stop()
         roomGui.showMessage(text)
         roomGui.setNavBarVisibility(true)
     }
 
-    handleLevelMessage(body: LevelMessage){
+    private handleLevelMessage(body: LevelMessage){
         this.level.setConfig(body.config)
         this.level.setPlayerRectID(body.playerRectId)
         this.level.setTPS(body.clientTps, body.serverTps)
@@ -116,7 +116,7 @@ class Platformer {
         }
     }
 
-    handleLevelUpdateMessage(body: LevelUpdateMessage){
+    private handleLevelUpdateMessage(body: LevelUpdateMessage){
         this.level.handlePlayerMovement(body.players, body.correct)
 
         // send controls right after level message, because server allows sending messages right after sending level message
@@ -131,7 +131,7 @@ class Platformer {
         }
     }
 
-    handleConnectMessage(body: ConnectMessage){
+    private handleConnectMessage(body: ConnectMessage){
         let serverRect = body.rect
         let rectID = body.rectId
         
@@ -141,7 +141,7 @@ class Platformer {
         }
     }
 
-    handleDisconnectMessage(body: DisconnectMessage){
+    private handleDisconnectMessage(body: DisconnectMessage){
         this.canvas.deleteDrawable(body.rectId)
         this.level.disconnectPlayer(body.rectId)
     }

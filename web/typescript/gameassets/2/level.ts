@@ -6,16 +6,16 @@ interface LevelConfig {
 }
 
 class Level {
-    blocks: Map<number, Block>
-    interpolatedPlayers: Map<number, InterpolatedPlayer>
-    kinematicPlayers: Map<number, KinematicPlayer>
+    private blocks: Map<number, Block>
+    private interpolatedPlayers: Map<number, InterpolatedPlayer>
+    private kinematicPlayers: Map<number, KinematicPlayer>
 
-    config: LevelConfig;
-    playerRectID: number
+    private config: LevelConfig;
+    private playerRectID: number
 
-    fixedTicker: FixedTicker;
-    serverTPS: number;
-    serverAccumulator: number;
+    private fixedTicker: FixedTicker;
+    private serverTPS: number;
+    private serverAccumulator: number;
 
     constructor(){
         this.blocks = new Map()
@@ -123,7 +123,7 @@ class Level {
                         break
                     }
                 }
-                player.targetPosition.x += player.velocity.x * fixedDT
+                player.moveTargetPos(player.getVelocity().x * fixedDT, 0)
 
                 // Vertical
                 for(const [_, block] of this.blocks){
@@ -133,7 +133,7 @@ class Level {
                         break
                     }
                 }
-                player.targetPosition.y += player.velocity.y * fixedDT
+                player.moveTargetPos(0, player.getVelocity().y * fixedDT)
             }
         })
 

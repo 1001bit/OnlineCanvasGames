@@ -1,11 +1,11 @@
 class Clicker {
-    clicks: number;
+    private clicks: number;
 
-    canvas: GameCanvas;
-    websocket: GameWebSocket;
-    ticker: Ticker;
+    private canvas: GameCanvas;
+    private websocket: GameWebSocket;
+    private ticker: Ticker;
 
-    drawables: Map<string, Drawable>;
+    private drawables: Map<string, Drawable>;
 
     constructor(){
         const layers = 2
@@ -27,11 +27,11 @@ class Clicker {
         this.ticker.start(dt => this.tick(dt))
     }
 
-    tick(_dt: number){
+    private tick(_dt: number){
         this.canvas.draw()
     }
 
-    initWebsocket(gameID: number, roomID: number){
+    private initWebsocket(gameID: number, roomID: number){
         this.websocket.handleMessage = (type, body) => {
             switch (type) {
                 case "clicks":
@@ -50,37 +50,37 @@ class Clicker {
         this.websocket.openConnection(gameID, roomID)
     }
 
-    stopWithText(text: string){
+    private stopWithText(text: string){
         this.canvas.stop()
         roomGui.showMessage(text)
         roomGui.setNavBarVisibility(true)
     }
 
-    initDrawables(){
+    private initDrawables(){
         const button = new RectangleShape()
         this.drawables.set("button", button)
         button.setColor(RGB(150, 150, 40))
         button.setSize(300, 200)
-        button.setPosition((window.innerWidth - button.rect.size.x)/2, (window.innerHeight - button.rect.size.y)/2)
+        button.setPosition((window.innerWidth - button.getSize().x)/2, (window.innerHeight - button.getSize().y)/2)
         this.canvas.insertDrawable(button, 0, 0)
 
         const text = new DrawableText("0 clicks", 48)
         this.drawables.set("text", text)
-        text.setPosition(button.rect.position.x + 10, button.rect.position.y + 10)
+        text.setPosition(button.getPosition().x + 10, button.getPosition().y + 10)
         this.canvas.insertDrawable(text, 1, 1)
 
         // button click
-        this.canvas.canvas.addEventListener("click", _e => {
+        this.canvas.onMouseClick = (_e) => {
             let mPos = this.canvas.getMousePos()
 
-            if (button.rect.containsPoint(mPos.x, mPos.y)){
+            if (button.getRect().containsPoint(mPos.x, mPos.y)){
                 this.click(this.clicks+1)
                 this.websocket.sendMessage("click", "")
             }
-        })
+        }
     }
 
-    click(clicks: number){
+    private click(clicks: number){
         this.clicks = clicks
         const text = <DrawableText> this.drawables.get("text")
         text.setString(`${this.clicks} clicks`)

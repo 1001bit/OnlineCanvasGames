@@ -1,13 +1,13 @@
 class GameCanvas {
-    canvas: HTMLCanvasElement;
-    ctx: CanvasRenderingContext2D;
+    private canvas: HTMLCanvasElement;
+    private ctx: CanvasRenderingContext2D;
     
-    layers: Array<Map<number, Drawable>>;
-    drawables: Map<number, Drawable>;
+    private layers: Array<Map<number, Drawable>>;
+    private drawables: Map<number, Drawable>;
 
-    mousePos: Vector2;
+    private mousePos: Vector2;
 
-    backgroundColor: string;
+    private backgroundColor: string;
 
     constructor(canvasID: string, layersCount: number) {
         this.canvas = <HTMLCanvasElement> document.getElementById(canvasID);
@@ -34,19 +34,41 @@ class GameCanvas {
         this.canvas.addEventListener("mousemove", e => {
             this.updateMousePos(e);
         })
+
+        this.canvas.addEventListener("click", e => {
+            this.onMouseClick(e);
+        })
     }
 
-    stop(){
-        this.canvas.remove();
-    }
-
-    resize(){
+    private resize(){
         const canvas = this.canvas;
 
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight - canvas.getBoundingClientRect().top;
 
         this.draw();
+    }
+
+    private clear(){
+        const ctx = this.ctx;
+        const canvas = this.canvas;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = this.backgroundColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    private updateMousePos(e: MouseEvent){
+        let rect = this.canvas.getBoundingClientRect();
+        let x = e.clientX - rect.left;
+        let y = e.clientY - rect.top;
+        this.mousePos.setPosition(x, y);
+    }
+
+    onMouseClick = (_e: MouseEvent) => {}
+
+    stop(){
+        this.canvas.remove();
     }
 
     insertDrawable(drawable: Drawable, layerNum: number, id: number){
@@ -81,24 +103,8 @@ class GameCanvas {
         });
     }
 
-    clear(){
-        const ctx = this.ctx;
-        const canvas = this.canvas;
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = this.backgroundColor;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
-
     setBackgroundColor(color: string){
         this.backgroundColor = color;
-    }
-
-    updateMousePos(e: MouseEvent){
-        let rect = this.canvas.getBoundingClientRect();
-        let x = e.clientX - rect.left;
-        let y = e.clientY - rect.top;
-        this.mousePos.setPosition(x, y);
     }
 
     getMousePos(){

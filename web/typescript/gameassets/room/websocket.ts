@@ -1,6 +1,6 @@
 class GameWebSocket {
-    active: boolean;
-    websocket: WebSocket | null;
+    private active: boolean;
+    private websocket: WebSocket | null;
 
     constructor(){
         this.active = false;

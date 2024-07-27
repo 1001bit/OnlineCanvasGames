@@ -1,17 +1,11 @@
 class Ticker {
-    previousTime: number;
+    private previousTime: number;
     
     constructor() {
         this.previousTime = 0
     }
 
-    start(callback: (dt: number) => void){
-        requestAnimationFrame((time) => {
-            this.tick(callback, time)
-        })
-    }
-
-    tick(callback: (dt: number) => void, time: number){
+    private tick(callback: (dt: number) => void, time: number){
         const dt = time - this.previousTime
         this.previousTime = time
 
@@ -21,11 +15,17 @@ class Ticker {
             this.tick(callback, time)
         })
     }
+
+    start(callback: (dt: number) => void){
+        requestAnimationFrame((time) => {
+            this.tick(callback, time)
+        })
+    }
 }
 
 class FixedTicker {
-    accumulator: number;
-    tps: number;
+    private accumulator: number;
+    private tps: number;
 
     constructor(tps: number){
         this.tps = tps

@@ -1,6 +1,7 @@
 "use strict";
 class GameCanvas {
     constructor(canvasID, layersCount) {
+        this.onMouseClick = (_e) => { };
         this.canvas = document.getElementById(canvasID);
         const ctx = this.canvas.getContext("2d");
         if (!ctx) {
@@ -19,15 +20,31 @@ class GameCanvas {
         this.canvas.addEventListener("mousemove", e => {
             this.updateMousePos(e);
         });
-    }
-    stop() {
-        this.canvas.remove();
+        this.canvas.addEventListener("click", e => {
+            this.onMouseClick(e);
+        });
     }
     resize() {
         const canvas = this.canvas;
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight - canvas.getBoundingClientRect().top;
         this.draw();
+    }
+    clear() {
+        const ctx = this.ctx;
+        const canvas = this.canvas;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = this.backgroundColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    updateMousePos(e) {
+        let rect = this.canvas.getBoundingClientRect();
+        let x = e.clientX - rect.left;
+        let y = e.clientY - rect.top;
+        this.mousePos.setPosition(x, y);
+    }
+    stop() {
+        this.canvas.remove();
     }
     insertDrawable(drawable, layerNum, id) {
         if (this.drawables.has(id)) {
@@ -54,21 +71,8 @@ class GameCanvas {
             });
         });
     }
-    clear() {
-        const ctx = this.ctx;
-        const canvas = this.canvas;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = this.backgroundColor;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
     setBackgroundColor(color) {
         this.backgroundColor = color;
-    }
-    updateMousePos(e) {
-        let rect = this.canvas.getBoundingClientRect();
-        let x = e.clientX - rect.left;
-        let y = e.clientY - rect.top;
-        this.mousePos.setPosition(x, y);
     }
     getMousePos() {
         return this.mousePos;
@@ -263,10 +267,19 @@ class RectangleShape extends Drawable {
         this.color = color;
     }
     draw(ctx) {
-        let pos = this.rect.position;
-        let size = this.rect.size;
+        let pos = this.rect.getPosition();
+        let size = this.rect.getSize();
         ctx.fillStyle = this.color;
         ctx.fillRect(pos.x, pos.y, size.x, size.y);
+    }
+    getSize() {
+        return this.rect.getSize();
+    }
+    getPosition() {
+        return this.rect.getPosition();
+    }
+    getRect() {
+        return this.rect;
     }
 }
 function RGB(r, g, b) {
@@ -309,15 +322,15 @@ class Ticker {
     constructor() {
         this.previousTime = 0;
     }
-    start(callback) {
-        requestAnimationFrame((time) => {
-            this.tick(callback, time);
-        });
-    }
     tick(callback, time) {
         const dt = time - this.previousTime;
         this.previousTime = time;
         callback(dt);
+        requestAnimationFrame((time) => {
+            this.tick(callback, time);
+        });
+    }
+    start(callback) {
         requestAnimationFrame((time) => {
             this.tick(callback, time);
         });
@@ -456,20 +469,20 @@ class Clicker {
         this.drawables.set("button", button);
         button.setColor(RGB(150, 150, 40));
         button.setSize(300, 200);
-        button.setPosition((window.innerWidth - button.rect.size.x) / 2, (window.innerHeight - button.rect.size.y) / 2);
+        button.setPosition((window.innerWidth - button.getSize().x) / 2, (window.innerHeight - button.getSize().y) / 2);
         this.canvas.insertDrawable(button, 0, 0);
         const text = new DrawableText("0 clicks", 48);
         this.drawables.set("text", text);
-        text.setPosition(button.rect.position.x + 10, button.rect.position.y + 10);
+        text.setPosition(button.getPosition().x + 10, button.getPosition().y + 10);
         this.canvas.insertDrawable(text, 1, 1);
         // button click
-        this.canvas.canvas.addEventListener("click", _e => {
+        this.canvas.onMouseClick = (_e) => {
             let mPos = this.canvas.getMousePos();
-            if (button.rect.containsPoint(mPos.x, mPos.y)) {
+            if (button.getRect().containsPoint(mPos.x, mPos.y)) {
                 this.click(this.clicks + 1);
                 this.websocket.sendMessage("click", "");
             }
-        });
+        };
     }
     click(clicks) {
         this.clicks = clicks;

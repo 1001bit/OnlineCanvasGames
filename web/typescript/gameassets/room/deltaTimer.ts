@@ -1,5 +1,5 @@
 class DeltaTimer {
-    lastTick: DOMHighResTimeStamp;
+    private lastTick: DOMHighResTimeStamp;
 
     constructor(){
         this.lastTick = performance.now();

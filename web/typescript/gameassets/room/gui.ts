@@ -1,5 +1,5 @@
 class RoomGui{
-    navVisible: boolean;
+    private navVisible: boolean;
 
     constructor(){
         this.navVisible = true

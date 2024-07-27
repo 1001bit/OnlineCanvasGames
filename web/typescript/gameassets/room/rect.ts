@@ -18,8 +18,8 @@ function isAbstractRect(obj: any): obj is AbstractRect {
 }
 
 class Rect {
-    position: Vector2;
-    size: Vector2;
+    protected position: Vector2;
+    protected size: Vector2;
 
     constructor(abstractRect?: AbstractRect){
         this.position = new Vector2(0, 0);
@@ -81,6 +81,4 @@ class Rect {
     getSize(){
         return new Vector2(this.size.x, this.size.y);
     }
-
-
 }

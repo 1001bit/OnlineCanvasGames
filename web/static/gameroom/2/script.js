@@ -1,6 +1,7 @@
 "use strict";
 class GameCanvas {
     constructor(canvasID, layersCount) {
+        this.onMouseClick = (_e) => { };
         this.canvas = document.getElementById(canvasID);
         const ctx = this.canvas.getContext("2d");
         if (!ctx) {
@@ -19,15 +20,31 @@ class GameCanvas {
         this.canvas.addEventListener("mousemove", e => {
             this.updateMousePos(e);
         });
-    }
-    stop() {
-        this.canvas.remove();
+        this.canvas.addEventListener("click", e => {
+            this.onMouseClick(e);
+        });
     }
     resize() {
         const canvas = this.canvas;
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight - canvas.getBoundingClientRect().top;
         this.draw();
+    }
+    clear() {
+        const ctx = this.ctx;
+        const canvas = this.canvas;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = this.backgroundColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    updateMousePos(e) {
+        let rect = this.canvas.getBoundingClientRect();
+        let x = e.clientX - rect.left;
+        let y = e.clientY - rect.top;
+        this.mousePos.setPosition(x, y);
+    }
+    stop() {
+        this.canvas.remove();
     }
     insertDrawable(drawable, layerNum, id) {
         if (this.drawables.has(id)) {
@@ -54,21 +71,8 @@ class GameCanvas {
             });
         });
     }
-    clear() {
-        const ctx = this.ctx;
-        const canvas = this.canvas;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = this.backgroundColor;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
     setBackgroundColor(color) {
         this.backgroundColor = color;
-    }
-    updateMousePos(e) {
-        let rect = this.canvas.getBoundingClientRect();
-        let x = e.clientX - rect.left;
-        let y = e.clientY - rect.top;
-        this.mousePos.setPosition(x, y);
     }
     getMousePos() {
         return this.mousePos;
@@ -263,10 +267,19 @@ class RectangleShape extends Drawable {
         this.color = color;
     }
     draw(ctx) {
-        let pos = this.rect.position;
-        let size = this.rect.size;
+        let pos = this.rect.getPosition();
+        let size = this.rect.getSize();
         ctx.fillStyle = this.color;
         ctx.fillRect(pos.x, pos.y, size.x, size.y);
+    }
+    getSize() {
+        return this.rect.getSize();
+    }
+    getPosition() {
+        return this.rect.getPosition();
+    }
+    getRect() {
+        return this.rect;
     }
 }
 function RGB(r, g, b) {
@@ -309,15 +322,15 @@ class Ticker {
     constructor() {
         this.previousTime = 0;
     }
-    start(callback) {
-        requestAnimationFrame((time) => {
-            this.tick(callback, time);
-        });
-    }
     tick(callback, time) {
         const dt = time - this.previousTime;
         this.previousTime = time;
         callback(dt);
+        requestAnimationFrame((time) => {
+            this.tick(callback, time);
+        });
+    }
+    start(callback) {
         requestAnimationFrame((time) => {
             this.tick(callback, time);
         });
@@ -514,7 +527,7 @@ class Level {
                         break;
                     }
                 }
-                player.targetPosition.x += player.velocity.x * fixedDT;
+                player.moveTargetPos(player.getVelocity().x * fixedDT, 0);
                 // Vertical
                 for (const [_, block] of this.blocks) {
                     const dir = player.detectVerticalCollision(block, fixedDT);
@@ -523,7 +536,7 @@ class Level {
                         break;
                     }
                 }
-                player.targetPosition.y += player.velocity.y * fixedDT;
+                player.moveTargetPos(0, player.getVelocity().y * fixedDT);
             }
         });
         // interpolate kinematic players
@@ -680,6 +693,10 @@ class InterpolatedPlayer extends Rect {
             this.startPosition.setPosition(x, y);
         }
     }
+    moveTargetPos(x, y) {
+        this.targetPosition.x += x;
+        this.targetPosition.y += y;
+    }
     updateStartPos() {
         this.startPosition.setPosition(this.targetPosition.x, this.targetPosition.y);
     }
@@ -703,7 +720,7 @@ class KinematicPlayer extends InterpolatedPlayer {
             this.velocity.x += speed;
             controls.addTick("right");
         }
-        if (controls.isHeld("jump") && this.collisionVertical == Direction.Down) {
+        if (controls.isHeld("jump") && this.isCollisionInDirection(Direction.Down)) {
             this.velocity.y -= jump;
             controls.addTick("jump");
         }
@@ -731,7 +748,16 @@ class KinematicPlayer extends InterpolatedPlayer {
         if (this.velocity.x == 0) {
             return Direction.None;
         }
-        const playerPath = new Rect(this);
+        const playerPath = new Rect({
+            position: {
+                x: this.targetPosition.x,
+                y: this.targetPosition.y
+            },
+            size: {
+                x: this.size.x,
+                y: this.size.y,
+            }
+        });
         playerPath.setPosition(this.targetPosition.x, this.targetPosition.y);
         playerPath.extend(this.velocity.x * dtMs, 0);
         if (!playerPath.intersects(block)) {
@@ -748,8 +774,16 @@ class KinematicPlayer extends InterpolatedPlayer {
         if (this.velocity.y == 0) {
             return Direction.None;
         }
-        const playerPath = new Rect(this);
-        playerPath.setPosition(this.targetPosition.x, this.targetPosition.y);
+        const playerPath = new Rect({
+            position: {
+                x: this.targetPosition.x,
+                y: this.targetPosition.y
+            },
+            size: {
+                x: this.size.x,
+                y: this.size.y,
+            }
+        });
         playerPath.extend(0, this.velocity.y * dtMs);
         if (!playerPath.intersects(block)) {
             return Direction.None;
@@ -795,5 +829,14 @@ class KinematicPlayer extends InterpolatedPlayer {
         if (distY >= divergenceTolerance && Math.abs(this.velocity.y) < 0.1) {
             this.targetPosition.y = posY;
         }
+    }
+    getVelocity() {
+        return new Vector2(this.velocity.x, this.velocity.y);
+    }
+    isCollisionInDirection(dir) {
+        if (dir == Direction.None) {
+            return false;
+        }
+        return this.collisionHorizontal == dir || this.collisionVertical == dir;
     }
 }

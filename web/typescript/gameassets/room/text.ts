@@ -1,10 +1,10 @@
 class DrawableText extends Drawable {
-    string: string;
-    color: string;
-    font: string;
-    fontSize: number;
+    private string: string;
+    private color: string;
+    private font: string;
+    private fontSize: number;
 
-    position: Vector2;
+    private position: Vector2;
 
     constructor(string: string, fontSize: number){
         super();
