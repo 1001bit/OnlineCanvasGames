@@ -27,8 +27,8 @@ class RectangleShape extends Drawable {
     }
 
     override draw(ctx: CanvasRenderingContext2D){
-        let pos = this.rect.getPosition();
-        let size = this.rect.getSize();
+        const pos = this.rect.getPosition();
+        const size = this.rect.getSize();
 
         ctx.fillStyle = this.color;
         ctx.fillRect(pos.x, pos.y, size.x, size.y);

@@ -46,6 +46,8 @@ class KinematicPlayer extends InterpolatedPlayer {
     private collisionHorizontal: Direction;
     private collisionVertical: Direction;
 
+    private futurePath: Rect;
+
     constructor(abstract: AbstractPlayer){
         super(abstract)
 
@@ -53,6 +55,8 @@ class KinematicPlayer extends InterpolatedPlayer {
 
         this.collisionHorizontal = Direction.None
         this.collisionVertical = Direction.None
+
+        this.futurePath = new Rect();
     }
 
     control(speed: number, jump: number, controls: Controls){
@@ -92,26 +96,24 @@ class KinematicPlayer extends InterpolatedPlayer {
         }
     }
 
+    applyHorizontalVelToPos(dt: number){
+        this.targetPosition.x += this.velocity.x * dt
+    }
+
+    applyVerticalVelToPos(dt: number){
+        this.targetPosition.y += this.velocity.y * dt
+    }
+
     detectHorizontalCollision(block: Block, dtMs: number){
         if(this.velocity.x == 0){
             return Direction.None
         }
-
-        const playerPath = new Rect({
-            position: {
-                x: this.targetPosition.x,
-                y: this.targetPosition.y
-            },
-            size: {
-                x: this.size.x,
-                y: this.size.y,
-            }
-        })
         
-        playerPath.setPosition(this.targetPosition.x, this.targetPosition.y)
-        playerPath.extend(this.velocity.x * dtMs, 0)
+        this.futurePath.setPosition(this.targetPosition.x, this.targetPosition.y)
+        this.futurePath.setSize(this.size.x, this.size.y)
+        this.futurePath.extend(this.velocity.x * dtMs, 0)
 
-        if(!playerPath.intersects(block)){
+        if(!this.futurePath.intersects(block)){
             return Direction.None
         }
 
@@ -127,20 +129,11 @@ class KinematicPlayer extends InterpolatedPlayer {
             return Direction.None
         }
 
-        const playerPath = new Rect({
-            position: {
-                x: this.targetPosition.x,
-                y: this.targetPosition.y
-            },
-            size: {
-                x: this.size.x,
-                y: this.size.y,
-            }
-        })
+        this.futurePath.setPosition(this.targetPosition.x, this.targetPosition.y)
+        this.futurePath.setSize(this.size.x, this.size.y)
+        this.futurePath.extend(0, this.velocity.y * dtMs)
 
-        playerPath.extend(0, this.velocity.y * dtMs)
-
-        if(!playerPath.intersects(block)){
+        if(!this.futurePath.intersects(block)){
             return Direction.None
         }
 
@@ -191,10 +184,6 @@ class KinematicPlayer extends InterpolatedPlayer {
         if(distY >= divergenceTolerance && Math.abs(this.velocity.y) < 0.1){
             this.targetPosition.y = posY
         }
-    }
-
-    getVelocity() {
-        return new Vector2(this.velocity.x, this.velocity.y)
     }
 
     isCollisionInDirection(dir: Direction){

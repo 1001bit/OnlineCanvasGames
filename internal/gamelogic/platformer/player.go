@@ -11,6 +11,8 @@ type Player struct {
 
 	collisionVertical   mathobjects.Direction
 	collisionHorizontal mathobjects.Direction
+
+	futurePath mathobjects.Rect
 }
 
 func NewPlayer(rectID rectID) *Player {
@@ -26,6 +28,8 @@ func NewPlayer(rectID rectID) *Player {
 
 		collisionVertical:   mathobjects.None,
 		collisionHorizontal: mathobjects.None,
+
+		futurePath: mathobjects.MakeRect(0, 0, 0, 0),
 	}
 }
 

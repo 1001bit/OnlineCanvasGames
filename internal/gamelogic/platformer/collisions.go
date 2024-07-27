@@ -9,10 +9,10 @@ func (p *Player) DetectHorizontalCollision(block *Block, dtMs float64) mathobjec
 		return mathobjects.None
 	}
 
-	playerPath := p.Rect
-	playerPath.Extend(p.velocity.X*dtMs, 0)
+	p.futurePath = p.Rect
+	p.futurePath.Extend(p.velocity.X*dtMs, 0)
 
-	if !playerPath.Intersects(block.Rect) {
+	if !p.futurePath.Intersects(block.Rect) {
 		return mathobjects.None
 	}
 
@@ -28,10 +28,10 @@ func (p *Player) DetectVerticalCollision(block *Block, dtMs float64) mathobjects
 		return mathobjects.None
 	}
 
-	playerPath := p.Rect
-	playerPath.Extend(0, p.velocity.Y*dtMs)
+	p.futurePath = p.Rect
+	p.futurePath.Extend(0, p.velocity.Y*dtMs)
 
-	if !playerPath.Intersects(block.Rect) {
+	if !p.futurePath.Intersects(block.Rect) {
 		return mathobjects.None
 	}
 

@@ -123,7 +123,7 @@ class Level {
                         break
                     }
                 }
-                player.moveTargetPos(player.getVelocity().x * fixedDT, 0)
+                player.applyHorizontalVelToPos(fixedDT)
 
                 // Vertical
                 for(const [_, block] of this.blocks){
@@ -133,7 +133,7 @@ class Level {
                         break
                     }
                 }
-                player.moveTargetPos(0, player.getVelocity().y * fixedDT)
+                player.applyVerticalVelToPos(fixedDT)
             }
         })
 
