@@ -13,7 +13,7 @@ type Player struct {
 	collisionHorizontal mathobjects.Direction
 }
 
-func NewPlayer(rectID int) *Player {
+func NewPlayer(rectID rectID) *Player {
 	innerRect := mathobjects.MakeRect(100*float64(rectID), 100, 100, 100)
 
 	return &Player{

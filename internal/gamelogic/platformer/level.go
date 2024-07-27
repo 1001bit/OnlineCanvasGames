@@ -6,6 +6,8 @@ import (
 	"github.com/1001bit/OnlineCanvasGames/pkg/concurrent"
 )
 
+type rectID int
+
 type LevelConfig struct {
 	PlayerSpeed    float64 `json:"playerSpeed"`
 	PlayerJump     float64 `json:"playerJump"`
@@ -15,8 +17,8 @@ type LevelConfig struct {
 
 type Level struct {
 	// [rectID]rect
-	players map[int]*Player
-	blocks  map[int]*Block
+	players map[rectID]*Player
+	blocks  map[rectID]*Block
 
 	// userID[data]
 	playersData concurrent.ConcurrentMap[int, *PlayerData]
@@ -41,8 +43,8 @@ func NewPlatformerLevel() *Level {
 	)
 
 	level := &Level{
-		players: make(map[int]*Player),
-		blocks:  make(map[int]*Block),
+		players: make(map[rectID]*Player),
+		blocks:  make(map[rectID]*Block),
 
 		playersData: concurrent.MakeMap[int, *PlayerData](),
 
@@ -59,18 +61,20 @@ func NewPlatformerLevel() *Level {
 }
 
 func (l *Level) Tick(dtMs float64, writer gamelogic.RoomWriter) {
-	movedPlayers := make(map[int]mathobjects.Vector2[float64])
+	// rectID[position]
+	movedPlayers := make(map[rectID]mathobjects.Vector2[float64])
 
-	// Controls
 	playersData, rUnlockFunc := l.playersData.GetMapForRead()
-	for _, playerData := range playersData {
-		playerData.ControlPlayer(l.config.PlayerSpeed, l.config.PlayerJump)
-	}
-	rUnlockFunc()
+	defer rUnlockFunc()
 
 	// Physics
-	for rectID, player := range l.players {
+	for _, playerData := range playersData {
+		player := playerData.player
+
 		startPos := player.GetPosition()
+
+		// Control
+		playerData.ControlPlayer(l.config.PlayerSpeed, l.config.PlayerJump)
 
 		// Forces
 		player.ApplyGravity(l.config.PlayerGravity, dtMs)
@@ -100,7 +104,7 @@ func (l *Level) Tick(dtMs float64, writer gamelogic.RoomWriter) {
 		player.Position.Y += player.velocity.Y * dtMs
 
 		if startPos != player.GetPosition() {
-			movedPlayers[rectID] = player.GetPosition()
+			movedPlayers[playerData.rectID] = player.GetPosition()
 		}
 	}
 

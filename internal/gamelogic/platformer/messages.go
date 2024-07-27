@@ -7,18 +7,18 @@ import (
 
 // Level
 type LevelData struct {
-	Blocks  map[int]*Block  `json:"blocks"`
-	Players map[int]*Player `json:"players"`
+	Blocks  map[rectID]*Block  `json:"blocks"`
+	Players map[rectID]*Player `json:"players"`
 
 	Config LevelConfig `json:"config"`
 
 	ServerTPS float64 `json:"serverTps"`
 	ClientTPS float64 `json:"clientTps"`
 
-	PlayerRectID int `json:"playerRectId"`
+	PlayerRectID rectID `json:"playerRectId"`
 }
 
-func NewLevelMessage(level *Level, playerRectID int) *message.JSON {
+func NewLevelMessage(level *Level, playerRectID rectID) *message.JSON {
 	return &message.JSON{
 		Type: "level",
 		Body: LevelData{
@@ -37,10 +37,11 @@ func NewLevelMessage(level *Level, playerRectID int) *message.JSON {
 
 // Level Update
 type LevelUpdateDate struct {
-	MovedPlayers map[int]mathobjects.Vector2[float64] `json:"movedPlayers"`
+	// rectID[position]
+	MovedPlayers map[rectID]mathobjects.Vector2[float64] `json:"movedPlayers"`
 }
 
-func NewLevelUpdateMessage(movedPlayers map[int]mathobjects.Vector2[float64]) *message.JSON {
+func NewLevelUpdateMessage(movedPlayers map[rectID]mathobjects.Vector2[float64]) *message.JSON {
 	return &message.JSON{
 		Type: "levelUpdate",
 		Body: LevelUpdateDate{
@@ -51,11 +52,11 @@ func NewLevelUpdateMessage(movedPlayers map[int]mathobjects.Vector2[float64]) *m
 
 // Connect
 type ConnectData struct {
-	RectID int     `json:"rectId"`
+	RectID rectID  `json:"rectId"`
 	Player *Player `json:"rect"`
 }
 
-func NewConnectMessage(rectID int, player *Player) *message.JSON {
+func NewConnectMessage(rectID rectID, player *Player) *message.JSON {
 	return &message.JSON{
 		Type: "connect",
 		Body: ConnectData{
@@ -67,10 +68,10 @@ func NewConnectMessage(rectID int, player *Player) *message.JSON {
 
 // Disconnect
 type DisconnectData struct {
-	RectID int `json:"rectId"`
+	RectID rectID `json:"rectId"`
 }
 
-func NewDisconnectMessage(rectID int) *message.JSON {
+func NewDisconnectMessage(rectID rectID) *message.JSON {
 	return &message.JSON{
 		Type: "disconnect",
 		Body: DisconnectData{

@@ -12,7 +12,7 @@
     - [X] Game scripts
 - [ ] Use custom types for:
     - [ ] UserID
-    - [ ] RectID
+    - [X] RectID
 
 - [X] Home page
     - [X] Use BaseNode's gamesJSON instead of database table for games list

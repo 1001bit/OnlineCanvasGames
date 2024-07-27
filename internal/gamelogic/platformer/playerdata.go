@@ -4,12 +4,12 @@ import "github.com/1001bit/OnlineCanvasGames/internal/gamelogic"
 
 type PlayerData struct {
 	player *Player
-	rectID int
+	rectID rectID
 
 	input *PlayerInput
 }
 
-func NewPlayerData(player *Player, rectID int) *PlayerData {
+func NewPlayerData(player *Player, rectID rectID) *PlayerData {
 	return &PlayerData{
 		player: player,
 		rectID: rectID,

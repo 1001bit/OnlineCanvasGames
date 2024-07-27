@@ -4,7 +4,7 @@ import (
 	"github.com/1001bit/OnlineCanvasGames/pkg/set"
 )
 
-func (l *Level) CreatePlayer(userID int, playersLimit int) (int, *Player) {
+func (l *Level) CreatePlayer(userID int, playersLimit int) (rectID, *Player) {
 	if playerData, ok := l.playersData.Get(userID); ok {
 		return playerData.rectID, playerData.player
 	}
@@ -18,7 +18,7 @@ func (l *Level) CreatePlayer(userID int, playersLimit int) (int, *Player) {
 	return rectID, player
 }
 
-func (l *Level) DeletePlayer(userID int) (int, error) {
+func (l *Level) DeletePlayer(userID int) (rectID, error) {
 	playerData, ok := l.playersData.Get(userID)
 	if !ok {
 		return 0, ErrNoPlayer
@@ -30,8 +30,8 @@ func (l *Level) DeletePlayer(userID int) (int, error) {
 	return playerData.rectID, nil
 }
 
-func (l *Level) getFreePlayerRectID(playersLimit int) int {
-	occupiedRectIDs := make(set.Set[int])
+func (l *Level) getFreePlayerRectID(playersLimit int) rectID {
+	occupiedRectIDs := make(set.Set[rectID])
 
 	playersData, rUnlockFunc := l.playersData.GetMapForRead()
 	defer rUnlockFunc()
@@ -41,8 +41,8 @@ func (l *Level) getFreePlayerRectID(playersLimit int) int {
 	}
 
 	for newID := range playersLimit {
-		if !occupiedRectIDs.Has(newID) {
-			return newID
+		if !occupiedRectIDs.Has(rectID(newID)) {
+			return rectID(newID)
 		}
 	}
 
