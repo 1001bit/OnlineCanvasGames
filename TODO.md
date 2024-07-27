@@ -26,7 +26,7 @@
     - [X] Basic info
     - [X] Logout button
 
-- [ ] Room Page
+- [X] Room Page
     - [X] WebSocket Room connection
     - [X] Make RT nodes independent from each other
     - [X] Split Nodes' run select statement into several goroutines (flows)
@@ -43,8 +43,8 @@
         - [X] Concurrent map
         - [X] Concurrent set
 
-    - [ ] Multiplayer platformer game
-        - [ ] Server
+    - [X] Multiplayer platformer game
+        - [X] Server
             - [X] Game loop
             - [X] Player and blocks
             - [X] Forces and collisions
@@ -53,7 +53,7 @@
                 - [X] Player control
                 - [X] Limit input ticks
             - [ ] Fixed Timestep (non crucial)
-            - [ ] Data send
+            - [X] Data send
                 - [X] Level
                 - [X] Info
                     - [X] Player rectID
@@ -61,9 +61,9 @@
                     - [X] TPS
                 - [X] Rect Delete/Create
                 - [X] Level update
-                - [ ] Level correction state
+                - [X] Level correction state
 
-        - [ ] Client
+        - [X] Client
             - [X] Level Draw
             - [X] Game loop
             - [X] Controls
@@ -71,13 +71,13 @@
                 - [X] Send to Backend
                 - [X] Postpone input ticks to next iteration, if the limit was bypassed
             - [X] Messages handling
-            - [ ] Smooth rect movements
+            - [X] Smooth rect movements
                 - [X] Client State -> Updated State interpolation
                 - [X] Player physics replication
                     - [X] Forces
                     - [X] Control
                     - [X] Collisions
-                - [ ] Kinematic Players position correction
+                - [X] Kinematic Players position correction
 
 - [ ] Admin page
     - [ ] Front end

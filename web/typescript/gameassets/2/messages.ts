@@ -11,7 +11,8 @@ interface LevelMessage {
 }
 
 interface LevelUpdateMessage {
-    movedPlayers: {};
+    players: {};
+    correct: boolean;
 }
 
 interface ConnectMessage {

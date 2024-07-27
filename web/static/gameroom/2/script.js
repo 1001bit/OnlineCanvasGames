@@ -441,7 +441,7 @@ class Level {
             playerFriction: 0,
         },
             this.playerRectID = 0;
-        this.fixedTicker = new FixedTicker(50);
+        this.fixedTicker = new FixedTicker(10);
         this.serverTPS = 0;
         this.serverAccumulator = 0;
     }
@@ -532,7 +532,7 @@ class Level {
             player.interpolate(kinematicAlpha);
         }
     }
-    handlePlayerMovement(moved) {
+    handlePlayerMovement(moved, correct) {
         // update interpolated rects interpolation
         this.serverAccumulator = 0;
         for (const [_, player] of this.interpolatedPlayers) {
@@ -549,10 +549,8 @@ class Level {
             }
             const kinematic = this.kinematicPlayers.get(rectID);
             if (kinematic) {
-                // TODO: Correction
-                const correct = false;
                 if (correct) {
-                    kinematic.setTargetPos(pos.x, pos.y);
+                    kinematic.correctDivergence(pos.x, pos.y);
                 }
             }
         }
@@ -620,8 +618,8 @@ class Platformer {
     handleLevelMessage(body) {
         this.level.setConfig(body.config);
         this.level.setPlayerRectID(body.playerRectId);
-        this.level.setTPS(body.clientTps, body.tps);
-        this.serverTPS = body.tps;
+        this.level.setTPS(body.clientTps, body.serverTps);
+        this.serverTPS = body.serverTps;
         this.clientTPS = body.clientTps;
         for (const [key, val] of Object.entries(body.players)) {
             const id = Number(key);
@@ -641,7 +639,7 @@ class Platformer {
         }
     }
     handleLevelUpdateMessage(body) {
-        this.level.handlePlayerMovement(body.movedPlayers);
+        this.level.handlePlayerMovement(body.players, body.correct);
         // send controls right after level message, because server allows sending messages right after sending level message
         const heldControlsTicks = this.controls.getHeldControlsTicks();
         if (heldControlsTicks.size != 0) {
@@ -785,6 +783,17 @@ class KinematicPlayer extends InterpolatedPlayer {
                 this.velocity.x = 0;
                 this.targetPosition.x = block.getPosition().x - this.getSize().x;
                 break;
+        }
+    }
+    correctDivergence(posX, posY) {
+        const divergenceTolerance = 30;
+        const distX = Math.abs(posX - this.targetPosition.x);
+        if (distX >= divergenceTolerance && Math.abs(this.velocity.x) < 0.1) {
+            this.targetPosition.x = posX;
+        }
+        const distY = Math.abs(posY - this.targetPosition.y);
+        if (distY >= divergenceTolerance && Math.abs(this.velocity.y) < 0.1) {
+            this.targetPosition.y = posY;
         }
     }
 }

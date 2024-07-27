@@ -38,13 +38,14 @@ class InterpolatedPlayer extends Rect {
 class KinematicPlayer extends InterpolatedPlayer {
     velocity: Vector2;
 
-    collisionVertical: Direction
-    collisionHorizontal: Direction
+    collisionVertical: Direction;
+    collisionHorizontal: Direction;
 
     constructor(abstract: AbstractPlayer){
         super(abstract)
 
         this.velocity = new Vector2(0, 0)
+
         this.collisionHorizontal = Direction.None
         this.collisionVertical = Direction.None
     }
@@ -151,6 +152,20 @@ class KinematicPlayer extends InterpolatedPlayer {
                 this.velocity.x = 0
                 this.targetPosition.x = block.getPosition().x - this.getSize().x
                 break
+        }
+    }
+
+    correctDivergence(posX: number, posY: number){
+        const divergenceTolerance = 30
+
+        const distX = Math.abs(posX - this.targetPosition.x)
+        if(distX >= divergenceTolerance && Math.abs(this.velocity.x) < 0.1){
+            this.targetPosition.x = posX
+        }
+
+        const distY = Math.abs(posY - this.targetPosition.y)
+        if(distY >= divergenceTolerance && Math.abs(this.velocity.y) < 0.1){
+            this.targetPosition.y = posY
         }
     }
 }

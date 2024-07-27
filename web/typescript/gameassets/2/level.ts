@@ -30,7 +30,8 @@ class Level {
         },
         this.playerRectID = 0
 
-        this.fixedTicker = new FixedTicker(50)
+        this.fixedTicker = new FixedTicker(10)
+        
         this.serverTPS = 0
         this.serverAccumulator = 0
     }
@@ -143,7 +144,7 @@ class Level {
         }
     }
 
-    handlePlayerMovement(moved: {}){
+    handlePlayerMovement(moved: {}, correct: boolean){
         // update interpolated rects interpolation
         this.serverAccumulator = 0
         
@@ -164,10 +165,8 @@ class Level {
 
             const kinematic = this.kinematicPlayers.get(rectID)
             if(kinematic){
-                // TODO: Correction
-                const correct = false
                 if(correct){
-                    kinematic.setTargetPos(pos.x, pos.y)
+                    kinematic.correctDivergence(pos.x, pos.y)
                 }
             }
         } 

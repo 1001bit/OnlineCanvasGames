@@ -38,14 +38,18 @@ func NewLevelMessage(level *Level, playerRectID rectID) *message.JSON {
 // Level Update
 type LevelUpdateDate struct {
 	// rectID[position]
-	MovedPlayers map[rectID]mathobjects.Vector2[float64] `json:"movedPlayers"`
+	Players map[rectID]mathobjects.Vector2[float64] `json:"players"`
+
+	DoCorrect bool `json:"correct"`
 }
 
-func NewLevelUpdateMessage(movedPlayers map[rectID]mathobjects.Vector2[float64]) *message.JSON {
+func NewLevelUpdateMessage(sentPlayers map[rectID]mathobjects.Vector2[float64], doCorrect bool) *message.JSON {
 	return &message.JSON{
 		Type: "levelUpdate",
 		Body: LevelUpdateDate{
-			MovedPlayers: movedPlayers,
+			Players: sentPlayers,
+
+			DoCorrect: doCorrect,
 		},
 	}
 }

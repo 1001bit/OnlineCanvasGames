@@ -4,6 +4,7 @@ import (
 	"github.com/1001bit/OnlineCanvasGames/internal/gamelogic"
 	"github.com/1001bit/OnlineCanvasGames/internal/mathobjects"
 	"github.com/1001bit/OnlineCanvasGames/pkg/concurrent"
+	"github.com/1001bit/OnlineCanvasGames/pkg/fixedticker"
 )
 
 type rectID int
@@ -27,6 +28,8 @@ type Level struct {
 
 	serverTPS float64
 	clientTPS float64
+
+	correctTicker *fixedticker.FixedTicker
 }
 
 func NewPlatformerLevel() *Level {
@@ -39,7 +42,9 @@ func NewPlatformerLevel() *Level {
 		}
 
 		serverTPS = 20.0
-		clientTPS = 50.0
+		clientTPS = 40.0
+
+		correctsPerSec = 1.0 / 5 // once per 5 sec
 	)
 
 	level := &Level{
@@ -52,6 +57,8 @@ func NewPlatformerLevel() *Level {
 
 		serverTPS: serverTPS,
 		clientTPS: clientTPS,
+
+		correctTicker: fixedticker.New(correctsPerSec),
 	}
 
 	block := NewBlock(0, 500, 1000, 100)
@@ -61,13 +68,18 @@ func NewPlatformerLevel() *Level {
 }
 
 func (l *Level) Tick(dtMs float64, writer gamelogic.RoomWriter) {
-	// rectID[position]
-	movedPlayers := make(map[rectID]mathobjects.Vector2[float64])
-
 	playersData, rUnlockFunc := l.playersData.GetMapForRead()
 	defer rUnlockFunc()
 
+	doCorrect := false
+	l.correctTicker.Update(dtMs, func(_ float64) {
+		doCorrect = true
+	})
+
 	// Physics
+	// rectID[position]
+	sentPlayers := make(map[rectID]mathobjects.Vector2[float64])
+
 	for _, playerData := range playersData {
 		player := playerData.player
 
@@ -103,11 +115,12 @@ func (l *Level) Tick(dtMs float64, writer gamelogic.RoomWriter) {
 		}
 		player.Position.Y += player.velocity.Y * dtMs
 
-		if startPos != player.GetPosition() {
-			movedPlayers[playerData.rectID] = player.GetPosition()
+		// add player to movedPlayers if it moved or it's time for correction
+		if startPos != player.GetPosition() || doCorrect {
+			sentPlayers[playerData.rectID] = player.GetPosition()
 		}
 	}
 
 	// Level Update Message
-	writer.GlobalWriteMessage(NewLevelUpdateMessage(movedPlayers))
+	writer.GlobalWriteMessage(NewLevelUpdateMessage(sentPlayers, doCorrect))
 }

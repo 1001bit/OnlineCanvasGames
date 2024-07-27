@@ -117,7 +117,7 @@ class Platformer {
     }
 
     handleLevelUpdateMessage(body: LevelUpdateMessage){
-        this.level.handlePlayerMovement(body.movedPlayers)
+        this.level.handlePlayerMovement(body.players, body.correct)
 
         // send controls right after level message, because server allows sending messages right after sending level message
         const heldControlsTicks = this.controls.getHeldControlsTicks()
