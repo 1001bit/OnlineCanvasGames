@@ -1,14 +1,25 @@
 class Ticker {
-    timer: DeltaTimer;
+    previousTime: number;
     
     constructor() {
-        this.timer = new DeltaTimer();
+        this.previousTime = 0
     }
 
-    tick(callback: (dt: number) => void){
-        let dt = this.timer.getDeltaTime();
-        callback(dt);
-        requestAnimationFrame(() => this.tick(callback));
+    start(callback: (dt: number) => void){
+        requestAnimationFrame((time) => {
+            this.tick(callback, time)
+        })
+    }
+
+    tick(callback: (dt: number) => void, time: number){
+        const dt = time - this.previousTime
+        this.previousTime = time
+
+        callback(dt)
+
+        requestAnimationFrame((time) => {
+            this.tick(callback, time)
+        })
     }
 }
 
@@ -21,7 +32,7 @@ class FixedTicker {
         this.accumulator = 0
     }
 
-    update(dt: number, callback: (dt: number) => void){
+    update(dt: number, callback: (fixedDT: number) => void){
         this.accumulator += dt
         const maxAccumulator = 1000/this.tps
 

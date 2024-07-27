@@ -18,7 +18,10 @@ func (gameNode *GameNode) RequestUpdatingRoomsJSON() {
 
 // write a message to every client
 func (gameNode *GameNode) GlobalWriteMessage(msg *message.JSON) {
-	for client := range gameNode.Clients.ChildMap {
+	childrenSet, rUnlockFunc := gameNode.Clients.ChildrenSet.GetSetForRead()
+	defer rUnlockFunc()
+
+	for client := range childrenSet {
 		go client.WriteMessage(msg)
 	}
 }

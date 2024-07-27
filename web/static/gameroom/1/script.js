@@ -79,10 +79,9 @@ class GameCanvas {
 }
 class Controls {
     constructor() {
-        // using map instead of set here because golang doesn't have set implementation yet
         this.heldControls = new Map();
-        this.controlsCoeffs = new Map();
         this.bindings = new Map();
+        this.heldControlsTicks = new Map();
         // on key press
         document.addEventListener("keypress", (e) => {
             // only single press
@@ -115,20 +114,31 @@ class Controls {
     isHeld(control) {
         return this.heldControls.has(control);
     }
-    resetCoeffs() {
-        this.controlsCoeffs.clear();
+    addTick(control) {
+        if (!this.heldControls.has(control)) {
+            return;
+        }
+        const ticks = this.heldControlsTicks.get(control);
+        if (!ticks) {
+            this.heldControlsTicks.set(control, 1);
+            return;
+        }
+        this.heldControlsTicks.set(control, ticks + 1);
     }
-    updateCoeffs(serverTPS, clientTPS) {
-        for (const [control, _] of this.heldControls) {
-            let coeff = this.controlsCoeffs.get(control);
-            if (coeff == undefined) {
-                coeff = 0;
+    resetHeldControlsTicks(serverTPS, clientTPS) {
+        const maxTicks = Math.ceil(clientTPS / serverTPS);
+        for (const [control, ticks] of this.heldControlsTicks) {
+            if (ticks <= maxTicks) {
+                // delete controls, that didn't bypass the limit
+                this.heldControlsTicks.delete(control);
+                continue;
             }
-            this.controlsCoeffs.set(control, coeff + serverTPS / clientTPS);
+            // postpone ticks, that are beyond for the future, since can't send any more.
+            this.heldControlsTicks.set(control, ticks - maxTicks);
         }
     }
-    getCoeffs() {
-        return this.controlsCoeffs;
+    getHeldControlsTicks() {
+        return this.heldControlsTicks;
     }
 }
 class DeltaTimer {
@@ -179,6 +189,9 @@ const roomGui = new RoomGui();
 function lerp(a, b, alpha) {
     return a + alpha * (b - a);
 }
+function isAbstractRect(obj) {
+    return "position" in obj && "size" in obj;
+}
 class Rect {
     constructor(abstractRect) {
         this.position = new Vector2(0, 0);
@@ -193,6 +206,16 @@ class Rect {
     }
     setSize(x, y) {
         this.size.setPosition(x, y);
+    }
+    extend(extX, extY) {
+        this.size.x += Math.abs(extX);
+        this.size.y += Math.abs(extY);
+        if (extX < 0) {
+            this.position.x -= Math.abs(extX);
+        }
+        if (extY < 0) {
+            this.position.y -= Math.abs(extY);
+        }
     }
     containsPoint(x, y) {
         let pos = this.position;
@@ -284,12 +307,20 @@ class DrawableText extends Drawable {
 }
 class Ticker {
     constructor() {
-        this.timer = new DeltaTimer();
+        this.previousTime = 0;
     }
-    tick(callback) {
-        let dt = this.timer.getDeltaTime();
+    start(callback) {
+        requestAnimationFrame((time) => {
+            this.tick(callback, time);
+        });
+    }
+    tick(callback, time) {
+        const dt = time - this.previousTime;
+        this.previousTime = time;
         callback(dt);
-        requestAnimationFrame(() => this.tick(callback));
+        requestAnimationFrame((time) => {
+            this.tick(callback, time);
+        });
     }
 }
 class FixedTicker {
@@ -312,9 +343,6 @@ class FixedTicker {
         return this.accumulator / (1000 / this.tps);
     }
 }
-function lerpVector2(v1, v2, a) {
-    return new Vector2(v1.x + a * (v2.x - v1.x), v1.y + a * (v2.y - v1.y));
-}
 class Vector2 {
     constructor(x, y) {
         this.x = x;
@@ -323,6 +351,10 @@ class Vector2 {
     setPosition(x, y) {
         this.x = x;
         this.y = y;
+    }
+    interpolateBetween(v1, v2, a) {
+        this.x = lerp(v1.x, v2.x, a);
+        this.y = lerp(v1.y, v2.y, a);
     }
 }
 class GameWebSocket {
@@ -394,7 +426,7 @@ class Clicker {
         this.drawables = new Map();
         this.initDrawables();
         this.ticker = new Ticker();
-        this.ticker.tick(dt => this.tick(dt));
+        this.ticker.start(dt => this.tick(dt));
     }
     tick(_dt) {
         this.canvas.draw();

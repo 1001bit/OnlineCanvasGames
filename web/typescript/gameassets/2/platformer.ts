@@ -1,38 +1,19 @@
 class Platformer {
-    playerRectID: number;
-    constants: PlatformerConstants;
+    ticker: Ticker;
 
-    physTps: number;
-    physTicker: FixedTicker;
-
-    serverAccumulator: number;
-    serverTPS: number;
+    level: Level;
 
     canvas: GameCanvas;
     controls: Controls;
     websocket: GameWebSocket;
-    ticker: Ticker;
 
-    physicsEngine: PhysicsEngine;
+    serverTPS: number;
+    clientTPS: number;
 
     constructor(){
         const layers = 2
 
-        this.playerRectID = 0
-        this.constants = {
-            physics: {
-                friction: 0,
-                gravity: 0,
-            },
-            playerSpeed: 0,
-            playerJump: 0,
-        }
-
-        this.physTps = 40
-        this.physTicker = new FixedTicker(this.physTps)
-
-        this.serverAccumulator = 0;
-        this.serverTPS = 0;
+        this.level = new Level()
 
         this.canvas = new GameCanvas("canvas", layers)
         this.canvas.setBackgroundColor(RGB(30, 100, 100))
@@ -44,11 +25,12 @@ class Platformer {
         const gameID = $("main").data("game-id")
         const roomID = $("main").data("room-id")
         this.initWebsocket(gameID, roomID)
-        
-        this.physicsEngine = new PhysicsEngine()
+
+        this.serverTPS = 0;
+        this.clientTPS = 0;
 
         this.ticker = new Ticker()
-        this.ticker.tick(dt => this.tick(dt))
+        this.ticker.start(dt => this.tick(dt))
     }
 
     bindControls(){
@@ -63,24 +45,20 @@ class Platformer {
     initWebsocket(gameID: number, roomID: number){
         this.websocket.handleMessage = (type, body) => {
             switch (type) {
-                case "gameinfo":
-                    this.handleGameInfoMessage(body);
-                    break;
-        
                 case "level":
                     this.handleLevelMessage(body);
                     break;
 
-                case "update":
-                    this.handleUpdateMessage(body);
+                case "levelUpdate":
+                    this.handleLevelUpdateMessage(body);
                     break;
-        
-                case "delete":
-                    this.handleDeleteMessage(body);
+                
+                case "connect":
+                    this.handleConnectMessage(body);
                     break;
-        
-                case "create":
-                    this.handleCreateMessage(body);
+
+                case "disconnect":
+                    this.handleDisconnectMessage(body);
                     break;
         
                 default:
@@ -96,41 +74,11 @@ class Platformer {
     }
 
     tick(dt: number) {
-        // physics
-        this.physTicker.update(dt, (fixedDT) => {
-            // update phys/server tps coeffs
-            this.controls.updateCoeffs(this.serverTPS, this.physTps)
-
-            this.physicsEngine.updateKinematicsInterpolation()
-            this.handleControls()
-            this.physicsEngine.update(fixedDT, this.constants.physics)
-        })
-
-        // interpolation
-        this.serverAccumulator += dt
-        const interpolatedAlpha = Math.min(1, this.serverAccumulator/(1000/this.serverTPS))
-        const kinematicAlpha = this.physTicker.getAlpha()
-        this.physicsEngine.interpolate(interpolatedAlpha, kinematicAlpha)
-
         // draw
         this.canvas.draw()
-    }
 
-    handleControls(){
-        const playerRect = this.physicsEngine.kinematicRects.get(this.playerRectID)
-        if(!playerRect){
-            return
-        }
-
-        if(this.controls.isHeld("left")){
-            playerRect.velocity.x -= this.constants.playerSpeed
-        }
-        if(this.controls.isHeld("right")){
-            playerRect.velocity.x += this.constants.playerSpeed
-        }
-        if(this.controls.isHeld("jump") && playerRect.collisionVertical == Direction.Down){
-            playerRect.velocity.y -= this.constants.playerJump
-        }
+        // level
+        this.level.tick(dt, this.controls)
     }
 
     stopWithText(text: string){
@@ -139,87 +87,63 @@ class Platformer {
         roomGui.setNavBarVisibility(true)
     }
 
-    createRectangleShape(serverRect: Rect | KinematicRect, rectID: number){
-        if(this.canvas.getDrawable(rectID)){
-            return
-        }
-
-        let rectangle: RectangleShape;
-
-        if(isKinematicRect(serverRect) && rectID == this.playerRectID){
-            // Doing physics prediction only for player rect
-            const rect = new KinematicRect(serverRect)
-            this.physicsEngine.insertKinematicRect(rectID, rect)
-
-            rectangle = new RectangleShape(rect)
-        } else if(isKinematicRect(serverRect)) {
-            // Interpolated rect for other kinematic rects
-            const rect = new InterpolatedRect(serverRect)
-            this.physicsEngine.insertInterpolatedRect(rectID, rect)
-
-            rectangle = new RectangleShape(rect)
-        } else if(isPhysicalRect(serverRect)) {
-            // Static rects
-            const rect = new PhysicalRect(serverRect)
-            this.physicsEngine.insertStaticRect(rectID, rect)
-
-            rectangle = new RectangleShape(rect)
-        } else {
-            // non rects
-            return
-        }
-
-        this.canvas.insertDrawable(rectangle, 0, rectID)
-    }
-
     handleLevelMessage(body: LevelMessage){
-        for (const [key, val] of Object.entries(body.kinematic)){
-            const id = Number(key)
-            const serverRect = val as KinematicRect
+        this.level.setConfig(body.config)
+        this.level.setPlayerRectID(body.playerRectId)
+        this.level.setTPS(body.clientTps, body.serverTps)
 
-            this.createRectangleShape(serverRect, id)
+        this.serverTPS = body.serverTps
+        this.clientTPS = body.clientTps
+
+        for (const [key, val] of Object.entries(body.players)){
+            const id = Number(key)
+            const serverRect = val as AbstractPlayer
+
+            const rectangle = this.level.createPlayerRectangle(serverRect, id)
+            if (rectangle){
+                this.canvas.insertDrawable(rectangle, 0, id)
+            }
         }
 
-        for (const [key, val] of Object.entries(body.static)){
+        for (const [key, val] of Object.entries(body.blocks)){
             const id = Number(key)
-            const serverRect = val as Rect
+            const serverRect = val as AbstractBlock
 
-            this.createRectangleShape(serverRect, id)
+            const rectangle = this.level.createBlockRectangle(serverRect, id)
+            if (rectangle){
+                this.canvas.insertDrawable(rectangle, 0, id)
+            }
         }
     }
 
-    handleUpdateMessage(body: UpdateMessage){
-        // physics operations
-        this.serverAccumulator = 0
-        this.physicsEngine.updateInterpolatedInterpolation()
-        this.physicsEngine.setMultiplePositions(body.rectsMoved)
+    handleLevelUpdateMessage(body: LevelUpdateMessage){
+        this.level.handlePlayerMovement(body.players, body.correct)
 
-        // send controls to server
-        const controlsCoeffs = this.controls.getCoeffs()
-        if(controlsCoeffs.size > 0){
-            const json = JSON.stringify(Object.fromEntries(controlsCoeffs.entries()))
-            this.controls.resetCoeffs()
-            console.log(json)
+        // send controls right after level message, because server allows sending messages right after sending level message
+        const heldControlsTicks = this.controls.getHeldControlsTicks()
+        if(heldControlsTicks.size != 0){
+            // no need of cutting ticks in map, that is being sent to server, since ticks are being limited there
+            const json = JSON.stringify(Object.fromEntries(heldControlsTicks))
             this.websocket.sendMessage("input", json)
+
+            // cutting ticks after sending
+            this.controls.resetHeldControlsTicks(this.serverTPS, this.clientTPS)
         }
     }
 
-    handleDeleteMessage(body: DeleteMessage){
-        this.canvas.deleteDrawable(body.id)
-        this.physicsEngine.deleteRect(body.id)
-    }
-
-    handleCreateMessage(body: CreateMessage){
+    handleConnectMessage(body: ConnectMessage){
         let serverRect = body.rect
-        let rectID = body.id
+        let rectID = body.rectId
         
-        this.createRectangleShape(serverRect, rectID)
+        const rectangle = this.level.createPlayerRectangle(serverRect, rectID)
+        if(rectangle){
+            this.canvas.insertDrawable(rectangle, 0, rectID)
+        }
     }
 
-    handleGameInfoMessage(body: GameInfoMessage){
-        this.playerRectID = body.rectID
-        this.serverTPS = body.tps
-        this.constants = body.constants
+    handleDisconnectMessage(body: DisconnectMessage){
+        this.canvas.deleteDrawable(body.rectId)
+        this.level.disconnectPlayer(body.rectId)
     }
 }
 

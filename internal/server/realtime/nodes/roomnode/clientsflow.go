@@ -19,7 +19,7 @@ func (roomNode *RoomNode) clientsFlow(requester GameNodeRequester, stopTimer *ti
 	for {
 		select {
 		case client := <-roomNode.Clients.ToConnect():
-			if len(roomNode.Clients.IDMap) >= roomNode.gamelogic.GetMaxClients() {
+			if roomNode.Clients.IDMap.Length() >= roomNode.gamelogic.GetMaxClients() {
 				client.WriteCloseMessage("There are too many players in the room")
 				continue
 			}
@@ -33,7 +33,7 @@ func (roomNode *RoomNode) clientsFlow(requester GameNodeRequester, stopTimer *ti
 			// Notify the gamelogic about new client
 			roomNode.gamelogic.JoinClient(client.GetUser().ID, roomNode)
 
-			log.Println("<RoomNode +Client>:", len(roomNode.Clients.IDMap))
+			log.Println("<RoomNode +Client>:", roomNode.Clients.IDMap.Length())
 
 		case client := <-roomNode.Clients.ToDisconnect():
 			// When server asked to disconnect a client
@@ -45,7 +45,7 @@ func (roomNode *RoomNode) clientsFlow(requester GameNodeRequester, stopTimer *ti
 			// Notify the gamelogic about client disconnect
 			roomNode.gamelogic.DeleteClient(client.GetUser().ID, roomNode)
 
-			log.Println("<RoomNode -Client>:", len(roomNode.Clients.IDMap))
+			log.Println("<RoomNode -Client>:", roomNode.Clients.IDMap.Length())
 
 		case <-roomNode.Flow.Done():
 			return
@@ -55,7 +55,7 @@ func (roomNode *RoomNode) clientsFlow(requester GameNodeRequester, stopTimer *ti
 
 // connects client to room and makes it owner if no owner exists
 func (roomNode *RoomNode) connectClient(client *roomclient.RoomClient) {
-	roomNode.Clients.IDMap[client.GetUser().ID] = client
+	roomNode.Clients.IDMap.Set(client.GetUser().ID, client)
 
 	// change owner if no owner yet
 	if roomNode.owner == nil {
@@ -65,11 +65,11 @@ func (roomNode *RoomNode) connectClient(client *roomclient.RoomClient) {
 
 // disconnects client from room and sets new owner if owner has left (owner is nil if no clients left, room is deleted after that)
 func (roomNode *RoomNode) disconnectClient(client *roomclient.RoomClient, stopTimer *time.Timer) {
-	if roomNode.Clients.IDMap[client.GetUser().ID] != client {
+	if currentClient, _ := roomNode.Clients.IDMap.Get(client.GetUser().ID); currentClient != client {
 		return
 	}
 
-	delete(roomNode.Clients.IDMap, client.GetUser().ID)
+	roomNode.Clients.IDMap.Delete(client.GetUser().ID)
 
 	// change owner
 	if roomNode.owner == client {
@@ -83,16 +83,21 @@ func (roomNode *RoomNode) disconnectClient(client *roomclient.RoomClient, stopTi
 
 // returns random client
 func (roomNode *RoomNode) pickRandomClient() (*roomclient.RoomClient, error) {
-	if len(roomNode.Clients.IDMap) == 0 {
+	if roomNode.Clients.IDMap.Length() == 0 {
 		return nil, ErrNoClients
 	}
 
-	k := rand.Intn(len(roomNode.Clients.IDMap))
-	for _, client := range roomNode.Clients.IDMap {
+	k := rand.Intn(roomNode.Clients.IDMap.Length())
+
+	idMap, rUnlockFunc := roomNode.Clients.IDMap.GetMapForRead()
+	defer rUnlockFunc()
+
+	for _, client := range idMap {
 		if k == 0 {
 			return client, nil
 		}
 		k--
 	}
+
 	return nil, ErrNoClients
 }

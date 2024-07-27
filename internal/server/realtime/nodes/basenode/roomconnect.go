@@ -8,12 +8,12 @@ import (
 
 // Handle WS endpoint
 func (baseNode *BaseNode) ConnectToRoom(conn *websocket.Conn, gameID, roomID, userID int, userName string) error {
-	gameNode, ok := baseNode.games.IDMap[gameID]
+	gameNode, ok := baseNode.games.IDMap.Get(gameID)
 	if !ok {
 		return ErrNoGame
 	}
 
-	roomNode, ok := gameNode.Rooms.IDMap[roomID]
+	roomNode, ok := gameNode.Rooms.IDMap.Get(roomID)
 	if !ok {
 		return ErrNoRoom
 	}

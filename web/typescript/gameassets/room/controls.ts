@@ -1,13 +1,18 @@
 class Controls {
+    // controls that are held right now (control -> bool (set))
+    // using map instead of set here because golang doesn't have set implementation yet
     heldControls: Map<string, boolean>;
-    controlsCoeffs: Map<string, number>
+    // controls bindings (key -> control)
     bindings: Map<string, string>;
 
+    // shows what controls were held and for how many ticks (control -> ticks)
+    heldControlsTicks: Map<string, number>
+
     constructor(){
-        // using map instead of set here because golang doesn't have set implementation yet
         this.heldControls = new Map();
-        this.controlsCoeffs = new Map();
         this.bindings = new Map();
+
+        this.heldControlsTicks = new Map()
 
         // on key press
         document.addEventListener("keypress", (e) => {
@@ -47,22 +52,35 @@ class Controls {
         return this.heldControls.has(control)
     }
 
-    resetCoeffs(){
-        this.controlsCoeffs.clear()
+    addTick(control: string) {
+        if(!this.heldControls.has(control)){
+            return
+        }
+
+        const ticks = this.heldControlsTicks.get(control) 
+        if(!ticks){
+            this.heldControlsTicks.set(control, 1)
+            return
+        }
+
+        this.heldControlsTicks.set(control, ticks+1)
     }
 
-    updateCoeffs(serverTPS: number, clientTPS: number){
-        for(const [control, _] of this.heldControls){
-            let coeff = this.controlsCoeffs.get(control)
-            if(coeff == undefined){
-                coeff = 0
+    resetHeldControlsTicks(serverTPS: number, clientTPS: number){
+        const maxTicks = Math.ceil(clientTPS/serverTPS)
+        for (const [control, ticks] of this.heldControlsTicks){
+            if(ticks <= maxTicks){
+                // delete controls, that didn't bypass the limit
+                this.heldControlsTicks.delete(control)
+                continue
             }
-
-            this.controlsCoeffs.set(control, coeff + serverTPS/clientTPS)
+            
+            // postpone ticks, that are beyond for the future, since can't send any more.
+            this.heldControlsTicks.set(control, ticks - maxTicks)
         }
     }
 
-    getCoeffs(){
-        return this.controlsCoeffs;
+    getHeldControlsTicks(){
+        return this.heldControlsTicks
     }
 }

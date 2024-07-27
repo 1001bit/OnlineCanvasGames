@@ -1,46 +1,14 @@
 package gamelogic
 
-import (
-	"encoding/json"
-)
+// inputMap[control]ticks
+type InputMap map[string]int
 
-type UserInput struct {
-	inputMap map[string]float64
-	userID   int
+func (inputMap InputMap) IsHeld(control string) bool {
+	_, ok := inputMap[control]
+	return ok
 }
 
-func NewUserInput(userID int, inputMap map[string]float64) *UserInput {
-	return &UserInput{
-		userID:   userID,
-		inputMap: inputMap,
-	}
-}
-
-func (input *UserInput) GetControlCoeff(id string) (float64, bool) {
-	coeff, ok := input.inputMap[id]
-	if coeff == 0 || !ok {
-		return 0, false
-	}
-
-	return min(coeff, 1), true
-}
-
-func (input *UserInput) IsHeld(id string) bool {
-	coeff, ok := input.inputMap[id]
-	return coeff != 0 && ok
-}
-
-func (input *UserInput) GetUserID() int {
-	return input.userID
-}
-
-func GetInputMapFromMsg(body any, userID int) (map[string]float64, error) {
-	inputMap := make(map[string]float64)
-
-	err := json.Unmarshal([]byte(body.(string)), &inputMap)
-	if err != nil {
-		return nil, err
-	}
-
-	return inputMap, nil
+func (inputMap InputMap) GetTicks(control string) (int, bool) {
+	ticks, ok := inputMap[control]
+	return ticks, ok
 }

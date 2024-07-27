@@ -1,51 +1,46 @@
 package platformer
 
 import (
+	"math"
+
 	"github.com/1001bit/OnlineCanvasGames/internal/gamelogic"
-	"github.com/1001bit/OnlineCanvasGames/internal/mathobjects"
 )
 
-func (gl *PlatformerGL) handleInput() {
-	handledClients := make(map[int]bool)
+// InputMap with coeffs instead of ticks
+type PlayerInput struct {
+	gamelogic.InputMap
 
-	for {
-		select {
-		case input := <-gl.inputChan:
-			// protect from handling input from same user more than once
-			if _, ok := handledClients[input.GetUserID()]; ok {
-				continue
-			}
-			handledClients[input.GetUserID()] = true
+	// serverTPS/clientTPS
+	serverClientTpsRatio float64
+}
 
-			gl.level.controlPlayerRect(input)
+func NewPlayerInput(inputMap gamelogic.InputMap, serverTPS, clientTPS float64) *PlayerInput {
+	return &PlayerInput{
+		InputMap: inputMap,
 
-		default:
-			return
-		}
+		serverClientTpsRatio: serverTPS / clientTPS,
 	}
 }
 
-func (l *Level) controlPlayerRect(input *gamelogic.UserInput) {
-	rectID := l.playersRects[input.GetUserID()]
-	playerKRect, ok := l.physEng.GetKinematicRects()[rectID]
+func (inputMap *PlayerInput) GetHoldCoeff(control string) (float64, bool) {
+	ticks, ok := inputMap.GetTicks(control)
+	if !ok || ticks == 0 {
+		return 0, false
+	}
+
+	// max ticks = ceil(clientTPS / serverTPS). Basically, how many times client can tick before server tick
+	maxTicks := int(math.Ceil(1 / inputMap.serverClientTpsRatio))
+	ticks = min(ticks, maxTicks)
+
+	return float64(ticks) * inputMap.serverClientTpsRatio, true
+}
+
+// Add input to map
+func (l *Level) HandleInput(userID int, inputMap gamelogic.InputMap) {
+	playerData, ok := l.playersData.Get(userID)
 	if !ok {
 		return
 	}
 
-	addX := 0.0
-	addY := 0.0
-
-	if coeff, ok := input.GetControlCoeff("left"); ok {
-		addX -= platformerConstants.PlayerSpeed * coeff
-	}
-
-	if coeff, ok := input.GetControlCoeff("right"); ok {
-		addX += platformerConstants.PlayerSpeed * coeff
-	}
-
-	if input.IsHeld("jump") && playerKRect.GetCollisionVertical() == mathobjects.Down {
-		addY -= platformerConstants.PlayerJump
-	}
-
-	playerKRect.AddToVel(addX, addY)
+	playerData.HandleInput(inputMap, l.serverTPS, l.clientTPS)
 }

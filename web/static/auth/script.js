@@ -30,3 +30,21 @@ $("#login").on("click", () => {
 $("#register").on("click", () => {
     postInput(InputType.Register);
 });
+$(() => {
+    const usernameField = $("#username");
+    const passwordField = $("#password");
+    // auto select username field
+    usernameField.trigger("focus");
+    // select password field after pressing enter
+    usernameField.on("keydown", e => {
+        if (e.key == "Enter" && usernameField.val() != "") {
+            passwordField.trigger("focus");
+        }
+    });
+    // login after pressing enter
+    passwordField.on("keydown", e => {
+        if (e.key == "Enter" && passwordField.val() != "") {
+            postInput(InputType.Login);
+        }
+    });
+});

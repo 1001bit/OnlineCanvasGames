@@ -1,25 +1,29 @@
 package children
 
+import (
+	"github.com/1001bit/OnlineCanvasGames/pkg/concurrent"
+)
+
 type Children[T any] struct {
 	Channels[T]
-	ChildMap map[*T]bool
+	ChildrenSet concurrent.ConcurrentSet[*T]
 }
 
 func MakeChildren[T any]() Children[T] {
 	return Children[T]{
-		ChildMap: make(map[*T]bool),
-		Channels: MakeChannels[T](),
+		ChildrenSet: concurrent.MakeSet[*T](),
+		Channels:    MakeChannels[T](),
 	}
 }
 
 type ChildrenWithID[T any] struct {
 	Channels[T]
-	IDMap map[int]*T
+	IDMap concurrent.ConcurrentMap[int, *T]
 }
 
 func MakeChildrenWithID[T any]() ChildrenWithID[T] {
 	return ChildrenWithID[T]{
-		IDMap:    make(map[int]*T),
+		IDMap:    concurrent.MakeMap[int, *T](),
 		Channels: MakeChannels[T](),
 	}
 }

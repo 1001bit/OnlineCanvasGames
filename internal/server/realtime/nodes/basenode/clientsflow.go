@@ -28,19 +28,19 @@ func (baseNode *BaseNode) clientsFlow() {
 
 // if there is already client with such ID - stop them. Put a new one
 func (baseNode *BaseNode) protectRoomClient(client *roomclient.RoomClient) {
-	oldClient, ok := baseNode.roomsClients.IDMap[client.GetUser().ID]
+	oldClient, ok := baseNode.roomsClients.IDMap.Get(client.GetUser().ID)
 	if ok {
 		go oldClient.WriteCloseMessage("This user has just joined another room")
 	}
-	baseNode.roomsClients.IDMap[client.GetUser().ID] = client
+	baseNode.roomsClients.IDMap.Set(client.GetUser().ID, client)
 }
 
 // if there is already client with such ID - stop them. Put a new one
 func (baseNode *BaseNode) deleteRoomClient(client *roomclient.RoomClient) {
 	// can delete only exact client, not just with the same id
-	if baseNode.roomsClients.IDMap[client.GetUser().ID] != client {
+	if currentClient, _ := baseNode.roomsClients.IDMap.Get(client.GetUser().ID); currentClient != client {
 		return
 	}
 
-	delete(baseNode.roomsClients.IDMap, client.GetUser().ID)
+	baseNode.roomsClients.IDMap.Delete(client.GetUser().ID)
 }

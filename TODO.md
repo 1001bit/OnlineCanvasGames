@@ -10,6 +10,9 @@
     - [X] Compiler
     - [X] Static scripts
     - [X] Game scripts
+- [ ] Use custom types for:
+    - [ ] UserID
+    - [X] RectID
 
 - [X] Home page
     - [X] Use BaseNode's gamesJSON instead of database table for games list
@@ -23,7 +26,7 @@
     - [X] Basic info
     - [X] Logout button
 
-- [ ] Room Page
+- [X] Room Page
     - [X] WebSocket Room connection
     - [X] Make RT nodes independent from each other
     - [X] Split Nodes' run select statement into several goroutines (flows)
@@ -36,17 +39,20 @@
         - [X] "Show nav bar" button
     - [X] Limit players amount
 
-    - [ ] Multiplayer platformer game
+    - [X] Fix bug: concurrent map iteration and map write: roomnode/public.go:28
+        - [X] Concurrent map
+        - [X] Concurrent set
+
+    - [X] Multiplayer platformer game
         - [X] Server
             - [X] Game loop
-            - [X] Client Input+Duration receive
-            - [X] Physics engine
-                - [X] Kinematic and Static rect
-                - [X] Movement
-                - [X] Collisions
-                - [ ] Migrate to just KinematicRect
-                - [ ] Simplify forces application
-                - [ ] Apply SOLID principles
+            - [X] Player and blocks
+            - [X] Forces and collisions
+            - [X] Client controls handling
+                - [X] Controls receive
+                - [X] Player control
+                - [X] Limit input ticks
+            - [ ] Fixed Timestep (non crucial)
             - [X] Data send
                 - [X] Level
                 - [X] Info
@@ -54,28 +60,24 @@
                     - [X] Constants
                     - [X] TPS
                 - [X] Rect Delete/Create
-                - [X] Moved rects
-                - [ ] Level state every 10 seconds
+                - [X] Level update
+                - [X] Level correction state
 
         - [X] Client
             - [X] Level Draw
             - [X] Game loop
             - [X] Controls
-                - [X] Frontend controls bindings
-                - [X] Send input right after server message
-            - [X] Messages handling:
-                - [X] Level
-                - [X] GameInfo
-                - [X] Rect Delete/Create
-            - [ ] Smooth rect movements
-                - [X] Physics class, which replicates server's physics
+                - [X] Frontend
+                - [X] Send to Backend
+                - [X] Postpone input ticks to next iteration, if the limit was bypassed
+            - [X] Messages handling
+            - [X] Smooth rect movements
                 - [X] Client State -> Updated State interpolation
-                - [ ] Client State -> Level State interpolation
-                - [ ] Update physics engine along the server one
-                - [X] Physics calculations (only for player's actions) based on current state
-                    - [X] Gravity, friction, small stuff
+                - [X] Player physics replication
+                    - [X] Forces
+                    - [X] Control
                     - [X] Collisions
-                    - [X] Player movement
+                - [X] Kinematic Players position correction
 
 - [ ] Admin page
     - [ ] Front end

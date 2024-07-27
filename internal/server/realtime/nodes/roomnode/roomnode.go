@@ -57,7 +57,7 @@ func (roomNode *RoomNode) Run(requester GameNodeRequester) {
 		select {
 		case <-stopTimer.C:
 			// If timer is over, check for clients
-			if len(roomNode.Clients.IDMap) == 0 {
+			if roomNode.Clients.IDMap.Length() == 0 {
 				return
 			}
 

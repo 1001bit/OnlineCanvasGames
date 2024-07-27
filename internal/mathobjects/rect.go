@@ -1,5 +1,7 @@
 package mathobjects
 
+import "math"
+
 type Rect struct {
 	Position Vector2[float64] `json:"position"`
 	Size     Vector2[float64] `json:"size"`
@@ -23,10 +25,27 @@ func (rect *Rect) Intersects(rect2 Rect) bool {
 	return true
 }
 
-func (rect *Rect) GetPosition() Vector2[float64] {
+func (rect *Rect) SetPosition(x, y float64) {
+	rect.Position.X = x
+	rect.Position.Y = y
+}
+
+func (rect *Rect) Extend(extX, extY float64) {
+	rect.Size.X += math.Abs(extX)
+	rect.Size.Y += math.Abs(extY)
+
+	if extX < 0 {
+		rect.Position.X -= math.Abs(extX)
+	}
+	if extY < 0 {
+		rect.Position.Y -= math.Abs(extY)
+	}
+}
+
+func (rect Rect) GetPosition() Vector2[float64] {
 	return rect.Position
 }
 
-func (rect *Rect) GetSize() Vector2[float64] {
+func (rect Rect) GetSize() Vector2[float64] {
 	return rect.Size
 }
