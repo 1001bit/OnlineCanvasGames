@@ -11,9 +11,9 @@ import (
 var DB *sql.DB
 
 func Start() error {
-	config := NewConfig()
+	config := NewReadyConfig()
 
-	connStr := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", config.user, config.pass, config.name)
+	connStr := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable", config.host, config.user, config.pass, config.name)
 
 	var err error
 	DB, err = sql.Open("postgres", connStr)

@@ -1,0 +1,26 @@
+microservices:
+    - Users service:
+        - Authorization
+        - Authentication
+        - Profile data
+        - Providing services above to other microservices
+
+    - Games service:
+        - SSE endpoints handling
+        - Games data
+        - Providing services above to other microservices
+
+    - Rooms service:
+        - Websockets with gamelogic
+        - Providing services above to other microservices
+
+    - Storage service:
+        - Images handling
+        - Static (js/css) handling
+        - Compiling typescript to js
+        - Providing services above to other microservices
+
+    - API service:
+        - Json api endpoints handling
+        - Webpages endpoints handling
+        - Getting data for services above from other microservices
