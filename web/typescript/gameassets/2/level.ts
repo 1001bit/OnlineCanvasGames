@@ -10,6 +10,8 @@ class Level {
     private interpolatedPlayers: Map<number, InterpolatedPlayer>
     private kinematicPlayers: Map<number, KinematicPlayer>
 
+    private camera: SmoothCamera;
+
     private config: LevelConfig;
     private playerRectID: number
 
@@ -21,6 +23,8 @@ class Level {
         this.blocks = new Map()
         this.interpolatedPlayers = new Map()
         this.kinematicPlayers = new Map()
+
+        this.camera = new SmoothCamera()
 
         this.config = {
             playerSpeed: 0,
@@ -61,6 +65,10 @@ class Level {
 
             this.kinematicPlayers.set(rectID, rect)
             rectangle = new RectangleShape(rect)
+
+            // camera
+            this.camera.setTarget(rect)
+            
         } else {
             const rect = new InterpolatedPlayer(serverRect)
 
@@ -89,9 +97,8 @@ class Level {
     }
 
     tick(dt: number, controls: Controls){
-        this.serverAccumulator += dt
-
         // interpolate interpolated players
+        this.serverAccumulator += dt
         const interpolatedAlpha = Math.min(this.serverAccumulator/(1000/this.serverTPS), 1)
         for (const [_, player] of this.interpolatedPlayers){
             player.interpolate(interpolatedAlpha)
@@ -142,6 +149,9 @@ class Level {
         for (const [_, player] of this.kinematicPlayers){
             player.interpolate(kinematicAlpha)
         }
+
+        // camera follow
+        this.camera.update(dt)
     }
 
     handlePlayerMovement(moved: {}, correct: boolean){
@@ -170,5 +180,9 @@ class Level {
                 }
             }
         } 
+    }
+
+    getCameraPosition(){
+        return this.camera.getPosition()
     }
 }

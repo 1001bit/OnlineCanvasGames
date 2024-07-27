@@ -10,6 +10,7 @@
     - [X] Compiler
     - [X] Static scripts
     - [X] Game scripts
+    
 - [ ] Use custom types for:
     - [ ] UserID
     - [X] RectID
@@ -52,7 +53,6 @@
                 - [X] Controls receive
                 - [X] Player control
                 - [X] Limit input ticks
-            - [ ] Fixed Timestep (non crucial)
             - [X] Data send
                 - [X] Level
                 - [X] Info
@@ -62,6 +62,8 @@
                 - [X] Rect Delete/Create
                 - [X] Level update
                 - [X] Level correction state
+            - [X] Smooth following camera
+            - [ ] Fixed Timestep (non crucial)
 
         - [X] Client
             - [X] Level Draw
@@ -78,6 +80,8 @@
                     - [X] Control
                     - [X] Collisions
                 - [X] Kinematic Players position correction
+            - [ ] Animated sprites
+
 
 - [ ] Admin page
     - [ ] Front end

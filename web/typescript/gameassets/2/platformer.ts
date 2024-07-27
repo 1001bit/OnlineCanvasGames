@@ -75,7 +75,7 @@ class Platformer {
 
     private tick(dt: number) {
         // draw
-        this.canvas.draw()
+        this.canvas.draw(this.level.getCameraPosition())
 
         // level
         this.level.tick(dt, this.controls)

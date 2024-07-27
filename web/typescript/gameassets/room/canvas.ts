@@ -91,16 +91,23 @@ class GameCanvas {
         })
     }
 
-    draw(){
+    draw(viewCenter?: Vector2){
         const ctx = this.ctx;
+        ctx.save();
 
         this.clear();
+
+        if(viewCenter){
+            ctx.translate(this.canvas.width/2 - viewCenter.x, this.canvas.height/2 - viewCenter.y)
+        }
 
         this.layers.forEach(layer => {
             layer.forEach(drawable => {
                 drawable.draw(ctx);
             });
         });
+
+        ctx.restore();
     }
 
     setBackgroundColor(color: string){

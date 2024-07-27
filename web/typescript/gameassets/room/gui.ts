@@ -6,9 +6,7 @@ class RoomGui{
 
         this.onclick()
 
-        $("#show-nav").click(() => {
-            this.onclick()
-        })
+        $("#show-nav").on("click", () => this.onclick())
     }
 
     showMessage(text: string){

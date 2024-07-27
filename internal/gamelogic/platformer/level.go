@@ -61,7 +61,7 @@ func NewPlatformerLevel() *Level {
 		correctTicker: fixedticker.New(correctsPerSec),
 	}
 
-	block := NewBlock(0, 500, 1000, 100)
+	block := NewBlock(-1000, 500, 2000, 100)
 	level.blocks[10] = block
 
 	return level

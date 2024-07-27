@@ -62,14 +62,19 @@ class GameCanvas {
             layer.delete(id);
         });
     }
-    draw() {
+    draw(viewCenter) {
         const ctx = this.ctx;
+        ctx.save();
         this.clear();
+        if (viewCenter) {
+            ctx.translate(this.canvas.width / 2 - viewCenter.x, this.canvas.height / 2 - viewCenter.y);
+        }
         this.layers.forEach(layer => {
             layer.forEach(drawable => {
                 drawable.draw(ctx);
             });
         });
+        ctx.restore();
     }
     setBackgroundColor(color) {
         this.backgroundColor = color;
@@ -164,9 +169,7 @@ class RoomGui {
     constructor() {
         this.navVisible = true;
         this.onclick();
-        $("#show-nav").click(() => {
-            this.onclick();
-        });
+        $("#show-nav").on("click", () => this.onclick());
     }
     showMessage(text) {
         $("#message").text(text);
@@ -434,6 +437,26 @@ class Block extends Rect {
         super(abstract);
     }
 }
+class SmoothCamera {
+    constructor() {
+        this.position = new Vector2(0, 0);
+        this.target = undefined;
+        this.strength = 0.9;
+    }
+    setTarget(target) {
+        this.target = target;
+    }
+    update(dt) {
+        if (this.target == undefined) {
+            return;
+        }
+        const centerPos = new Vector2(this.target.getPosition().x + this.target.getSize().x / 2, this.target.getPosition().y + this.target.getSize().y / 2);
+        this.position.interpolateBetween(this.position, centerPos, Math.pow(this.strength, dt));
+    }
+    getPosition() {
+        return this.position;
+    }
+}
 var Direction;
 (function (Direction) {
     Direction[Direction["None"] = 0] = "None";
@@ -447,6 +470,7 @@ class Level {
         this.blocks = new Map();
         this.interpolatedPlayers = new Map();
         this.kinematicPlayers = new Map();
+        this.camera = new SmoothCamera();
         this.config = {
             playerSpeed: 0,
             playerJump: 0,
@@ -477,6 +501,8 @@ class Level {
             const rect = new KinematicPlayer(serverRect);
             this.kinematicPlayers.set(rectID, rect);
             rectangle = new RectangleShape(rect);
+            // camera
+            this.camera.setTarget(rect);
         }
         else {
             const rect = new InterpolatedPlayer(serverRect);
@@ -499,8 +525,8 @@ class Level {
         return rectangle;
     }
     tick(dt, controls) {
-        this.serverAccumulator += dt;
         // interpolate interpolated players
+        this.serverAccumulator += dt;
         const interpolatedAlpha = Math.min(this.serverAccumulator / (1000 / this.serverTPS), 1);
         for (const [_, player] of this.interpolatedPlayers) {
             player.interpolate(interpolatedAlpha);
@@ -544,6 +570,8 @@ class Level {
         for (const [_, player] of this.kinematicPlayers) {
             player.interpolate(kinematicAlpha);
         }
+        // camera follow
+        this.camera.update(dt);
     }
     handlePlayerMovement(moved, correct) {
         // update interpolated rects interpolation
@@ -567,6 +595,9 @@ class Level {
                 }
             }
         }
+    }
+    getCameraPosition() {
+        return this.camera.getPosition();
     }
 }
 class Platformer {
@@ -619,7 +650,7 @@ class Platformer {
     }
     tick(dt) {
         // draw
-        this.canvas.draw();
+        this.canvas.draw(this.level.getCameraPosition());
         // level
         this.level.tick(dt, this.controls);
     }

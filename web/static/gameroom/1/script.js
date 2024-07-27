@@ -62,14 +62,19 @@ class GameCanvas {
             layer.delete(id);
         });
     }
-    draw() {
+    draw(viewCenter) {
         const ctx = this.ctx;
+        ctx.save();
         this.clear();
+        if (viewCenter) {
+            ctx.translate(this.canvas.width / 2 - viewCenter.x, this.canvas.height / 2 - viewCenter.y);
+        }
         this.layers.forEach(layer => {
             layer.forEach(drawable => {
                 drawable.draw(ctx);
             });
         });
+        ctx.restore();
     }
     setBackgroundColor(color) {
         this.backgroundColor = color;
@@ -164,9 +169,7 @@ class RoomGui {
     constructor() {
         this.navVisible = true;
         this.onclick();
-        $("#show-nav").click(() => {
-            this.onclick();
-        });
+        $("#show-nav").on("click", () => this.onclick());
     }
     showMessage(text) {
         $("#message").text(text);
