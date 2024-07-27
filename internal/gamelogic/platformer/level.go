@@ -1,10 +1,9 @@
 package platformer
 
 import (
-	"sync"
-
 	"github.com/1001bit/OnlineCanvasGames/internal/gamelogic"
 	"github.com/1001bit/OnlineCanvasGames/internal/mathobjects"
+	"github.com/1001bit/OnlineCanvasGames/pkg/concurrent"
 )
 
 type LevelConfig struct {
@@ -19,17 +18,13 @@ type Level struct {
 	players map[int]*Player
 	blocks  map[int]*Block
 
+	// userID[data]
+	playersData concurrent.ConcurrentMap[int, *PlayerData]
+
 	config LevelConfig
 
-	tps       float64
+	serverTPS float64
 	clientTPS float64
-
-	// userID[input]
-	userInput      map[int]*PlayerInput
-	userInputMutex sync.RWMutex
-
-	// userID[rectID]
-	userRectIDs map[int]int
 }
 
 func NewPlatformerLevel() *Level {
@@ -41,7 +36,7 @@ func NewPlatformerLevel() *Level {
 			PlayerFriction: 0.3,
 		}
 
-		tps       = 20.0
+		serverTPS = 20.0
 		clientTPS = 50.0
 	)
 
@@ -49,15 +44,12 @@ func NewPlatformerLevel() *Level {
 		players: make(map[int]*Player),
 		blocks:  make(map[int]*Block),
 
+		playersData: concurrent.MakeMap[int, *PlayerData](),
+
 		config: config,
 
-		tps:       tps,
+		serverTPS: serverTPS,
 		clientTPS: clientTPS,
-
-		userInput:      make(map[int]*PlayerInput),
-		userInputMutex: sync.RWMutex{},
-
-		userRectIDs: make(map[int]int),
 	}
 
 	block := NewBlock(0, 500, 1000, 100)
@@ -70,15 +62,11 @@ func (l *Level) Tick(dtMs float64, writer gamelogic.RoomWriter) {
 	movedPlayers := make(map[int]mathobjects.Vector2[float64])
 
 	// Controls
-	for userID, inputMap := range l.userInput {
-		player := l.getPlayer(userID)
-		if player == nil {
-			continue
-		}
-		player.Control(l.config.PlayerSpeed, l.config.PlayerJump, inputMap)
+	playersData, rUnlockFunc := l.playersData.GetMapForRead()
+	for _, playerData := range playersData {
+		playerData.ControlPlayer(l.config.PlayerSpeed, l.config.PlayerJump)
 	}
-	// Clear user input
-	l.ClearUserInput()
+	rUnlockFunc()
 
 	// Physics
 	for rectID, player := range l.players {
@@ -118,16 +106,4 @@ func (l *Level) Tick(dtMs float64, writer gamelogic.RoomWriter) {
 
 	// Level Update Message
 	writer.GlobalWriteMessage(NewLevelUpdateMessage(movedPlayers))
-}
-
-func (l *Level) getPlayer(userID int) *Player {
-	rectID, ok := l.userRectIDs[userID]
-	if !ok {
-		return nil
-	}
-	player, ok := l.players[rectID]
-	if !ok {
-		return nil
-	}
-	return player
 }

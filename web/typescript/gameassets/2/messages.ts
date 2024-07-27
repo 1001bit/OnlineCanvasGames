@@ -4,7 +4,7 @@ interface LevelMessage {
 
     config: LevelConfig;
 
-    tps: number;
+    serverTps: number;
     clientTps: number;
 
     playerRectId: number;

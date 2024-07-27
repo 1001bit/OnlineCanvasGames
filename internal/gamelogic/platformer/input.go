@@ -37,12 +37,10 @@ func (inputMap *PlayerInput) GetHoldCoeff(control string) (float64, bool) {
 
 // Add input to map
 func (l *Level) HandleInput(userID int, inputMap gamelogic.InputMap) {
-	l.userInputMutex.Lock()
-	defer l.userInputMutex.Unlock()
+	playerData, ok := l.playersData.Get(userID)
+	if !ok {
+		return
+	}
 
-	l.userInput[userID] = NewPlayerInput(inputMap, l.tps, l.clientTPS)
-}
-
-func (l *Level) ClearUserInput() {
-	clear(l.userInput)
+	playerData.HandleInput(inputMap, l.serverTPS, l.clientTPS)
 }

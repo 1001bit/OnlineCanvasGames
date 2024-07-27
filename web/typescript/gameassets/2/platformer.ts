@@ -90,9 +90,9 @@ class Platformer {
     handleLevelMessage(body: LevelMessage){
         this.level.setConfig(body.config)
         this.level.setPlayerRectID(body.playerRectId)
-        this.level.setTPS(body.clientTps, body.tps)
+        this.level.setTPS(body.clientTps, body.serverTps)
 
-        this.serverTPS = body.tps
+        this.serverTPS = body.serverTps
         this.clientTPS = body.clientTps
 
         for (const [key, val] of Object.entries(body.players)){

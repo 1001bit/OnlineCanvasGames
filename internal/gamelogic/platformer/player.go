@@ -29,16 +29,20 @@ func NewPlayer(rectID int) *Player {
 	}
 }
 
-func (p *Player) Control(speed, jump float64, inputMap *PlayerInput) {
-	if coeff, ok := inputMap.GetHoldCoeff("left"); ok {
+func (p *Player) Control(speed, jump float64, input *PlayerInput) {
+	if input == nil {
+		return
+	}
+
+	if coeff, ok := input.GetHoldCoeff("left"); ok {
 		p.velocity.X -= speed * coeff
 	}
 
-	if coeff, ok := inputMap.GetHoldCoeff("right"); ok {
+	if coeff, ok := input.GetHoldCoeff("right"); ok {
 		p.velocity.X += speed * coeff
 	}
 
-	if inputMap.IsHeld("jump") && p.collisionVertical == mathobjects.Down {
+	if input.IsHeld("jump") && p.collisionVertical == mathobjects.Down {
 		p.velocity.Y -= jump
 	}
 }

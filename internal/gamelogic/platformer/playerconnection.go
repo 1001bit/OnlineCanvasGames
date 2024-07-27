@@ -5,36 +5,39 @@ import (
 )
 
 func (l *Level) CreatePlayer(userID int, playersLimit int) (int, *Player) {
-	if rectID, ok := l.userRectIDs[userID]; ok {
-		return rectID, l.players[rectID]
+	if playerData, ok := l.playersData.Get(userID); ok {
+		return playerData.rectID, playerData.player
 	}
 
 	rectID := l.getFreePlayerRectID(playersLimit)
-	l.userRectIDs[userID] = rectID
-
 	player := NewPlayer(rectID)
+
 	l.players[rectID] = player
+	l.playersData.Set(userID, NewPlayerData(player, rectID))
 
 	return rectID, player
 }
 
 func (l *Level) DeletePlayer(userID int) (int, error) {
-	rectID, ok := l.userRectIDs[userID]
+	playerData, ok := l.playersData.Get(userID)
 	if !ok {
 		return 0, ErrNoPlayer
 	}
 
-	delete(l.userRectIDs, userID)
-	delete(l.players, rectID)
+	l.playersData.Delete(userID)
+	delete(l.players, playerData.rectID)
 
-	return rectID, nil
+	return playerData.rectID, nil
 }
 
 func (l *Level) getFreePlayerRectID(playersLimit int) int {
 	occupiedRectIDs := make(set.Set[int])
 
-	for _, rectID := range l.userRectIDs {
-		occupiedRectIDs.Insert(rectID)
+	playersData, rUnlockFunc := l.playersData.GetMapForRead()
+	defer rUnlockFunc()
+
+	for _, playerData := range playersData {
+		occupiedRectIDs.Insert(playerData.rectID)
 	}
 
 	for newID := range playersLimit {
@@ -42,5 +45,6 @@ func (l *Level) getFreePlayerRectID(playersLimit int) int {
 			return newID
 		}
 	}
+
 	return -1
 }

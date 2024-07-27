@@ -34,7 +34,7 @@ func (gl *PlatformerGL) Run(doneChan <-chan struct{}, writer gamelogic.RoomWrite
 
 		// clear read clients set (ready to read new messages)
 		clear(gl.handledClients)
-	}, int(gl.level.tps), doneChan)
+	}, int(gl.level.serverTPS), doneChan)
 }
 
 func (gl *PlatformerGL) HandleReadMessage(msg rtclient.MessageWithClient, writer gamelogic.RoomWriter) {
