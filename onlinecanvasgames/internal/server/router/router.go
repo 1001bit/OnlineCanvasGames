@@ -2,11 +2,12 @@ package router
 
 import (
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 
 	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/api"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/page"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/rt"
-	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/storage"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/middleware"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/basenode"
 
@@ -14,16 +15,17 @@ import (
 	chimw "github.com/go-chi/chi/v5/middleware"
 )
 
-func NewRouter() (http.Handler, error) {
+func NewRouter(storageServiceUrl string) (http.Handler, error) {
 	router := chi.NewRouter()
 	router.Use(chimw.Logger)
 	router.Use(chimw.RedirectSlashes)
 	router.Use(middleware.InjectJWTClaims)
 
 	// Storage
-	router.Handle("/static/*", http.StripPrefix("/static", http.HandlerFunc(storage.HandleStatic)))
-	router.Get("/favicon.ico", storage.HandleStatic)
-	router.Handle("/image/*", http.StripPrefix("/image", http.HandlerFunc(storage.HandleImage)))
+	router.Handle("/static/*", ServiceProxy(storageServiceUrl))
+	router.Get("/favicon.ico", ServiceProxy(storageServiceUrl))
+	router.Handle("/js/*", ServiceProxy(storageServiceUrl))
+	router.Handle("/image/*", ServiceProxy(storageServiceUrl))
 
 	// Realtime
 	baseNode := basenode.NewBaseNode()
@@ -81,4 +83,17 @@ func NewRouter() (http.Handler, error) {
 	})
 
 	return router, nil
+}
+
+// Use proxy to kind of "redirect" user to needed service
+func ServiceProxy(serviceUrl string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		url, err := url.Parse(serviceUrl)
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		proxy := httputil.NewSingleHostReverseProxy(url)
+		proxy.ServeHTTP(w, r)
+	}
 }

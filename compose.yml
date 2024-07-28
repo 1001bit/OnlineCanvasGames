@@ -3,23 +3,39 @@ services:
     container_name: ocg
 
     build: ./onlinecanvasgames
+    env_file:
+      - .env
     restart: always
     ports:
-      - "8080:8080"
+      - "${OCG_PORT}:${OCG_PORT}"
     depends_on:
       db:
         condition: service_healthy
+      storage:
+        condition: service_started
+    command: ./main
+
+  storage:
+    container_name: storage
+    
+    build: ./storage
     env_file:
       - .env
+    restart: always
+    ports:
+      - "${STORAGE_PORT}:${STORAGE_PORT}"
+    volumes:
+      - ./storage/storage/static:/app/storage/static
+      - ./storage/storage/image:/app/storage/image
     command: ./main
   
   db:
     container_name: ocg_db
 
-    image: postgres
-    restart: always
     env_file:
       - .env
+    image: postgres
+    restart: always
     volumes:
       - pgdbdata:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -38,7 +54,7 @@ services:
     image: adminer
     restart: always
     ports:
-      - 8081:8080
-  
+      - ${ADMINER_PORT}:8080
+
 volumes:
   pgdbdata: null

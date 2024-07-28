@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -24,12 +25,16 @@ func main() {
 	defer database.DB.Close()
 
 	// start http server
-	router, err := router.NewRouter()
+	storageHost := env.GetEnvVal("STORAGE_HOST")
+	storagePort := env.GetEnvVal("STORAGE_PORT")
+	storageURL := fmt.Sprintf("http://%s:%s", storageHost, storagePort)
+
+	router, err := router.NewRouter(storageURL)
 	if err != nil {
 		log.Fatal("err creating router:", err)
 	}
 
-	addr := env.GetEnvVal("ADDR")
+	addr := fmt.Sprintf(":%s", env.GetEnvVal("OCG_PORT"))
 
 	log.Println("Listening on", addr)
 	log.Fatal(http.ListenAndServe(addr, router))

@@ -82,6 +82,12 @@
                 - [X] Kinematic Players position correction
             - [ ] Animated sprites
 
+- [ ] Microservices:
+    - [X] Storage
+    - [ ] Users
+    - [ ] Rooms
+    - [ ] Games
+    - [ ] API gateway
 
 - [ ] Admin page
     - [ ] Front end
