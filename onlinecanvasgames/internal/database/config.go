@@ -11,9 +11,9 @@ type Config struct {
 
 func NewReadyConfig() *Config {
 	return &Config{
-		user: env.GetEnvVal("DB_USER"),
-		name: env.GetEnvVal("DB_NAME"),
-		pass: env.GetEnvVal("DB_PASS"),
+		user: env.GetEnvVal("POSTGRES_USER"),
+		name: env.GetEnvVal("POSTGRES_DB"),
+		pass: env.GetEnvVal("POSTGRES_PASSWORD"),
 		host: env.GetEnvVal("DB_HOST"),
 	}
 }

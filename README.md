@@ -16,24 +16,22 @@
 - **Routing**: [`go-chi/chi`](https://github.com/go-chi/chi)
 - **Authentication**: [`golang-jwt/jwt`](https://github.com/golang-jwt/jwt).
 - **WebSocket Communication**: [`gorilla/websocket`](https://github.com/gorilla/websocket).
-- **Database**: PostgreSQL, accessed via [`lib/pq`](https://github.com/lib/pq).
+- **Database**: [`PostgreSQL`](https://www.postgresql.org/), accessed via [`lib/pq`](https://github.com/lib/pq) and administrated with [`adminer`](https://www.adminer.org/).
 - **Environment Variables**: [`joho/godotenv`](https://github.com/joho/godotenv).
 - **Cryptography**: [`golang.org/x/crypto`](https://golang.org/x/crypto).
+- **Frontend**: [`TypeScript`](https://www.typescriptlang.org/).
+- **Containerization**: [`Docker`](https://www.docker.com/).
 
 ## Getting Started
 
-To get started with **Online Canvas Games**, ensure you have Go installed on your system. Then, clone the repository and navigate to the project directory.
+1. To get started with **Online Canvas Games**, ensure you have Docker installed on your machine.
+2. Clone the repository and navigate to the project directory.
+3. Create your own `.env` in the root directory based on the `example.env`
 
+## Running and building the Application
 
-Before running the server, make sure to set up your PostgreSQL database and environment variables. You can use `.env.example` as a template for creating your own `.env` file.
-
-To compile TypeScript files for the client-side (Linux machine):
-` ./scripts/tscompiler.sh `
-
-
-To run the server (Linux machine):
-`./scripts/run.sh`
-
+1. To build the entire application, use `docker compose build`
+2. To run, use `docker compose up` 
 
 ## Contributing
 
