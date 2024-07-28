@@ -25,11 +25,18 @@ func (s *ConcurrentSet[T]) Insert(elem T) {
 	s.items.Insert(elem)
 }
 
-func (m *ConcurrentSet[T]) Delete(elem T) {
-	m.mutex.Lock()
-	defer m.mutex.Unlock()
+func (s *ConcurrentSet[T]) Delete(elem T) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 
-	delete(m.items, elem)
+	delete(s.items, elem)
+}
+
+func (s *ConcurrentSet[T]) Clear() {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	clear(s.items)
 }
 
 func (s *ConcurrentSet[T]) Has(elem T) bool {

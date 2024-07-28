@@ -5,15 +5,15 @@ import (
 
 	"github.com/1001bit/OnlineCanvasGames/internal/gamelogic"
 	rtclient "github.com/1001bit/OnlineCanvasGames/internal/server/realtime/client"
+	"github.com/1001bit/OnlineCanvasGames/pkg/concurrent"
 	"github.com/1001bit/OnlineCanvasGames/pkg/gameloop"
-	"github.com/1001bit/OnlineCanvasGames/pkg/set"
 )
 
 type PlatformerGL struct {
 	level *Level
 
 	// set[userID] of already read clients
-	handledClients set.Set[int]
+	handledClients concurrent.ConcurrentSet[int]
 
 	maxPlayers int
 }
@@ -22,7 +22,7 @@ func NewPlatformerGL() *PlatformerGL {
 	return &PlatformerGL{
 		level: NewPlatformerLevel(),
 
-		handledClients: make(set.Set[int]),
+		handledClients: concurrent.MakeSet[int](),
 
 		maxPlayers: 8,
 	}
@@ -33,7 +33,7 @@ func (gl *PlatformerGL) Run(doneChan <-chan struct{}, writer gamelogic.RoomWrite
 		gl.level.Tick(dtMs, writer)
 
 		// clear read clients set (ready to read new messages)
-		clear(gl.handledClients)
+		gl.handledClients.Clear()
 	}, int(gl.level.serverTPS), doneChan)
 }
 
