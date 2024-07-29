@@ -24,18 +24,20 @@ func main() {
 	}
 	defer database.DB.Close()
 
-	// start http server
-	storageHost := env.GetEnvVal("STORAGE_HOST")
-	storagePort := env.GetEnvVal("STORAGE_PORT")
-	storageURL := fmt.Sprintf("http://%s:%s", storageHost, storagePort)
+	// services
+	storageService, err := router.NewService(env.GetEnvVal("STORAGE_HOST"), env.GetEnvVal("STORAGE_PORT"))
+	if err != nil {
+		log.Fatal("err getting service url:", err)
+	}
 
-	router, err := router.NewRouter(storageURL)
+	// router
+	router, err := router.NewRouter(storageService)
 	if err != nil {
 		log.Fatal("err creating router:", err)
 	}
 
+	// start http server
 	addr := fmt.Sprintf(":%s", env.GetEnvVal("OCG_PORT"))
-
 	log.Println("Listening on", addr)
 	log.Fatal(http.ListenAndServe(addr, router))
 }
