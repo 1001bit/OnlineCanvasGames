@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	gamemodel "github.com/1001bit/OnlineCanvasGames/internal/model/game"
+	"github.com/1001bit/OnlineCanvasGames/internal/gamemodel"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/children"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/gamenode"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/roomclient"

@@ -8,23 +8,13 @@ import (
 	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/rt"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/middleware"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/basenode"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/service"
 
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
 )
 
-func NewRouter(storageService *Service) (http.Handler, error) {
-	router := chi.NewRouter()
-	router.Use(chimw.Logger)
-	router.Use(chimw.RedirectSlashes)
-	router.Use(middleware.InjectJWTClaims)
-
-	// Storage
-	router.Handle("/static/*", storageService.Proxy())
-	router.Get("/favicon.ico", storageService.Proxy())
-	router.Handle("/js/*", storageService.Proxy())
-	router.Handle("/image/*", storageService.Proxy())
-
+func NewRouter(storageService *service.StorageService, userService *service.UserService) (http.Handler, error) {
 	// Realtime
 	baseNode := basenode.NewBaseNode()
 	go baseNode.Run()
@@ -34,50 +24,78 @@ func NewRouter(storageService *Service) (http.Handler, error) {
 		return nil, err
 	}
 
-	// RT Secure
-	router.Route("/rt", func(rs chi.Router) {
-		rs.Use(middleware.AuthJSON)
+	// Router
+	router := chi.NewRouter()
+	router.Use(chimw.Logger)
+	router.Use(chimw.RedirectSlashes)
+	router.Use(middleware.ClaimsContext)
 
-		rs.Get("/sse/game/{gameid}", func(w http.ResponseWriter, r *http.Request) {
+	// Storage
+	router.Group(func(storageRouter chi.Router) {
+		storageRouter.Handle("/static/*", storageService.HandleStorage())
+		storageRouter.Get("/favicon.ico", storageService.HandleStorage().ServeHTTP)
+		storageRouter.Handle("/js/*", storageService.HandleStorage())
+		storageRouter.Handle("/image/*", storageService.HandleStorage())
+	})
+
+	// Realtime
+	router.Route("/rt", func(realtimeRouter chi.Router) {
+		realtimeRouter.Use(middleware.AuthJSON)
+
+		realtimeRouter.Get("/sse/game/{gameid}", func(w http.ResponseWriter, r *http.Request) {
 			rt.HandleGameSSE(w, r, baseNode)
 		})
-		rs.Get("/ws/game/{gameid}/room/{roomid}", func(w http.ResponseWriter, r *http.Request) {
+		realtimeRouter.Get("/ws/game/{gameid}/room/{roomid}", func(w http.ResponseWriter, r *http.Request) {
 			rt.HandleRoomWS(w, r, baseNode)
 		})
 	})
 
-	// API
-	router.Route("/api", func(r chi.Router) {
-		r.Use(middleware.TypeJSON)
+	// JSON
+	router.Route("/api", func(jsonRouter chi.Router) {
+		jsonRouter.Use(middleware.TypeJSON)
 
-		// Post
-		r.Post("/user", api.HandleUserPost)
-		r.Post("/game/{gameid}/room", func(w http.ResponseWriter, r *http.Request) {
-			api.HandleRoomPost(w, r, baseNode)
+		// Users
+		jsonRouter.Post("/user", func(w http.ResponseWriter, r *http.Request) {
+			api.HandleUserPost(w, r, userService)
+		})
+
+		// Rooms
+		jsonRouter.Group(func(jsonRouterSecure chi.Router) {
+			jsonRouterSecure.Use(middleware.AuthJSON)
+
+			jsonRouterSecure.Post("/game/{gameid}/room", func(w http.ResponseWriter, r *http.Request) {
+				api.HandleRoomPost(w, r, baseNode)
+			})
 		})
 	})
 
 	// HTML Pages
-	router.Route("/", func(r chi.Router) {
-		r.Use(middleware.TypeHTML)
+	router.Route("/", func(htmlRouter chi.Router) {
+		htmlRouter.Use(middleware.TypeHTML)
 
-		// Get
-		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		// Home
+		htmlRouter.Get("/", func(w http.ResponseWriter, r *http.Request) {
 			page.HandleHome(w, r, baseNode)
 		})
-		r.Get("/auth", page.HandleAuth)
-		r.Get("/profile/{id}", page.HandleProfile)
-		r.Get("/logout", page.HandleLogout)
+		// Auth
+		htmlRouter.Get("/auth", page.HandleAuth)
+		// Profile
+		htmlRouter.Get("/profile/{id}", func(w http.ResponseWriter, r *http.Request) {
+			page.HandleProfile(w, r, userService)
+		})
+		// Logout
+		htmlRouter.Get("/logout", page.HandleLogout)
 
-		// Secure
-		r.Group(func(rs chi.Router) {
-			rs.Use(middleware.AuthHTML)
+		// Games
+		htmlRouter.Group(func(htmlRouterSecure chi.Router) {
+			htmlRouterSecure.Use(middleware.AuthHTML)
 
-			rs.Get("/game/{gameid}", page.HandleGameHub)
-			rs.Get("/game/{gameid}/room/{roomid}", page.HandleGameRoom)
+			htmlRouterSecure.Get("/game/{gameid}", page.HandleGameHub)
+			htmlRouterSecure.Get("/game/{gameid}/room/{roomid}", page.HandleGameRoom)
 		})
 
-		r.Get("/*", page.HandleNotFound)
+		// Other
+		htmlRouter.Get("/*", page.HandleNotFound)
 	})
 
 	return router, nil

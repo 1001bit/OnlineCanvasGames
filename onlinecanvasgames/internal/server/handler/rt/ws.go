@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/1001bit/OnlineCanvasGames/internal/auth"
+	"github.com/1001bit/OnlineCanvasGames/internal/auth/claimscontext"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/basenode"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/roomclient"
@@ -48,14 +48,14 @@ func HandleRoomWS(w http.ResponseWriter, r *http.Request, baseNode *basenode.Bas
 		return
 	}
 
-	// Get user from JWT
-	claims, err := auth.GetJwtClaimsFromContext(r.Context())
+	// UserID and username
+	userID, username, err := claimscontext.GetClaims(r.Context())
 	if err != nil {
-		closeConnWithMessage(conn, "Unauthorized!")
+		closeConnWithMessage(conn, "Unauthorized")
 		return
 	}
 
-	err = baseNode.ConnectToRoom(conn, gameID, roomID, claims.UserID, claims.Username)
+	err = baseNode.ConnectToRoom(conn, gameID, roomID, userID, username)
 	switch err {
 	case nil:
 		// no error

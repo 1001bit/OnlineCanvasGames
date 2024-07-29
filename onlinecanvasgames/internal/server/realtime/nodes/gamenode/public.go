@@ -1,7 +1,7 @@
 package gamenode
 
 import (
-	gamemodel "github.com/1001bit/OnlineCanvasGames/internal/model/game"
+	gamemodel "github.com/1001bit/OnlineCanvasGames/internal/gamemodel"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/message"
 )
 

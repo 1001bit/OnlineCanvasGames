@@ -9,10 +9,6 @@ import (
 	"github.com/neinBit/ocg-storage-service/pkg/env"
 )
 
-func init() {
-	env.InitEnv()
-}
-
 func main() {
 	// start http server
 	router, err := router.NewRouter()

@@ -5,16 +5,11 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/1001bit/OnlineCanvasGames/internal/auth/basetoken"
 	"github.com/1001bit/OnlineCanvasGames/internal/database"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/router"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/service"
 	"github.com/1001bit/OnlineCanvasGames/pkg/env"
 )
-
-func init() {
-	env.InitEnv()
-	basetoken.InitJWTSecret()
-}
 
 func main() {
 	// start database
@@ -25,19 +20,24 @@ func main() {
 	defer database.DB.Close()
 
 	// services
-	storageService, err := router.NewService(env.GetEnvVal("STORAGE_HOST"), env.GetEnvVal("STORAGE_PORT"))
+	storageService, err := service.NewStorageService(env.GetEnvVal("STORAGE_HOST"), env.GetEnvVal("STORAGE_PORT"))
+	if err != nil {
+		log.Fatal("err getting service url:", err)
+	}
+
+	userService, err := service.NewUserService(env.GetEnvVal("USER_HOST"), env.GetEnvVal("USER_PORT"))
 	if err != nil {
 		log.Fatal("err getting service url:", err)
 	}
 
 	// router
-	router, err := router.NewRouter(storageService)
+	router, err := router.NewRouter(storageService, userService)
 	if err != nil {
 		log.Fatal("err creating router:", err)
 	}
 
 	// start http server
-	addr := fmt.Sprintf(":%s", env.GetEnvVal("OCG_PORT"))
+	addr := fmt.Sprintf(":%s", env.GetEnvVal("PORT"))
 	log.Println("Listening on", addr)
 	log.Fatal(http.ListenAndServe(addr, router))
 }

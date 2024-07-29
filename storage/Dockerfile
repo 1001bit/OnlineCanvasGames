@@ -12,11 +12,11 @@ RUN go mod download
 # other files
 COPY . .
 
-# compiling ts -> js
-RUN go run cmd/tscompiler/main.go
-
 # compiling go -> ./main
 RUN go build -o main cmd/server/main.go
+
+# compiling ts -> js
+RUN go run cmd/tscompiler/main.go
 
 # Final stage
 FROM debian:bookworm-slim

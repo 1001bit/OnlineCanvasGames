@@ -17,7 +17,6 @@
 - **Authentication**: [`golang-jwt/jwt`](https://github.com/golang-jwt/jwt).
 - **WebSocket Communication**: [`gorilla/websocket`](https://github.com/gorilla/websocket).
 - **Database**: [`PostgreSQL`](https://www.postgresql.org/), accessed via [`lib/pq`](https://github.com/lib/pq) and administrated with [`adminer`](https://www.adminer.org/).
-- **Environment Variables**: [`joho/godotenv`](https://github.com/joho/godotenv).
 - **Cryptography**: [`golang.org/x/crypto`](https://golang.org/x/crypto).
 - **Frontend**: [`TypeScript`](https://www.typescriptlang.org/).
 - **Containerization**: [`Docker`](https://www.docker.com/).

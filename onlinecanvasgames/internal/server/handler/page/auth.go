@@ -3,12 +3,11 @@ package page
 import (
 	"net/http"
 
-	"github.com/1001bit/OnlineCanvasGames/internal/auth"
+	"github.com/1001bit/OnlineCanvasGames/internal/auth/claimscontext"
 )
 
 func HandleAuth(w http.ResponseWriter, r *http.Request) {
-	// only unauthorized may see this page
-	_, err := auth.GetJwtClaimsFromContext(r.Context())
+	_, _, err := claimscontext.GetClaims(r.Context())
 
 	if err == nil {
 		http.Redirect(w, r, "/", http.StatusSeeOther)

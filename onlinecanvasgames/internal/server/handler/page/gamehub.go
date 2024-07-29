@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	gamemodel "github.com/1001bit/OnlineCanvasGames/internal/model/game"
+	"github.com/1001bit/OnlineCanvasGames/internal/gamemodel"
 )
 
 type GameHubData struct {

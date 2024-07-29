@@ -3,7 +3,7 @@ package gamenode
 import (
 	"log"
 
-	gamemodel "github.com/1001bit/OnlineCanvasGames/internal/model/game"
+	gamemodel "github.com/1001bit/OnlineCanvasGames/internal/gamemodel"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/children"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/gameclient"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/roomnode"

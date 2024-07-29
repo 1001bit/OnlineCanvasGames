@@ -4,7 +4,7 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/1001bit/OnlineCanvasGames/internal/auth"
+	"github.com/1001bit/OnlineCanvasGames/internal/auth/claimscontext"
 )
 
 type NavigationData struct {
@@ -24,11 +24,7 @@ func serveTemplate(file string, data any, w http.ResponseWriter, r *http.Request
 		Data: data,
 	}
 
-	claims, err := auth.GetJwtClaimsFromContext(r.Context())
-	if err == nil {
-		tmplData.Navigation.UserID = claims.UserID
-		tmplData.Navigation.Username = claims.Username
-	}
+	tmplData.Navigation.UserID, tmplData.Navigation.Username, _ = claimscontext.GetClaims(r.Context())
 
 	templates.ExecuteTemplate(w, file, tmplData)
 }

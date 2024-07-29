@@ -4,10 +4,10 @@ import (
 	"context"
 	"net/http"
 	"strconv"
+	"time"
 
-	"github.com/1001bit/OnlineCanvasGames/internal/auth"
-	"github.com/1001bit/OnlineCanvasGames/internal/database"
-	usermodel "github.com/1001bit/OnlineCanvasGames/internal/model/user"
+	"github.com/1001bit/OnlineCanvasGames/internal/auth/claimscontext"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/service"
 )
 
 type ProfileData struct {
@@ -16,7 +16,7 @@ type ProfileData struct {
 	Date      string
 }
 
-func HandleProfile(w http.ResponseWriter, r *http.Request) {
+func HandleProfile(w http.ResponseWriter, r *http.Request, userService *service.UserService) {
 	data := ProfileData{}
 
 	id, err := strconv.Atoi(r.PathValue("id"))
@@ -25,26 +25,37 @@ func HandleProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := usermodel.GetByID(r.Context(), id)
-	if err != nil {
-		switch err {
-		case context.DeadlineExceeded:
-			HandleServerOverload(w, r)
-		default:
-			HandleNotFound(w, r)
-		}
+	user, err := userService.GetUserByID(r.Context(), id)
+	switch err {
+	case nil:
+		// continue
+	case context.DeadlineExceeded:
+		HandleServerOverload(w, r)
+		return
+	default:
+		HandleNotFound(w, r)
 		return
 	}
 
 	data.OwnerName = user.Name
-	data.Date, err = database.FormatPostgresDate(user.Date)
+	data.Date, err = formatPostgresDate(user.Date)
 	if err != nil {
 		HandleServerError(w, r)
 		return
 	}
 
-	claims, _ := auth.GetJwtClaimsFromContext(r.Context())
-	data.UserName = claims.Username
+	_, username, _ := claimscontext.GetClaims(r.Context())
+	data.UserName = username
 
 	serveTemplate("profile.html", data, w, r)
+}
+
+// 2006-01-02T15:04:05Z -> 2 January 2006
+func formatPostgresDate(dateStr string) (string, error) {
+	t, err := time.Parse("2006-01-02T15:04:05Z", dateStr)
+	if err != nil {
+		return "", err
+	}
+
+	return t.Format("2 January 2006"), nil
 }
