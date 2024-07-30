@@ -1,10 +1,10 @@
 services:
-  ocg:
-    container_name: ocg
+  gateway:
+    container_name: gateway
 
-    build: ./onlinecanvasgames
+    build: ./gateway
     environment:
-      - PORT=${OCG_PORT}
+      - PORT=${GATEWAY_PORT}
 
       - USER_PORT=${USER_PORT}
       - USER_HOST=${USER_HOST}
@@ -18,11 +18,13 @@ services:
       - TOKEN_SECRET=${TOKEN_SECRET}
     restart: always
     ports:
-      - "${OCG_PORT}:${OCG_PORT}"
+      - "${GATEWAY_PORT}:${GATEWAY_PORT}"
     depends_on:
       storage:
         condition: service_started
       user:
+        condition: service_started
+      games:
         condition: service_started
     command: ./main
 
