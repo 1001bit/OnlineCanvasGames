@@ -30,6 +30,11 @@ func (rect *Rect) SetPosition(x, y float64) {
 	rect.Position.Y = y
 }
 
+func (rect *Rect) SetSize(x, y float64) {
+	rect.Size.X = x
+	rect.Size.Y = y
+}
+
 func (rect *Rect) Extend(extX, extY float64) {
 	rect.Size.X += math.Abs(extX)
 	rect.Size.Y += math.Abs(extY)

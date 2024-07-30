@@ -41,7 +41,7 @@ func NewPlatformerLevel() *Level {
 			PlayerFriction: 0.3,
 		}
 
-		serverTPS = 20.0
+		serverTPS = 40.0
 		clientTPS = 40.0
 
 		correctsPerSec = 1.0 / 5 // once per 5 sec
@@ -61,8 +61,11 @@ func NewPlatformerLevel() *Level {
 		correctTicker: fixedticker.New(correctsPerSec),
 	}
 
-	block := NewBlock(-1000, 500, 2000, 100)
-	level.blocks[10] = block
+	block1 := NewBlock(-1000, 500, 2000, 100)
+	level.blocks[10] = block1
+
+	block2 := NewBlock(1000, 400, 2000, 100)
+	level.blocks[11] = block2
 
 	return level
 }
