@@ -2,7 +2,7 @@
 
 ## Overview
 
-**Online Canvas Games** is a web application designed to provide a platform for users to enjoy multiplayer online games together. It features real-time interactions, user authentication, and a variety of engaging games that players can join and play with others across the globe.
+**Online Canvas Games** is a fullstack web application to provide a way to play some games online.
 
 ## Main Features
 
@@ -26,11 +26,29 @@
 1. To get started with **Online Canvas Games**, ensure you have Docker installed on your machine.
 2. Clone the repository and navigate to the project directory.
 3. Create your own `.env` in the root directory based on the `.env.example`
+4. To build the entire application, use `docker compose build`
+5. To run, use `docker compose up` 
 
-## Running and building the Application
+## Microservices
 
-1. To build the entire application, use `docker compose build`
-2. To run, use `docker compose up` 
+- **gateway**: 
+  - Manages API endpoints and web page serving
+  - Handles user authorization
+  - Routes requests to appropriate microservices
+
+- **games**: 
+  - Implements game logic
+  - Handles WebSocket connections for real-time gameplay
+  - Manages game data and state
+
+- **user**: 
+  - Manages user authentication
+  - Stores and retrieves user profile data
+
+- **storage**: 
+  - Manages static assets and file storage
+  - Handles image retrievals
+  - Compiles TypeScript to JavaScript
 
 ## Contributing
 
