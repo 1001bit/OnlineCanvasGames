@@ -6,8 +6,6 @@ microservices:
     - Games service:
         - SSE endpoints handling
         - Games data
-
-    - Rooms service:
         - Websockets with gamelogic
 
     - Storage service:

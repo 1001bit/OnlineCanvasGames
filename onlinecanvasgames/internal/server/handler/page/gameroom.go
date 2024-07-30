@@ -2,19 +2,18 @@ package page
 
 import (
 	"context"
-	"database/sql"
 	"net/http"
 	"strconv"
 
-	"github.com/1001bit/OnlineCanvasGames/internal/gamemodel"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/service"
 )
 
 type GameRoomData struct {
 	RoomID int
-	Game   *gamemodel.Game
+	Game   *service.Game
 }
 
-func HandleGameRoom(w http.ResponseWriter, r *http.Request) {
+func HandleGameRoom(w http.ResponseWriter, r *http.Request, gamesService *service.GamesService) {
 	data := GameRoomData{}
 
 	// roomID
@@ -32,17 +31,16 @@ func HandleGameRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data.Game, err = gamemodel.GetByID(r.Context(), gameID)
+	data.Game, err = gamesService.GetGameByID(r.Context(), gameID)
 
-	if err != nil {
-		switch err {
-		case sql.ErrNoRows:
-			HandleNotFound(w, r)
-		case context.DeadlineExceeded:
-			HandleServerOverload(w, r)
-		default:
-			HandleServerError(w, r)
-		}
+	switch err {
+	case nil:
+		// continue
+	case context.DeadlineExceeded:
+		HandleServerOverload(w, r)
+		return
+	default:
+		HandleNotFound(w, r)
 		return
 	}
 

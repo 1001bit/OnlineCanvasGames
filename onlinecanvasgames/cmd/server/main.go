@@ -5,20 +5,12 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/1001bit/OnlineCanvasGames/internal/database"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/router"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/service"
 	"github.com/1001bit/OnlineCanvasGames/pkg/env"
 )
 
 func main() {
-	// start database
-	err := database.Start()
-	if err != nil {
-		log.Fatal("err starting database:", err)
-	}
-	defer database.DB.Close()
-
 	// services
 	storageService, err := service.NewStorageService(env.GetEnvVal("STORAGE_HOST"), env.GetEnvVal("STORAGE_PORT"))
 	if err != nil {
@@ -30,8 +22,13 @@ func main() {
 		log.Fatal("err getting service url:", err)
 	}
 
+	gamesService, err := service.NewGamesService(env.GetEnvVal("GAMES_HOST"), env.GetEnvVal("GAMES_PORT"))
+	if err != nil {
+		log.Fatal("err getting service url:", err)
+	}
+
 	// router
-	router, err := router.NewRouter(storageService, userService)
+	router, err := router.NewRouter(storageService, userService, gamesService)
 	if err != nil {
 		log.Fatal("err creating router:", err)
 	}

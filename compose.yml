@@ -4,12 +4,6 @@ services:
 
     build: ./onlinecanvasgames
     environment:
-      - DB_NAME=${GAMES_DB_NAME}
-      - DB_USER=${DB_USER}
-      - DB_PASS=${DB_PASS}
-      - DB_PORT=${DB_PORT}
-      - DB_HOST=${GAMES_DB_HOST}
-
       - PORT=${OCG_PORT}
 
       - USER_PORT=${USER_PORT}
@@ -18,17 +12,38 @@ services:
       - STORAGE_PORT=${STORAGE_PORT}
       - STORAGE_HOST=${STORAGE_HOST}
 
+      - GAMES_PORT=${GAMES_PORT}
+      - GAMES_HOST=${GAMES_HOST}
+
       - TOKEN_SECRET=${TOKEN_SECRET}
     restart: always
     ports:
       - "${OCG_PORT}:${OCG_PORT}"
     depends_on:
-      gamesdb:
-        condition: service_healthy
       storage:
         condition: service_started
       user:
         condition: service_started
+    command: ./main
+
+  games:
+    container_name: games
+
+    build: ./games
+    environment:
+      - DB_NAME=${GAMES_DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_PORT=${DB_PORT}
+      - DB_HOST=${GAMES_DB_HOST}
+
+      - PORT=${GAMES_PORT}
+    restart: always
+    ports:
+      - "${GAMES_PORT}:${GAMES_PORT}"
+    depends_on:
+      gamesdb:
+        condition: service_healthy
     command: ./main
 
   gamesdb:

@@ -5,25 +5,14 @@ import (
 
 	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/api"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/page"
-	"github.com/1001bit/OnlineCanvasGames/internal/server/handler/rt"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/middleware"
-	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/basenode"
 	"github.com/1001bit/OnlineCanvasGames/internal/server/service"
 
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
 )
 
-func NewRouter(storageService *service.StorageService, userService *service.UserService) (http.Handler, error) {
-	// Realtime
-	baseNode := basenode.NewBaseNode()
-	go baseNode.Run()
-
-	err := baseNode.InitGames()
-	if err != nil {
-		return nil, err
-	}
-
+func NewRouter(storageService *service.StorageService, userService *service.UserService, gamesService *service.GamesService) (http.Handler, error) {
 	// Router
 	router := chi.NewRouter()
 	router.Use(chimw.Logger)
@@ -42,12 +31,8 @@ func NewRouter(storageService *service.StorageService, userService *service.User
 	router.Route("/rt", func(realtimeRouter chi.Router) {
 		realtimeRouter.Use(middleware.AuthJSON)
 
-		realtimeRouter.Get("/sse/game/{gameid}", func(w http.ResponseWriter, r *http.Request) {
-			rt.HandleGameSSE(w, r, baseNode)
-		})
-		realtimeRouter.Get("/ws/game/{gameid}/room/{roomid}", func(w http.ResponseWriter, r *http.Request) {
-			rt.HandleRoomWS(w, r, baseNode)
-		})
+		realtimeRouter.Get("/sse/game/{gameid}", gamesService.HandleGameHubSSE())
+		realtimeRouter.Get("/ws/game/{gameid}/room/{roomid}", gamesService.HandleRoomWS())
 	})
 
 	// JSON
@@ -63,9 +48,7 @@ func NewRouter(storageService *service.StorageService, userService *service.User
 		jsonRouter.Group(func(jsonRouterSecure chi.Router) {
 			jsonRouterSecure.Use(middleware.AuthJSON)
 
-			jsonRouterSecure.Post("/game/{gameid}/room", func(w http.ResponseWriter, r *http.Request) {
-				api.HandleRoomPost(w, r, baseNode)
-			})
+			jsonRouterSecure.Post("/game/{gameid}/room", gamesService.HandleRoomPost())
 		})
 	})
 
@@ -75,7 +58,7 @@ func NewRouter(storageService *service.StorageService, userService *service.User
 
 		// Home
 		htmlRouter.Get("/", func(w http.ResponseWriter, r *http.Request) {
-			page.HandleHome(w, r, baseNode)
+			page.HandleHome(w, r, gamesService)
 		})
 		// Auth
 		htmlRouter.Get("/auth", page.HandleAuth)
@@ -90,8 +73,12 @@ func NewRouter(storageService *service.StorageService, userService *service.User
 		htmlRouter.Group(func(htmlRouterSecure chi.Router) {
 			htmlRouterSecure.Use(middleware.AuthHTML)
 
-			htmlRouterSecure.Get("/game/{gameid}", page.HandleGameHub)
-			htmlRouterSecure.Get("/game/{gameid}/room/{roomid}", page.HandleGameRoom)
+			htmlRouterSecure.Get("/game/{gameid}", func(w http.ResponseWriter, r *http.Request) {
+				page.HandleGameHub(w, r, gamesService)
+			})
+			htmlRouterSecure.Get("/game/{gameid}/room/{roomid}", func(w http.ResponseWriter, r *http.Request) {
+				page.HandleGameRoom(w, r, gamesService)
+			})
 		})
 
 		// Other

@@ -47,19 +47,19 @@ func (s *UserService) GetUserByID(ctx context.Context, id int) (*User, error) {
 
 		user.Name, ok = body["name"].(string)
 		if !ok {
-			return nil, ErrUser
+			return nil, ErrBadRequest
 		}
 
 		user.Date, ok = body["date"].(string)
 		if !ok {
-			return nil, ErrUser
+			return nil, ErrBadRequest
 		}
 
 		return user, nil
 
 	default:
 		// some unhandled message type
-		return nil, ErrUser
+		return nil, ErrBadRequest
 	}
 }
 
@@ -71,14 +71,14 @@ func (s *UserService) PostUser(ctx context.Context, body io.ReadCloser) (*User, 
 		return nil, ""
 	}
 
-	user := &User{}
-
 	// message types
 	switch msg.Type {
 	case "user":
 		// user type, ok
 		body := msg.Body.(map[string]any)
 		var ok bool
+
+		user := &User{}
 
 		user.Name, ok = body["name"].(string)
 		if !ok {

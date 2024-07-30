@@ -85,7 +85,7 @@
 - [ ] Microservices:
     - [X] Storage
     - [X] Users
-    - [ ] Games
+    - [X] Games
     - [ ] API gateway
 
 - [ ] Admin page

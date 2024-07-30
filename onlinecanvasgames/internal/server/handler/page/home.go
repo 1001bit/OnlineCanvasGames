@@ -4,23 +4,21 @@ import (
 	"net/http"
 
 	"github.com/1001bit/OnlineCanvasGames/internal/auth/claimscontext"
-	"github.com/1001bit/OnlineCanvasGames/internal/gamemodel"
-	"github.com/1001bit/OnlineCanvasGames/internal/server/realtime/nodes/basenode"
+	"github.com/1001bit/OnlineCanvasGames/internal/server/service"
 )
 
 type HomeData struct {
 	Username string
-	Games    []gamemodel.Game
+	Games    []*service.Game
 }
 
-func HandleHome(w http.ResponseWriter, r *http.Request, baseNode *basenode.BaseNode) {
+func HandleHome(w http.ResponseWriter, r *http.Request, service *service.GamesService) {
 	data := HomeData{}
 
 	_, username, _ := claimscontext.GetClaims(r.Context())
 	data.Username = username
 
-	// games list
-	data.Games = baseNode.GetGamesJSON()
+	data.Games, _ = service.GetGames(r.Context())
 
 	serveTemplate("home.html", data, w, r)
 }
