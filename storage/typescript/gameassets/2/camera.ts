@@ -8,7 +8,7 @@ class SmoothCamera {
         this.position = new Vector2(0, 0);
         this.target = undefined;
 
-        this.strength = 0.9
+        this.strength = 0.96
     }
 
     setTarget(target: KinematicPlayer){
