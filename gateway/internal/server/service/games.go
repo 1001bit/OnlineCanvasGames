@@ -55,16 +55,8 @@ func (s *GamesService) GetGameByID(ctx context.Context, id int) (*Game, error) {
 
 	switch msg.Type {
 	case "game":
-		// user type, ok
-		body := msg.Body.(map[string]any)
-		var ok bool
-
-		game := &Game{
-			ID: id,
-		}
-
-		game.Title, ok = body["title"].(string)
-		if !ok {
+		game := mapToGame(msg.Body.(map[string]any))
+		if game == nil {
 			return nil, ErrBadRequest
 		}
 
@@ -89,30 +81,33 @@ func (s *GamesService) GetGames(ctx context.Context) ([]*Game, error) {
 		games := make([]*Game, len(body))
 
 		for i := range body {
-			game := &Game{}
-
-			// get i element of received body
-			gameMap, ok := body[i].(map[string]any)
-			if !ok {
+			game := body[i].(map[string]any)
+			if game == nil {
 				return nil, ErrBadRequest
 			}
-
-			id, ok := gameMap["id"].(float64)
-			if !ok {
-				return nil, ErrBadRequest
-			}
-			game.ID = int(id)
-
-			game.Title, ok = gameMap["title"].(string)
-			if !ok {
-				return nil, ErrBadRequest
-			}
-
-			games[i] = game
+			games[i] = mapToGame(game)
 		}
 
 		return games, nil
 	default:
 		return nil, ErrBadRequest
 	}
+}
+
+func mapToGame(m map[string]any) *Game {
+	game := &Game{}
+	var ok bool
+
+	id, ok := m["id"].(float64)
+	if !ok {
+		return nil
+	}
+	game.ID = int(id)
+
+	game.Title, ok = m["title"].(string)
+	if !ok {
+		return nil
+	}
+
+	return game
 }

@@ -34,24 +34,12 @@ func (s *UserService) GetUserByID(ctx context.Context, id int) (*User, error) {
 		return nil, err
 	}
 
-	user := &User{
-		ID: id,
-	}
-
 	// message types
 	switch msg.Type {
 	case "user":
 		// user message type, it's ok
-		body := msg.Body.(map[string]any)
-		var ok bool
-
-		user.Name, ok = body["name"].(string)
-		if !ok {
-			return nil, ErrBadRequest
-		}
-
-		user.Date, ok = body["date"].(string)
-		if !ok {
+		user := mapToUser(msg.Body.(map[string]any))
+		if user == nil {
 			return nil, ErrBadRequest
 		}
 
@@ -74,23 +62,10 @@ func (s *UserService) PostUser(ctx context.Context, body io.ReadCloser) (*User, 
 	// message types
 	switch msg.Type {
 	case "user":
-		// user type, ok
-		body := msg.Body.(map[string]any)
-		var ok bool
-
-		user := &User{}
-
-		user.Name, ok = body["name"].(string)
-		if !ok {
+		user := mapToUser(msg.Body.(map[string]any))
+		if user == nil {
 			return nil, ""
 		}
-
-		id, ok := body["id"].(float64)
-		if !ok {
-			return nil, ""
-		}
-		user.ID = int(id)
-
 		return user, ""
 
 	case "message":
@@ -105,4 +80,27 @@ func (s *UserService) PostUser(ctx context.Context, body io.ReadCloser) (*User, 
 		// some unhandled type
 		return nil, ""
 	}
+}
+
+func mapToUser(m map[string]any) *User {
+	user := &User{}
+	var ok bool
+
+	user.Name, ok = m["name"].(string)
+	if !ok {
+		return nil
+	}
+
+	id, ok := m["id"].(float64)
+	if !ok {
+		return nil
+	}
+	user.ID = int(id)
+
+	user.Date, ok = m["date"].(string)
+	if !ok {
+		return nil
+	}
+
+	return user
 }
