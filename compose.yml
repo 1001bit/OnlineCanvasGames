@@ -34,8 +34,6 @@ services:
 
       - PORT=${GAMES_PORT}
     restart: always
-    ports:
-      - "${GAMES_PORT}:${GAMES_PORT}"
     depends_on:
       gamesdb:
         condition: service_healthy
@@ -73,8 +71,6 @@ services:
 
       - PORT=${USER_PORT}
     restart: always
-    ports:
-      - "${USER_PORT}:${USER_PORT}"
     depends_on:
       usersdb:
         condition: service_healthy
@@ -106,8 +102,6 @@ services:
     env_file:
       - .env
     restart: always
-    ports:
-      - "${STORAGE_PORT}:${STORAGE_PORT}"
     volumes:
       - ./storageFiles/static/:/app/static:ro
     command: ./main
