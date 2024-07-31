@@ -19,13 +19,6 @@ services:
     restart: always
     ports:
       - "${GATEWAY_PORT}:${GATEWAY_PORT}"
-    depends_on:
-      storage:
-        condition: service_started
-      user:
-        condition: service_started
-      games:
-        condition: service_started
     command: ./main
 
   games:
