@@ -1,6 +1,5 @@
 CREATE TABLE IF NOT EXISTS games (
-    id SERIAL PRIMARY KEY,
-    title VARCHAR(63) NOT NULL UNIQUE
+    title VARCHAR(63) PRIMARY KEY
 );
 
 INSERT INTO games (title) VALUES ('clicker') ON CONFLICT (title) DO NOTHING;

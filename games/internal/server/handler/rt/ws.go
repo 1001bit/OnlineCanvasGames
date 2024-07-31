@@ -33,12 +33,8 @@ func HandleRoomWS(w http.ResponseWriter, r *http.Request, baseNode *basenode.Bas
 	}
 
 	// Get params from path
-	// GameID
-	gameID, err := strconv.Atoi(r.PathValue("gameid"))
-	if err != nil {
-		closeConnWithMessage(conn, "Wrong game id!")
-		return
-	}
+	// Game title
+	gameTitle := r.PathValue("title")
 
 	// RoomID
 	roomID, err := strconv.Atoi(r.PathValue("roomid"))
@@ -55,7 +51,7 @@ func HandleRoomWS(w http.ResponseWriter, r *http.Request, baseNode *basenode.Bas
 		return
 	}
 
-	err = baseNode.ConnectToRoom(conn, gameID, roomID, username)
+	err = baseNode.ConnectToRoom(conn, gameTitle, roomID, username)
 	switch err {
 	case nil:
 		// no error

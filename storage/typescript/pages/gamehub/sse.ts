@@ -7,10 +7,10 @@ class GameSSE {
         this.eventSource = null;
     }
 
-    openConnection(gameID: number){
+    openConnection(gameTitle: string){
         const protocol = location.protocol == "https:" ? "https:" : "http:" 
 
-        this.eventSource = new EventSource(`${protocol}//${document.location.host}/rt/sse/game/${gameID}`)
+        this.eventSource = new EventSource(`${protocol}//${document.location.host}/rt/sse/game/${gameTitle}`)
         const sse = this.eventSource
 
         sse.onopen = (_e) => {this.handleOpen()}

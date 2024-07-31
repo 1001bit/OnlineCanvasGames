@@ -22,9 +22,9 @@ class Platformer {
         this.bindControls()
 
         this.websocket = new GameWebSocket()
-        const gameID = $("main").data("game-id")
+        const gameTitle = $("main").data("game-title")
         const roomID = $("main").data("room-id")
-        this.initWebsocket(gameID, roomID)
+        this.initWebsocket(gameTitle, roomID)
 
         this.serverTPS = 0;
         this.clientTPS = 0;
@@ -42,7 +42,7 @@ class Platformer {
         controls.bindControl(" ", "jump")
     }
 
-    private initWebsocket(gameID: number, roomID: number){
+    private initWebsocket(gameTitle: string, roomID: number){
         this.websocket.handleMessage = (type, body) => {
             switch (type) {
                 case "level":
@@ -70,7 +70,7 @@ class Platformer {
             this.stopWithText(body)
         }
 
-        this.websocket.openConnection(gameID, roomID)
+        this.websocket.openConnection(gameTitle, roomID)
     }
 
     private tick(dt: number) {

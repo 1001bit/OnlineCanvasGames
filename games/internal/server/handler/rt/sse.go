@@ -2,7 +2,6 @@ package rt
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/neinBit/ocg-games-service/internal/server/realtime/nodes/basenode"
 )
@@ -14,14 +13,10 @@ func HandleGameSSE(w http.ResponseWriter, r *http.Request, baseNode *basenode.Ba
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	// Get game from path
-	gameID, err := strconv.Atoi(r.PathValue("gameid"))
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
+	gameTitle := r.PathValue("title")
 
 	// connects client to sse (blocks the goroutine)
-	err = baseNode.ConnectToGame(r.Context(), w, gameID)
+	err := baseNode.ConnectToGame(r.Context(), w, gameTitle)
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)

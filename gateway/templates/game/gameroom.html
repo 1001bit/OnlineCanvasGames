@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/static/global/global.css">
     <link rel="stylesheet" href="/static/room/room.css">
-    <title>{{ .Data.Game.Title }}</title>
+    <title>{{ .Data.GameTitle }}</title>
 </head>
 <body>
     {{ template "navigation" .Navigation }}
-    <main data-room-id="{{ .Data.RoomID }}" data-game-id="{{ .Data.Game.ID }}">
+    <main data-room-id="{{ .Data.RoomID }}" data-game-title="{{ .Data.GameTitle }}">
 
         <canvas id="canvas"></canvas>
         <div id="gui">
@@ -24,6 +24,6 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     
     <!-- Game Script -->
-    <script src="/js/gameroom/{{ .Data.Game.ID }}.js"></script>
+    <script src="/js/gameroom/{{ .Data.GameTitle }}.js"></script>
 </body>
 </html>

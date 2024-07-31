@@ -13,15 +13,13 @@ func TestMapToGame(t *testing.T) {
 		{
 			name: "valid",
 			input: map[string]any{
-				"id":    1.0,
 				"title": "platformer",
 			},
-			expected: &Game{ID: 1, Title: "platformer"},
+			expected: &Game{Title: "platformer"},
 		},
 		{
 			name: "invalid",
 			input: map[string]any{
-				"id":    "a",
 				"title": "test game",
 			},
 			expected: nil,

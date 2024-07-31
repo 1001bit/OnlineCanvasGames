@@ -7,8 +7,8 @@ import (
 )
 
 // Handle WS endpoint
-func (baseNode *BaseNode) ConnectToRoom(conn *websocket.Conn, gameID, roomID int, username string) error {
-	gameNode, ok := baseNode.games.ChildrenMap.Get(gameID)
+func (baseNode *BaseNode) ConnectToRoom(conn *websocket.Conn, gameTitle string, roomID int, username string) error {
+	gameNode, ok := baseNode.games.ChildrenMap.Get(gameTitle)
 	if !ok {
 		return ErrNoGame
 	}

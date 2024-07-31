@@ -31,8 +31,8 @@ func NewRouter(storageService *service.StorageService, userService *service.User
 	router.Route("/rt", func(realtimeRouter chi.Router) {
 		realtimeRouter.Use(middleware.AuthJSON)
 
-		realtimeRouter.Get("/sse/game/{gameid}", gamesService.ProxyHandler())
-		realtimeRouter.Get("/ws/game/{gameid}/room/{roomid}", gamesService.RoomProxyHandler())
+		realtimeRouter.Get("/sse/game/{title}", gamesService.ProxyHandler())
+		realtimeRouter.Get("/ws/game/{title}/room/{roomid}", gamesService.RoomProxyHandler())
 	})
 
 	// JSON
@@ -48,7 +48,7 @@ func NewRouter(storageService *service.StorageService, userService *service.User
 		jsonRouter.Group(func(jsonRouterSecure chi.Router) {
 			jsonRouterSecure.Use(middleware.AuthJSON)
 
-			jsonRouterSecure.Post("/game/{gameid}/room", gamesService.ProxyHandler())
+			jsonRouterSecure.Post("/game/{title}/room", gamesService.ProxyHandler())
 		})
 	})
 
@@ -73,10 +73,10 @@ func NewRouter(storageService *service.StorageService, userService *service.User
 		htmlRouter.Group(func(htmlRouterSecure chi.Router) {
 			htmlRouterSecure.Use(middleware.AuthHTML)
 
-			htmlRouterSecure.Get("/game/{gameid}", func(w http.ResponseWriter, r *http.Request) {
+			htmlRouterSecure.Get("/game/{title}", func(w http.ResponseWriter, r *http.Request) {
 				page.HandleGameHub(w, r, gamesService)
 			})
-			htmlRouterSecure.Get("/game/{gameid}/room/{roomid}", func(w http.ResponseWriter, r *http.Request) {
+			htmlRouterSecure.Get("/game/{title}/room/{roomid}", func(w http.ResponseWriter, r *http.Request) {
 				page.HandleGameRoom(w, r, gamesService)
 			})
 		})

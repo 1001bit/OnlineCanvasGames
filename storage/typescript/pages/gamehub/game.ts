@@ -3,11 +3,11 @@
 
 const rooms = new Rooms("rooms")
 const sse = new GameSSE(rooms)
-let gameID = 0
+let gameTitle = ""
 
 $(() => {
-    gameID = $("main").data("game-id")
-    sse.openConnection(gameID)
+    gameTitle = $("main").data("game-title")
+    sse.openConnection(gameTitle)
 })
 
 $("#random").on("click", joinRandomRoom)
@@ -34,7 +34,7 @@ function joinRandomRoom(){
 }
 
 function createRoom(){
-    fetch(`/api/game/${gameID}/room`, {
+    fetch(`/api/game/${gameTitle}/room`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -46,6 +46,6 @@ function createRoom(){
             return
         }
         
-        response.json().then(data => window.location.href = `/game/${gameID}/room/${data.body}`)
+        response.json().then(data => window.location.href = `/game/${gameTitle}/room/${data.body}`)
     })
 }

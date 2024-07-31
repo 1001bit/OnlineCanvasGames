@@ -7,10 +7,10 @@ class GameWebSocket {
         this.websocket = null;
     }
 
-    openConnection(gameID: number, roomID: number){
+    openConnection(gameTitle: string, roomID: number){
         const protocol = location.protocol == "https:" ? "wss:" : "ws:" 
 
-        this.websocket = new WebSocket(`${protocol}//${document.location.host}/rt/ws/game/${gameID}/room/${roomID}`)
+        this.websocket = new WebSocket(`${protocol}//${document.location.host}/rt/ws/game/${gameTitle}/room/${roomID}`)
         const ws = this.websocket
 
         ws.onopen = _e => {

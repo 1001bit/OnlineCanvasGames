@@ -1,6 +1,8 @@
 package concurrent
 
-import "sync"
+import (
+	"sync"
+)
 
 type ConcurrentMap[K comparable, V any] struct {
 	mutex sync.RWMutex

@@ -26,7 +26,7 @@ type RoomNode struct {
 	owner *roomclient.RoomClient
 }
 
-func NewRoomNode(gameID int) *RoomNode {
+func NewRoomNode(gameTitle string) *RoomNode {
 	return &RoomNode{
 		Flow: runflow.MakeRunFlow(),
 
@@ -34,7 +34,7 @@ func NewRoomNode(gameID int) *RoomNode {
 
 		connectedToGameChan: make(chan struct{}),
 
-		gamelogic: NewGameLogicByID(gameID),
+		gamelogic: NewGameLogicByTitle(gameTitle),
 
 		id:    0,
 		owner: nil,

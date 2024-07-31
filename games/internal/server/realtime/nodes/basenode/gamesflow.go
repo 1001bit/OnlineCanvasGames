@@ -30,10 +30,10 @@ func (baseNode *BaseNode) gamesFlow() {
 
 // connect gameNode to BaseNode
 func (baseNode *BaseNode) connectGame(game *gamenode.GameNode) {
-	baseNode.games.ChildrenMap.Set(game.GetGame().ID, game)
+	baseNode.games.ChildrenMap.Set(game.GetGame().Title, game)
 }
 
 // disconnect gameNode from BaseNode
 func (baseNode *BaseNode) disconnectGame(game *gamenode.GameNode) {
-	baseNode.games.ChildrenMap.Delete(game.GetGame().ID)
+	baseNode.games.ChildrenMap.Delete(game.GetGame().Title)
 }

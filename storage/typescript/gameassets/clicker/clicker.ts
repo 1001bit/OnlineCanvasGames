@@ -16,9 +16,9 @@ class Clicker {
         this.canvas.setBackgroundColor(RGB(60, 70, 70))
 
         this.websocket = new GameWebSocket()
-        const gameID = $("main").data("game-id")
+        const gameTitle = $("main").data("game-title")
         const roomID = $("main").data("room-id")
-        this.initWebsocket(gameID, roomID)
+        this.initWebsocket(gameTitle, roomID)
 
         this.drawables = new Map()
         this.initDrawables()
@@ -31,7 +31,7 @@ class Clicker {
         this.canvas.draw()
     }
 
-    private initWebsocket(gameID: number, roomID: number){
+    private initWebsocket(gameTitle: string, roomID: number){
         this.websocket.handleMessage = (type, body) => {
             switch (type) {
                 case "clicks":
@@ -47,7 +47,7 @@ class Clicker {
             this.stopWithText(body)
         }
 
-        this.websocket.openConnection(gameID, roomID)
+        this.websocket.openConnection(gameTitle, roomID)
     }
 
     private stopWithText(text: string){

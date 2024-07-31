@@ -10,16 +10,16 @@ import (
 )
 
 // create new room and connect it to BaseNode
-func (baseNode *BaseNode) ConnectNewRoom(ctx context.Context, gameID int) (*roomnode.RoomNode, error) {
+func (baseNode *BaseNode) ConnectNewRoom(ctx context.Context, gameTitle string) (*roomnode.RoomNode, error) {
 	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
 	defer cancel()
 
-	gameNode, ok := baseNode.games.ChildrenMap.Get(gameID)
+	gameNode, ok := baseNode.games.ChildrenMap.Get(gameTitle)
 	if !ok {
 		return nil, ErrNoGame
 	}
 
-	room := roomnode.NewRoomNode(gameID)
+	room := roomnode.NewRoomNode(gameTitle)
 
 	// RUN roomNode
 	go func() {
@@ -43,8 +43,8 @@ func (baseNode *BaseNode) ConnectNewRoom(ctx context.Context, gameID int) (*room
 	}
 }
 
-func (baseNode *BaseNode) GetGameByID(id int) (*gamenode.GameNode, bool) {
-	return baseNode.games.ChildrenMap.Get(id)
+func (baseNode *BaseNode) GetGameByTitle(title string) (*gamenode.GameNode, bool) {
+	return baseNode.games.ChildrenMap.Get(title)
 }
 
 func (baseNode *BaseNode) GetGamesJSON() []gamemodel.Game {

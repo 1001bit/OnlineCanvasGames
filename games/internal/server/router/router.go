@@ -26,22 +26,20 @@ func NewRouter() (http.Handler, error) {
 
 	// Realtime
 	router.Route("/rt", func(realtimeRouter chi.Router) {
-		realtimeRouter.Get("/sse/game/{gameid}", func(w http.ResponseWriter, r *http.Request) {
+		realtimeRouter.Get("/sse/game/{title}", func(w http.ResponseWriter, r *http.Request) {
 			rt.HandleGameSSE(w, r, baseNode)
 		})
-		realtimeRouter.Get("/ws/game/{gameid}/room/{roomid}", func(w http.ResponseWriter, r *http.Request) {
+		realtimeRouter.Get("/ws/game/{title}/room/{roomid}", func(w http.ResponseWriter, r *http.Request) {
 			rt.HandleRoomWS(w, r, baseNode)
 		})
 	})
 
 	// Json
 	router.Route("/api", func(jsonRouter chi.Router) {
-		jsonRouter.Post("/game/{gameid}/room", func(w http.ResponseWriter, r *http.Request) {
+		jsonRouter.Post("/game/{title}/room", func(w http.ResponseWriter, r *http.Request) {
 			api.HandleRoomPost(w, r, baseNode)
 		})
-		jsonRouter.Get("/game/{gameid}", func(w http.ResponseWriter, r *http.Request) {
-			api.HandleGameGet(w, r, baseNode)
-		})
+
 		jsonRouter.Get("/game", func(w http.ResponseWriter, r *http.Request) {
 			api.HandleGamesGet(w, r, baseNode)
 		})

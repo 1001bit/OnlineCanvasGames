@@ -20,10 +20,10 @@
     <div class="card-group">
         {{ range .Data.Games }}
 
-        <a href="/game/{{.ID }}">
+        <a href="/game/{{ .Title }}">
             <div class="card">
                 <div class="img-holder">
-                    <img src="/image/gameicon/{{ .ID }}">
+                    <img src="/image/gameicon/{{ .Title }}">
                 </div>
                 <button class="style-button small physical">{{ .Title }}</button>
             </div>

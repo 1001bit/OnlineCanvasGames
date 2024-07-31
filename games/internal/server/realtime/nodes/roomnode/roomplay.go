@@ -6,11 +6,11 @@ import (
 	"github.com/neinBit/ocg-games-service/internal/gamelogic/platformer"
 )
 
-func NewGameLogicByID(gameID int) gamelogic.GameLogic {
-	switch gameID {
-	case 1:
+func NewGameLogicByTitle(title string) gamelogic.GameLogic {
+	switch title {
+	case "clicker":
 		return clicker.NewClickerGL()
-	case 2:
+	case "platformer":
 		return platformer.NewPlatformerGL()
 	default:
 		return nil

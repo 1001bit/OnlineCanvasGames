@@ -1,7 +1,7 @@
 {
     "extends": "../../tsconfig.json",
     "compilerOptions": {
-        "outFile": "../../../storage/js/gameroom/2.js",
+        "outFile": "../../../storage/js/gameroom/platformer.js",
     },
     "include": [
         "../room/*.ts",

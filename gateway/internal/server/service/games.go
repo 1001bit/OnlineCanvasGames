@@ -2,14 +2,12 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/1001bit/ocg-gateway-service/internal/auth/claimscontext"
 )
 
 type Game struct {
-	ID    int    `json:"id"`
 	Title string `json:"title"`
 }
 
@@ -45,26 +43,6 @@ func (s *GamesService) RoomProxyHandler() http.HandlerFunc {
 	}
 }
 
-func (s *GamesService) GetGameByID(ctx context.Context, id int) (*Game, error) {
-	// forward post request from original body
-	msg, err := s.service.request(ctx, "GET", fmt.Sprintf("/api/game/%d", id), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	switch msg.Type {
-	case "game":
-		game := mapToGame(msg.Body.(map[string]any))
-		if game == nil {
-			return nil, ErrBadRequest
-		}
-
-		return game, nil
-	default:
-		return nil, ErrBadRequest
-	}
-}
-
 func (s *GamesService) GetGames(ctx context.Context) ([]*Game, error) {
 	// forward post request from original body
 	msg, err := s.service.request(ctx, "GET", "/api/game", nil)
@@ -96,12 +74,6 @@ func (s *GamesService) GetGames(ctx context.Context) ([]*Game, error) {
 func mapToGame(m map[string]any) *Game {
 	game := &Game{}
 	var ok bool
-
-	id, ok := m["id"].(float64)
-	if !ok {
-		return nil
-	}
-	game.ID = int(id)
 
 	game.Title, ok = m["title"].(string)
 	if !ok {
