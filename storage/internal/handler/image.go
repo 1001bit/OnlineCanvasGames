@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-const imageStoragePath = "./storage/image"
+const imageDir = "image"
 
 var imageFormats = [...]string{"png", "jpg", "jpeg"}
 
@@ -18,9 +18,11 @@ func HandleImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	imagePath := filepath.Join(staticPath, imageDir)
+
 	// check if file.png, file.jpg, etc. exists and use it
 	for _, format := range imageFormats {
-		possiblePath := filepath.Join(imageStoragePath, path+"."+format)
+		possiblePath := filepath.Join(imagePath, path+"."+format)
 
 		if _, err := os.Stat(possiblePath); err == nil {
 			http.ServeFile(w, r, possiblePath)
@@ -28,6 +30,6 @@ func HandleImage(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	fileServer := http.FileServer(http.Dir(imageStoragePath))
+	fileServer := http.FileServer(http.Dir(imagePath))
 	fileServer.ServeHTTP(w, r)
 }

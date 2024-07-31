@@ -13,15 +13,11 @@ func NewRouter() (http.Handler, error) {
 	router.Use(chimw.Logger)
 	router.Use(chimw.RedirectSlashes)
 
-	// Static
-	router.Handle("/static/*", handler.StorageHandler("/"))
-	router.Get("/favicon.ico", handler.StorageHandler("/static"))
-
-	// JS
-	router.Handle("/js/*", handler.StorageHandler("/"))
-
 	// Image
 	router.Handle("/image/*", http.StripPrefix("/image", http.HandlerFunc(handler.HandleImage)))
+
+	// Everything else
+	router.Handle("/*", handler.StaticHandler("/"))
 
 	return router, nil
 }

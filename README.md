@@ -25,9 +25,13 @@
 
 1. To get started with **Online Canvas Games**, ensure you have Docker installed on your machine.
 2. Clone the repository and navigate to the project directory.
-3. Create your own `.env` in the root directory based on the `.env.example`
-4. To build the entire application, use `docker compose build`
-5. To run, use `docker compose up` 
+3. Create your own `.env` in the root directory based on the `.env.example` (may keep the values)
+
+## Build and start
+
+1. To build the entire application, run `./scripts/build.sh`
+2. To compile typescript into javascript files, run `./scripts/compilets.sh`
+3. To run the application, run `./scripts/up.sh`
 
 ## Microservices
 

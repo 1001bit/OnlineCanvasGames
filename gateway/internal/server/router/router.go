@@ -21,7 +21,7 @@ func NewRouter(storageService *service.StorageService, userService *service.User
 
 	// Storage
 	router.Group(func(storageRouter chi.Router) {
-		storageRouter.Handle("/static/*", storageService.ProxyHandler())
+		storageRouter.Handle("/css/*", storageService.ProxyHandler())
 		storageRouter.Handle("/favicon.ico", storageService.ProxyHandler())
 		storageRouter.Handle("/js/*", storageService.ProxyHandler())
 		storageRouter.Handle("/image/*", storageService.ProxyHandler())

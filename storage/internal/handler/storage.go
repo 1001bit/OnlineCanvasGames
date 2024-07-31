@@ -5,11 +5,11 @@ import (
 	"path"
 )
 
-const storagePath = "./storage"
+const staticPath = "./static"
 
-func StorageHandler(dir string) http.HandlerFunc {
+func StaticHandler(dir string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		path := path.Join(storagePath, dir)
+		path := path.Join(staticPath, dir)
 		fileServer := http.FileServer(http.Dir(path))
 		fileServer.ServeHTTP(w, r)
 	}
