@@ -19,6 +19,7 @@
 - **Database**: [`PostgreSQL`](https://www.postgresql.org/), accessed via [`lib/pq`](https://github.com/lib/pq) and administrated with [`adminer`](https://www.adminer.org/).
 - **Cryptography**: [`golang.org/x/crypto`](https://golang.org/x/crypto).
 - **Frontend**: [`TypeScript`](https://www.typescriptlang.org/).
+- **TypeScript Recursive Compilation**: [`tscompiler`](https://github.com/1001bit/tscompiler)
 - **Containerization**: [`Docker`](https://www.docker.com/).
 
 ## Getting Started
