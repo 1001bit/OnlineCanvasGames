@@ -10,9 +10,9 @@ import (
 
 func AuthHTML(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_, _, err := claimscontext.GetClaims(r.Context())
+		_, ok := claimscontext.GetUsername(r.Context())
 
-		if err != nil {
+		if !ok {
 			page.HandleAuth(w, r)
 			return
 		}
@@ -22,9 +22,9 @@ func AuthHTML(next http.Handler) http.Handler {
 
 func AuthJSON(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_, _, err := claimscontext.GetClaims(r.Context())
+		_, ok := claimscontext.GetUsername(r.Context())
 
-		if err != nil {
+		if !ok {
 			api.ServeTextMessage(w, "Unauthorized!", http.StatusUnauthorized)
 			return
 		}

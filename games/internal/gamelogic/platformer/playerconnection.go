@@ -2,8 +2,8 @@ package platformer
 
 import "github.com/neinBit/ocg-games-service/pkg/set"
 
-func (l *Level) CreatePlayer(userID int, playersLimit int) (rectID, *Player) {
-	if playerData, ok := l.playersData.Get(userID); ok {
+func (l *Level) CreatePlayer(username string, playersLimit int) (rectID, *Player) {
+	if playerData, ok := l.playersData.Get(username); ok {
 		return playerData.rectID, playerData.player
 	}
 
@@ -11,18 +11,18 @@ func (l *Level) CreatePlayer(userID int, playersLimit int) (rectID, *Player) {
 	player := NewPlayer(rectID)
 
 	l.players[rectID] = player
-	l.playersData.Set(userID, NewPlayerData(player, rectID))
+	l.playersData.Set(username, NewPlayerData(player, rectID))
 
 	return rectID, player
 }
 
-func (l *Level) DeletePlayer(userID int) (rectID, error) {
-	playerData, ok := l.playersData.Get(userID)
+func (l *Level) DeletePlayer(username string) (rectID, error) {
+	playerData, ok := l.playersData.Get(username)
 	if !ok {
 		return 0, ErrNoPlayer
 	}
 
-	l.playersData.Delete(userID)
+	l.playersData.Delete(username)
 	delete(l.players, playerData.rectID)
 
 	return playerData.rectID, nil

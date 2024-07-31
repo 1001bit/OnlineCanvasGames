@@ -33,13 +33,12 @@ func (s *GamesService) ProxyHandler() http.HandlerFunc {
 
 func (s *GamesService) RoomProxyHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userID, username, err := claimscontext.GetClaims(r.Context())
-		if err != nil {
+		username, ok := claimscontext.GetUsername(r.Context())
+		if !ok {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 
-		r.Header.Set("X-User-ID", fmt.Sprintf("%d", userID))
 		r.Header.Set("X-Username", username)
 
 		s.service.proxy().ServeHTTP(w, r)

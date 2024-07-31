@@ -13,13 +13,12 @@ var (
 	accessTokenDuration = time.Minute * 15
 )
 
-func GenerateAccessToken(userID int, username string) (string, error) {
+func GenerateAccessToken(username string) (string, error) {
 	claims := &Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(accessTokenDuration)),
 		},
 
-		UserID:   userID,
 		Username: username,
 	}
 

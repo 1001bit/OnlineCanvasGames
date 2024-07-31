@@ -15,8 +15,7 @@ type HomeData struct {
 func HandleHome(w http.ResponseWriter, r *http.Request, service *service.GamesService) {
 	data := HomeData{}
 
-	_, username, _ := claimscontext.GetClaims(r.Context())
-	data.Username = username
+	data.Username, _ = claimscontext.GetUsername(r.Context())
 
 	data.Games, _ = service.GetGames(r.Context())
 

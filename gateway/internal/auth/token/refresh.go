@@ -1,17 +1,19 @@
 package token
 
 func RefreshTokens(refreshToken string) (string, string, error) {
+	// validate refresh token
 	claims, err := ValidateRefreshToken(refreshToken)
 	if err != nil {
 		return "", "", err
 	}
 
-	newAccessToken, err := GenerateAccessToken(claims.UserID, claims.Username)
+	// generate new tokens
+	newAccessToken, err := GenerateAccessToken(claims.Username)
 	if err != nil {
 		return "", "", err
 	}
 
-	newRefreshToken, err := GenerateRefreshToken(claims.UserID, claims.Username)
+	newRefreshToken, err := GenerateRefreshToken(claims.Username)
 	if err != nil {
 		return "", "", err
 	}

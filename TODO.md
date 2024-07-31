@@ -11,8 +11,7 @@
     - [X] Static scripts
     - [X] Game scripts
     
-- [ ] Use custom types for:
-    - [ ] UserID
+- [X] Use custom types for:
     - [X] RectID
 
 - [X] Home page

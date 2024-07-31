@@ -18,7 +18,7 @@ func NewRouter() (http.Handler, error) {
 	// Post
 	router.Post("/", handler.HandleUserPost)
 	// Get
-	router.Get("/{id}", handler.HandleUserGet)
+	router.Get("/{name}", handler.HandleUserGet)
 
 	return router, nil
 }

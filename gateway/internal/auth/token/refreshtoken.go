@@ -13,13 +13,12 @@ var (
 	refreshTokenDuration = time.Hour * 24 * 7
 )
 
-func GenerateRefreshToken(userID int, username string) (string, error) {
+func GenerateRefreshToken(username string) (string, error) {
 	claims := &Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(refreshTokenDuration)),
 		},
 
-		UserID:   userID,
 		Username: username,
 	}
 

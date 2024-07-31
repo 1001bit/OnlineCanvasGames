@@ -21,8 +21,8 @@ type Level struct {
 	players map[rectID]*Player
 	blocks  map[rectID]*Block
 
-	// userID[data]
-	playersData concurrent.ConcurrentMap[int, *PlayerData]
+	// username[data]
+	playersData concurrent.ConcurrentMap[string, *PlayerData]
 
 	config LevelConfig
 
@@ -51,7 +51,7 @@ func NewPlatformerLevel() *Level {
 		players: make(map[rectID]*Player),
 		blocks:  make(map[rectID]*Block),
 
-		playersData: concurrent.MakeMap[int, *PlayerData](),
+		playersData: concurrent.MakeMap[string, *PlayerData](),
 
 		config: config,
 

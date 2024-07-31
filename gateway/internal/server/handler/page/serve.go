@@ -9,7 +9,6 @@ import (
 
 type NavigationData struct {
 	Username string
-	UserID   int
 }
 
 type TemplateData struct {
@@ -24,7 +23,7 @@ func serveTemplate(file string, data any, w http.ResponseWriter, r *http.Request
 		Data: data,
 	}
 
-	tmplData.Navigation.UserID, tmplData.Navigation.Username, _ = claimscontext.GetClaims(r.Context())
+	tmplData.Navigation.Username, _ = claimscontext.GetUsername(r.Context())
 
 	templates.ExecuteTemplate(w, file, tmplData)
 }

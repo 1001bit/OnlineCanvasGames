@@ -12,7 +12,6 @@ import (
 const maxQueryTime = 5 * time.Second
 
 type User struct {
-	ID   int    `json:"id"`
 	Name string `json:"name"`
 	Date string `json:"date"`
 }
@@ -21,14 +20,14 @@ func NewUser() *User {
 	return &User{}
 }
 
-func GetByID(ctx context.Context, userID int) (*User, error) {
+func GetByName(ctx context.Context, username string) (*User, error) {
 	ctx, cancel := context.WithTimeout(ctx, maxQueryTime)
 	defer cancel()
 
 	user := NewUser()
-	user.ID = userID
+	user.Name = username
 
-	err := database.DB.QueryRowContext(ctx, "SELECT name, date FROM users WHERE id = $1", userID).Scan(&user.Name, &user.Date)
+	err := database.DB.QueryRowContext(ctx, "SELECT date FROM users WHERE name = $1", username).Scan(&user.Date)
 	if err != nil {
 		return nil, err
 	}
@@ -44,8 +43,8 @@ func GetByNameAndPassword(ctx context.Context, username, password string) (*User
 	var hash string
 
 	// get user row regardless of character case
-	row := database.DB.QueryRowContext(ctx, "SELECT id, name, date, hash FROM users WHERE LOWER(name) = LOWER($1)", username)
-	err := row.Scan(&user.ID, &user.Name, &user.Date, &hash)
+	row := database.DB.QueryRowContext(ctx, "SELECT name, date, hash FROM users WHERE LOWER(name) = LOWER($1)", username)
+	err := row.Scan(&user.Name, &user.Date, &hash)
 
 	switch err {
 	case nil:
@@ -90,10 +89,7 @@ func Insert(ctx context.Context, username, password string) (*User, error) {
 		return nil, err
 	}
 	// insert into a database
-	err = database.DB.QueryRowContext(ctx, "INSERT INTO users (name, hash) VALUES ($1, $2) RETURNING id", username, hash).Scan(&newUser.ID)
-	if err != nil {
-		return nil, err
-	}
+	database.DB.QueryRowContext(ctx, "INSERT INTO users (name, hash) VALUES ($1, $2)", username, hash)
 
 	return newUser, nil
 }

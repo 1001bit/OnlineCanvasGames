@@ -16,13 +16,13 @@ func HandleUserPost(w http.ResponseWriter, r *http.Request, userService *service
 		return
 	}
 
-	accessToken, err := token.GenerateAccessToken(user.ID, user.Name)
+	accessToken, err := token.GenerateAccessToken(user.Name)
 	if err != nil {
 		ServeTextMessage(w, "Something went wrong!", http.StatusInternalServerError)
 		return
 	}
 
-	refreshToken, err := token.GenerateRefreshToken(user.ID, user.Name)
+	refreshToken, err := token.GenerateRefreshToken(user.Name)
 	if err != nil {
 		ServeTextMessage(w, "Something went wrong!", http.StatusInternalServerError)
 		return

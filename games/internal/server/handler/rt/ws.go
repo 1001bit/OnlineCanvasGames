@@ -47,16 +47,15 @@ func HandleRoomWS(w http.ResponseWriter, r *http.Request, baseNode *basenode.Bas
 		return
 	}
 
-	// UserID and username
-	userID, err := strconv.Atoi(r.Header.Get("X-User-ID"))
+	// username
 	username := r.Header.Get("X-Username")
 
-	if err != nil || username == "" {
+	if username == "" {
 		closeConnWithMessage(conn, "Unauthorized!")
 		return
 	}
 
-	err = baseNode.ConnectToRoom(conn, gameID, roomID, userID, username)
+	err = baseNode.ConnectToRoom(conn, gameID, roomID, username)
 	switch err {
 	case nil:
 		// no error

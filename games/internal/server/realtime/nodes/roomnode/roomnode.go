@@ -16,7 +16,7 @@ const roomStopWait = 5 * time.Second
 type RoomNode struct {
 	Flow runflow.RunFlow
 
-	Clients children.ChildrenWithID[roomclient.RoomClient]
+	Clients children.MapChildren[string, *roomclient.RoomClient]
 
 	connectedToGameChan chan struct{}
 
@@ -30,7 +30,7 @@ func NewRoomNode(gameID int) *RoomNode {
 	return &RoomNode{
 		Flow: runflow.MakeRunFlow(),
 
-		Clients: children.MakeChildrenWithID[roomclient.RoomClient](),
+		Clients: children.MakeMapChildren[string, *roomclient.RoomClient](),
 
 		connectedToGameChan: make(chan struct{}),
 
@@ -57,7 +57,7 @@ func (roomNode *RoomNode) Run(requester GameNodeRequester) {
 		select {
 		case <-stopTimer.C:
 			// If timer is over, check for clients
-			if roomNode.Clients.IDMap.Length() == 0 {
+			if roomNode.Clients.ChildrenMap.Length() == 0 {
 				return
 			}
 

@@ -6,5 +6,4 @@ type Claims struct {
 	jwt.RegisteredClaims
 
 	Username string `json:"username"`
-	UserID   int    `json:"userID"`
 }

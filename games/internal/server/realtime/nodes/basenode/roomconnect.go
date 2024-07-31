@@ -7,20 +7,19 @@ import (
 )
 
 // Handle WS endpoint
-func (baseNode *BaseNode) ConnectToRoom(conn *websocket.Conn, gameID, roomID, userID int, userName string) error {
-	gameNode, ok := baseNode.games.IDMap.Get(gameID)
+func (baseNode *BaseNode) ConnectToRoom(conn *websocket.Conn, gameID, roomID int, username string) error {
+	gameNode, ok := baseNode.games.ChildrenMap.Get(gameID)
 	if !ok {
 		return ErrNoGame
 	}
 
-	roomNode, ok := gameNode.Rooms.IDMap.Get(roomID)
+	roomNode, ok := gameNode.Rooms.ChildrenMap.Get(roomID)
 	if !ok {
 		return ErrNoRoom
 	}
 
 	user := rtclient.User{
-		ID:   userID,
-		Name: userName,
+		Name: username,
 	}
 
 	// Create client and start client

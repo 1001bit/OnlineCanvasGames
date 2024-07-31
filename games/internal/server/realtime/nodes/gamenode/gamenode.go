@@ -22,8 +22,8 @@ type RoomJSON struct {
 type GameNode struct {
 	Flow runflow.RunFlow
 
-	Rooms   children.ChildrenWithID[roomnode.RoomNode]
-	Clients children.Children[gameclient.GameClient]
+	Rooms   children.MapChildren[int, *roomnode.RoomNode]
+	Clients children.SetChildren[*gameclient.GameClient]
 
 	roomsJSON           []RoomJSON
 	roomsJSONUpdateChan chan struct{}
@@ -35,8 +35,8 @@ func NewGameNode(game gamemodel.Game) *GameNode {
 	return &GameNode{
 		Flow: runflow.MakeRunFlow(),
 
-		Rooms:   children.MakeChildrenWithID[roomnode.RoomNode](),
-		Clients: children.MakeChildren[gameclient.GameClient](),
+		Rooms:   children.MakeMapChildren[int, *roomnode.RoomNode](),
+		Clients: children.MakeSetChildren[*gameclient.GameClient](),
 
 		roomsJSON:           make([]RoomJSON, 0),
 		roomsJSONUpdateChan: make(chan struct{}),

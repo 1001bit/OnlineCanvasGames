@@ -63,7 +63,7 @@ func NewRouter(storageService *service.StorageService, userService *service.User
 		// Auth
 		htmlRouter.Get("/auth", page.HandleAuth)
 		// Profile
-		htmlRouter.Get("/profile/{id}", func(w http.ResponseWriter, r *http.Request) {
+		htmlRouter.Get("/profile/{name}", func(w http.ResponseWriter, r *http.Request) {
 			page.HandleProfile(w, r, userService)
 		})
 		// Logout

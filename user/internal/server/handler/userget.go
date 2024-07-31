@@ -3,21 +3,15 @@ package handler
 import (
 	"database/sql"
 	"net/http"
-	"strconv"
 
 	"github.com/neinBit/ocg-user-service/internal/server/message"
 	"github.com/neinBit/ocg-user-service/internal/usermodel"
 )
 
 func HandleUserGet(w http.ResponseWriter, r *http.Request) {
-	idStr := r.PathValue("id")
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		ServeTextMessage(w, "No such user", http.StatusBadRequest)
-		return
-	}
+	username := r.PathValue("name")
 
-	user, err := usermodel.GetByID(r.Context(), id)
+	user, err := usermodel.GetByName(r.Context(), username)
 	switch err {
 	case nil:
 		// continue

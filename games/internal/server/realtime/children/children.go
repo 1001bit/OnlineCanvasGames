@@ -2,26 +2,26 @@ package children
 
 import "github.com/neinBit/ocg-games-service/pkg/concurrent"
 
-type Children[T any] struct {
+type SetChildren[T comparable] struct {
 	Channels[T]
-	ChildrenSet concurrent.ConcurrentSet[*T]
+	ChildrenSet concurrent.ConcurrentSet[T]
 }
 
-func MakeChildren[T any]() Children[T] {
-	return Children[T]{
-		ChildrenSet: concurrent.MakeSet[*T](),
+func MakeSetChildren[T comparable]() SetChildren[T] {
+	return SetChildren[T]{
+		ChildrenSet: concurrent.MakeSet[T](),
 		Channels:    MakeChannels[T](),
 	}
 }
 
-type ChildrenWithID[T any] struct {
-	Channels[T]
-	IDMap concurrent.ConcurrentMap[int, *T]
+type MapChildren[K comparable, V any] struct {
+	Channels[V]
+	ChildrenMap concurrent.ConcurrentMap[K, V]
 }
 
-func MakeChildrenWithID[T any]() ChildrenWithID[T] {
-	return ChildrenWithID[T]{
-		IDMap:    concurrent.MakeMap[int, *T](),
-		Channels: MakeChannels[T](),
+func MakeMapChildren[K comparable, V any]() MapChildren[K, V] {
+	return MapChildren[K, V]{
+		ChildrenMap: concurrent.MakeMap[K, V](),
+		Channels:    MakeChannels[V](),
 	}
 }

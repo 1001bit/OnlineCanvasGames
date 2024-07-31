@@ -3,7 +3,6 @@ package page
 import (
 	"context"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/1001bit/ocg-gateway-service/internal/auth/claimscontext"
@@ -18,14 +17,11 @@ type ProfileData struct {
 
 func HandleProfile(w http.ResponseWriter, r *http.Request, userService *service.UserService) {
 	data := ProfileData{}
+	data.UserName, _ = claimscontext.GetUsername(r.Context())
 
-	id, err := strconv.Atoi(r.PathValue("id"))
-	if err != nil {
-		HandleNotFound(w, r)
-		return
-	}
+	name := r.PathValue("name")
 
-	user, err := userService.GetUserByID(r.Context(), id)
+	user, err := userService.GetUserByName(r.Context(), name)
 	switch err {
 	case nil:
 		// continue
@@ -33,6 +29,11 @@ func HandleProfile(w http.ResponseWriter, r *http.Request, userService *service.
 		HandleServerOverload(w, r)
 		return
 	default:
+		if data.UserName == name {
+			HandleLogout(w, r)
+			return
+		}
+
 		HandleNotFound(w, r)
 		return
 	}
@@ -43,9 +44,6 @@ func HandleProfile(w http.ResponseWriter, r *http.Request, userService *service.
 		HandleServerError(w, r)
 		return
 	}
-
-	_, username, _ := claimscontext.GetClaims(r.Context())
-	data.UserName = username
 
 	serveTemplate("profile.html", data, w, r)
 }

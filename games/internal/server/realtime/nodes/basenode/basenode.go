@@ -15,8 +15,8 @@ import (
 type BaseNode struct {
 	Flow runflow.RunFlow
 
-	games        children.ChildrenWithID[gamenode.GameNode]
-	roomsClients children.ChildrenWithID[roomclient.RoomClient]
+	games        children.MapChildren[int, *gamenode.GameNode]
+	roomsClients children.MapChildren[string, *roomclient.RoomClient]
 
 	gamesJSON []gamemodel.Game
 }
@@ -25,8 +25,8 @@ func NewBaseNode() *BaseNode {
 	return &BaseNode{
 		Flow: runflow.MakeRunFlow(),
 
-		games:        children.MakeChildrenWithID[gamenode.GameNode](),
-		roomsClients: children.MakeChildrenWithID[roomclient.RoomClient](),
+		games:        children.MakeMapChildren[int, *gamenode.GameNode](),
+		roomsClients: children.MakeMapChildren[string, *roomclient.RoomClient](),
 
 		gamesJSON: make([]gamemodel.Game, 0),
 	}

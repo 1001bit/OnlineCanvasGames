@@ -7,9 +7,9 @@ import (
 )
 
 func HandleAuth(w http.ResponseWriter, r *http.Request) {
-	_, _, err := claimscontext.GetClaims(r.Context())
+	_, ok := claimscontext.GetUsername(r.Context())
 
-	if err == nil {
+	if ok {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}

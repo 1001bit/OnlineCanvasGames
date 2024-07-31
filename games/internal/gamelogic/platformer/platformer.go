@@ -12,8 +12,8 @@ import (
 type PlatformerGL struct {
 	level *Level
 
-	// set[userID] of already read clients
-	handledClients concurrent.ConcurrentSet[int]
+	// set[username] of already read clients
+	handledClients concurrent.ConcurrentSet[string]
 
 	maxPlayers int
 }
@@ -22,7 +22,7 @@ func NewPlatformerGL() *PlatformerGL {
 	return &PlatformerGL{
 		level: NewPlatformerLevel(),
 
-		handledClients: concurrent.MakeSet[int](),
+		handledClients: concurrent.MakeSet[string](),
 
 		maxPlayers: 8,
 	}
@@ -39,10 +39,10 @@ func (gl *PlatformerGL) Run(doneChan <-chan struct{}, writer gamelogic.RoomWrite
 
 func (gl *PlatformerGL) HandleReadMessage(msg rtclient.MessageWithClient, writer gamelogic.RoomWriter) {
 	// Protect from reading the same client many times
-	if gl.handledClients.Has(msg.Client.GetUser().ID) {
+	if gl.handledClients.Has(msg.Client.GetUser().Name) {
 		return
 	}
-	gl.handledClients.Insert(msg.Client.GetUser().ID)
+	gl.handledClients.Insert(msg.Client.GetUser().Name)
 
 	switch msg.Message.Type {
 	case "input":
@@ -52,21 +52,21 @@ func (gl *PlatformerGL) HandleReadMessage(msg rtclient.MessageWithClient, writer
 			return
 		}
 
-		gl.level.HandleInput(msg.Client.GetUser().ID, inputMap)
+		gl.level.HandleInput(msg.Client.GetUser().Name, inputMap)
 	}
 }
 
-func (gl *PlatformerGL) JoinClient(userID int, writer gamelogic.RoomWriter) {
+func (gl *PlatformerGL) JoinClient(username string, writer gamelogic.RoomWriter) {
 	// create player on server
-	rectID, rect := gl.level.CreatePlayer(userID, gl.maxPlayers)
+	rectID, rect := gl.level.CreatePlayer(username, gl.maxPlayers)
 	// write level message to new player
-	writer.WriteMessageTo(NewLevelMessage(gl.level, rectID), userID)
+	writer.WriteMessageTo(NewLevelMessage(gl.level, rectID), username)
 	// write new player message to everybody
 	writer.GlobalWriteMessage(NewConnectMessage(rectID, rect))
 }
 
-func (gl *PlatformerGL) DeleteClient(userID int, writer gamelogic.RoomWriter) {
-	rectID, err := gl.level.DeletePlayer(userID)
+func (gl *PlatformerGL) DeleteClient(username string, writer gamelogic.RoomWriter) {
+	rectID, err := gl.level.DeletePlayer(username)
 	if err == nil {
 		writer.GlobalWriteMessage(NewDisconnectMessage(rectID))
 	}

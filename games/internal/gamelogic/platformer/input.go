@@ -36,8 +36,8 @@ func (inputMap *PlayerInput) GetHoldCoeff(control string) (float64, bool) {
 }
 
 // Add input to map
-func (l *Level) HandleInput(userID int, inputMap gamelogic.InputMap) {
-	playerData, ok := l.playersData.Get(userID)
+func (l *Level) HandleInput(username string, inputMap gamelogic.InputMap) {
+	playerData, ok := l.playersData.Get(username)
 	if !ok {
 		return
 	}

@@ -7,7 +7,6 @@ import (
 )
 
 type User struct {
-	ID   int    `json:"id"`
 	Name string `json:"name"`
 	Date string `json:"date"`
 }
@@ -26,10 +25,10 @@ func NewUserService(host, port string) (*UserService, error) {
 	}, nil
 }
 
-// get user from service by userID
-func (s *UserService) GetUserByID(ctx context.Context, id int) (*User, error) {
+// get user from service by username
+func (s *UserService) GetUserByName(ctx context.Context, name string) (*User, error) {
 	// send get request to service
-	msg, err := s.service.request(ctx, "GET", fmt.Sprintf("/%d", id), nil)
+	msg, err := s.service.request(ctx, "GET", fmt.Sprintf("/%s", name), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -90,12 +89,6 @@ func mapToUser(m map[string]any) *User {
 	if !ok {
 		return nil
 	}
-
-	id, ok := m["id"].(float64)
-	if !ok {
-		return nil
-	}
-	user.ID = int(id)
 
 	user.Date, ok = m["date"].(string)
 	if !ok {

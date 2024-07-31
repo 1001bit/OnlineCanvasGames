@@ -29,11 +29,11 @@ func (gl *ClickerGL) HandleReadMessage(msg rtclient.MessageWithClient, writer ga
 	}
 }
 
-func (gl *ClickerGL) JoinClient(userID int, writer gamelogic.RoomWriter) {
-	writer.WriteMessageTo(gl.newStateMessage(), userID)
+func (gl *ClickerGL) JoinClient(username string, writer gamelogic.RoomWriter) {
+	writer.WriteMessageTo(gl.newStateMessage(), username)
 }
 
-func (gl *ClickerGL) DeleteClient(userID int, writer gamelogic.RoomWriter) {
+func (gl *ClickerGL) DeleteClient(username string, writer gamelogic.RoomWriter) {
 
 }
 

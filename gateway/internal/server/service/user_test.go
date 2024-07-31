@@ -11,11 +11,10 @@ func TestMapToUser(t *testing.T) {
 		{
 			name: "valid",
 			input: map[string]any{
-				"id":   1.0,
 				"name": "bob",
 				"date": "once upon a time",
 			},
-			expected: &User{ID: 1, Name: "bob", Date: "once upon a time"},
+			expected: &User{Name: "bob", Date: "once upon a time"},
 		},
 		{
 			name: "dateless",

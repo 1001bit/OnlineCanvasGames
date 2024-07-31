@@ -25,33 +25,33 @@ func ClaimsContext(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := claimscontext.GetContext(r.Context(), claims.UserID, claims.Username)
+		ctx := claimscontext.GetContext(r.Context(), claims.Username)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
 func handleTokenRefresh(w http.ResponseWriter, r *http.Request, next http.Handler) {
-	userID, username, err := refreshTokens(w, r)
+	username, err := refreshTokens(w, r)
 	if err != nil {
 		next.ServeHTTP(w, r)
 		return
 	}
 
-	ctx := claimscontext.GetContext(r.Context(), userID, username)
+	ctx := claimscontext.GetContext(r.Context(), username)
 	next.ServeHTTP(w, r.WithContext(ctx))
 }
 
-func refreshTokens(w http.ResponseWriter, r *http.Request) (int, string, error) {
+func refreshTokens(w http.ResponseWriter, r *http.Request) (string, error) {
 	// get refresh token
 	cookie, err := r.Cookie("refresh")
 	if err != nil {
-		return 0, "", err
+		return "", err
 	}
 
 	// refresh tokens
 	accessTokenString, refreshTokenString, err := token.RefreshTokens(cookie.Value)
 	if err != nil {
-		return 0, "", err
+		return "", err
 	}
 
 	// set new cookies
@@ -64,8 +64,8 @@ func refreshTokens(w http.ResponseWriter, r *http.Request) (int, string, error) 
 	// get claims
 	claims, err := token.ValidateAccessToken(accessTokenString)
 	if err != nil {
-		return 0, "", err
+		return "", err
 	}
 
-	return claims.UserID, claims.Username, nil
+	return claims.Username, nil
 }
