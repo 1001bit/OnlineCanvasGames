@@ -15,5 +15,5 @@ func HandleGameHub(w http.ResponseWriter, r *http.Request, gamesService *service
 		GameTitle: r.PathValue("title"),
 	}
 
-	serveTemplate("gamehub.html", data, w, r)
+	serveTemplate(w, r, "gamehub.html", data)
 }

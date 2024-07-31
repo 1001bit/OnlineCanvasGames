@@ -19,5 +19,5 @@ func HandleHome(w http.ResponseWriter, r *http.Request, service *service.GamesSe
 
 	data.Games, _ = service.GetGames(r.Context())
 
-	serveTemplate("home.html", data, w, r)
+	serveTemplate(w, r, "home.html", data)
 }

@@ -25,5 +25,5 @@ func HandleGameRoom(w http.ResponseWriter, r *http.Request, gamesService *servic
 	}
 	data.RoomID = roomID
 
-	serveTemplate("gameroom.html", data, w, r)
+	serveTemplate(w, r, "gameroom.html", data)
 }

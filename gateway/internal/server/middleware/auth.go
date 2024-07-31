@@ -25,7 +25,7 @@ func AuthJSON(next http.Handler) http.Handler {
 		_, ok := claimscontext.GetUsername(r.Context())
 
 		if !ok {
-			api.ServeTextMessage(w, "Unauthorized!", http.StatusUnauthorized)
+			api.HandleUnauthorized(w, r)
 			return
 		}
 		next.ServeHTTP(w, r)

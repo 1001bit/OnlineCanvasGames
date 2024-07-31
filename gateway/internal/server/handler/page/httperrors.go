@@ -4,15 +4,15 @@ import "net/http"
 
 func HandleNotFound(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
-	serveTemplate("notFound.html", nil, w, r)
+	serveTemplate(w, r, "notFound.html", nil)
 }
 
 func HandleServerError(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusInternalServerError)
-	serveTemplate("serverError.html", nil, w, r)
+	serveTemplate(w, r, "serverError.html", nil)
 }
 
 func HandleServerOverload(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusInternalServerError)
-	serveTemplate("serverOverload.html", nil, w, r)
+	serveTemplate(w, r, "serverOverload.html", nil)
 }

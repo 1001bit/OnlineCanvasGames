@@ -14,5 +14,5 @@ func HandleAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	serveTemplate("auth.html", nil, w, r)
+	serveTemplate(w, r, "auth.html", nil)
 }

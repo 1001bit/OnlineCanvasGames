@@ -45,7 +45,7 @@ func HandleProfile(w http.ResponseWriter, r *http.Request, userService *service.
 		return
 	}
 
-	serveTemplate("profile.html", data, w, r)
+	serveTemplate(w, r, "profile.html", data)
 }
 
 // 2006-01-02T15:04:05Z -> 2 January 2006

@@ -18,7 +18,7 @@ type TemplateData struct {
 
 var templates = template.Must(template.ParseGlob("templates/**/*.html"))
 
-func serveTemplate(file string, data any, w http.ResponseWriter, r *http.Request) {
+func serveTemplate(w http.ResponseWriter, r *http.Request, file string, data any) {
 	tmplData := TemplateData{
 		Data: data,
 	}
