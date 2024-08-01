@@ -3,7 +3,7 @@ package rt
 import (
 	"net/http"
 
-	"github.com/neinBit/ocg-games-service/internal/server/realtime/nodes/basenode"
+	"github.com/1001bit/ocg-games-service/internal/server/realtime/nodes/basenode"
 )
 
 func HandleGameSSE(w http.ResponseWriter, r *http.Request, baseNode *basenode.BaseNode) {

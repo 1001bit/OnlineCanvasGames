@@ -1,6 +1,6 @@
 package database
 
-import "github.com/neinBit/ocg-user-service/pkg/env"
+import "github.com/1001bit/ocg-user-service/pkg/env"
 
 type Config struct {
 	user string

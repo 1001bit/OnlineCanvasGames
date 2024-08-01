@@ -1,8 +1,8 @@
 package platformer
 
 import (
-	"github.com/neinBit/ocg-games-service/internal/mathobjects"
-	"github.com/neinBit/ocg-games-service/internal/server/message"
+	"github.com/1001bit/ocg-games-service/internal/mathobjects"
+	"github.com/1001bit/ocg-games-service/internal/server/message"
 )
 
 // Level

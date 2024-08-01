@@ -1,9 +1,9 @@
 package clicker
 
 import (
-	"github.com/neinBit/ocg-games-service/internal/gamelogic"
-	"github.com/neinBit/ocg-games-service/internal/server/message"
-	rtclient "github.com/neinBit/ocg-games-service/internal/server/realtime/client"
+	"github.com/1001bit/ocg-games-service/internal/gamelogic"
+	"github.com/1001bit/ocg-games-service/internal/server/message"
+	rtclient "github.com/1001bit/ocg-games-service/internal/server/realtime/client"
 )
 
 type ClickerGL struct {

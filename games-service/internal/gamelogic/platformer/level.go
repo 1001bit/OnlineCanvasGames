@@ -1,10 +1,10 @@
 package platformer
 
 import (
-	"github.com/neinBit/ocg-games-service/internal/gamelogic"
-	"github.com/neinBit/ocg-games-service/internal/mathobjects"
-	"github.com/neinBit/ocg-games-service/pkg/concurrent"
-	"github.com/neinBit/ocg-games-service/pkg/fixedticker"
+	"github.com/1001bit/ocg-games-service/internal/gamelogic"
+	"github.com/1001bit/ocg-games-service/internal/mathobjects"
+	"github.com/1001bit/ocg-games-service/pkg/concurrent"
+	"github.com/1001bit/ocg-games-service/pkg/fixedticker"
 )
 
 type rectID int

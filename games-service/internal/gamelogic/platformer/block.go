@@ -1,6 +1,6 @@
 package platformer
 
-import "github.com/neinBit/ocg-games-service/internal/mathobjects"
+import "github.com/1001bit/ocg-games-service/internal/mathobjects"
 
 type Block struct {
 	mathobjects.Rect

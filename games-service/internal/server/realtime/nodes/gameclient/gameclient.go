@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/neinBit/ocg-games-service/internal/server/message"
-	"github.com/neinBit/ocg-games-service/internal/server/realtime/runflow"
+	"github.com/1001bit/ocg-games-service/internal/server/message"
+	"github.com/1001bit/ocg-games-service/internal/server/realtime/runflow"
 )
 
 // Layer of RT which is responsible for handling connections: GameClient > User, GameNode > GameClient

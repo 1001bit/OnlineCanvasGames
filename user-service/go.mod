@@ -1,4 +1,4 @@
-module github.com/neinBit/ocg-user-service
+module github.com/1001bit/ocg-user-service
 
 go 1.22.5
 

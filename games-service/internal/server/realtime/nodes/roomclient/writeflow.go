@@ -4,8 +4,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/1001bit/ocg-games-service/internal/server/message"
 	"github.com/gorilla/websocket"
-	"github.com/neinBit/ocg-games-service/internal/server/message"
 )
 
 // flow that is responsible for writing messages to conn

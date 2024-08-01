@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/neinBit/ocg-games-service/internal/database"
+	"github.com/1001bit/ocg-games-service/internal/database"
 )
 
 const maxQueryTime = 5 * time.Second

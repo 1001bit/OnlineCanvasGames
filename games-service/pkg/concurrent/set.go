@@ -3,7 +3,7 @@ package concurrent
 import (
 	"sync"
 
-	"github.com/neinBit/ocg-games-service/pkg/set"
+	"github.com/1001bit/ocg-games-service/pkg/set"
 )
 
 type ConcurrentSet[T comparable] struct {

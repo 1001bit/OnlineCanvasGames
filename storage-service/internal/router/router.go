@@ -3,9 +3,9 @@ package router
 import (
 	"net/http"
 
+	"github.com/1001bit/ocg-storage-service/internal/handler"
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
-	"github.com/neinBit/ocg-storage-service/internal/handler"
 )
 
 func NewRouter() (http.Handler, error) {

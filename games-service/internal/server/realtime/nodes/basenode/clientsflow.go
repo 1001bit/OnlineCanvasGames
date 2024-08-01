@@ -3,7 +3,7 @@ package basenode
 import (
 	"log"
 
-	"github.com/neinBit/ocg-games-service/internal/server/realtime/nodes/roomclient"
+	"github.com/1001bit/ocg-games-service/internal/server/realtime/nodes/roomclient"
 )
 
 func (baseNode *BaseNode) clientsFlow() {

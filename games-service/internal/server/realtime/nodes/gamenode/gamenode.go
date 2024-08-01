@@ -3,11 +3,11 @@ package gamenode
 import (
 	"log"
 
-	"github.com/neinBit/ocg-games-service/internal/gamemodel"
-	"github.com/neinBit/ocg-games-service/internal/server/realtime/children"
-	"github.com/neinBit/ocg-games-service/internal/server/realtime/nodes/gameclient"
-	"github.com/neinBit/ocg-games-service/internal/server/realtime/nodes/roomnode"
-	"github.com/neinBit/ocg-games-service/internal/server/realtime/runflow"
+	"github.com/1001bit/ocg-games-service/internal/gamemodel"
+	"github.com/1001bit/ocg-games-service/internal/server/realtime/children"
+	"github.com/1001bit/ocg-games-service/internal/server/realtime/nodes/gameclient"
+	"github.com/1001bit/ocg-games-service/internal/server/realtime/nodes/roomnode"
+	"github.com/1001bit/ocg-games-service/internal/server/realtime/runflow"
 )
 
 // Room that will be sent to client

@@ -1,8 +1,8 @@
 package gamenode
 
 import (
-	"github.com/neinBit/ocg-games-service/internal/gamemodel"
-	"github.com/neinBit/ocg-games-service/internal/server/message"
+	"github.com/1001bit/ocg-games-service/internal/gamemodel"
+	"github.com/1001bit/ocg-games-service/internal/server/message"
 )
 
 // ask gameNode to update gameNode.roomsJSON

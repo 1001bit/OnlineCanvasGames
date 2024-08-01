@@ -1,4 +1,4 @@
-module github.com/neinBit/ocg-games-service
+module github.com/1001bit/ocg-games-service
 
 go 1.22.5
 

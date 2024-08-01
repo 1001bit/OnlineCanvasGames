@@ -3,11 +3,11 @@ package router
 import (
 	"net/http"
 
+	"github.com/1001bit/ocg-games-service/internal/server/handler/api"
+	"github.com/1001bit/ocg-games-service/internal/server/handler/rt"
+	"github.com/1001bit/ocg-games-service/internal/server/realtime/nodes/basenode"
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
-	"github.com/neinBit/ocg-games-service/internal/server/handler/api"
-	"github.com/neinBit/ocg-games-service/internal/server/handler/rt"
-	"github.com/neinBit/ocg-games-service/internal/server/realtime/nodes/basenode"
 )
 
 func NewRouter() (http.Handler, error) {

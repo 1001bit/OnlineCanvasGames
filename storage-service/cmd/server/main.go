@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/neinBit/ocg-storage-service/internal/router"
-	"github.com/neinBit/ocg-storage-service/pkg/env"
+	"github.com/1001bit/ocg-storage-service/internal/router"
+	"github.com/1001bit/ocg-storage-service/pkg/env"
 )
 
 func main() {

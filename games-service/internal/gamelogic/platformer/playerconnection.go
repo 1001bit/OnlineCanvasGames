@@ -1,6 +1,6 @@
 package platformer
 
-import "github.com/neinBit/ocg-games-service/pkg/set"
+import "github.com/1001bit/ocg-games-service/pkg/set"
 
 func (l *Level) CreatePlayer(username string, playersLimit int) (rectID, *Player) {
 	if playerData, ok := l.playersData.Get(username); ok {

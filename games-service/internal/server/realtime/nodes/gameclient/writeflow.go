@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/neinBit/ocg-games-service/internal/server/message"
+	"github.com/1001bit/ocg-games-service/internal/server/message"
 )
 
 func (client *GameClient) writeFlow() {

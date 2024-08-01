@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"net/http"
 
-	"github.com/neinBit/ocg-user-service/internal/server/message"
-	"github.com/neinBit/ocg-user-service/internal/usermodel"
+	"github.com/1001bit/ocg-user-service/internal/server/message"
+	"github.com/1001bit/ocg-user-service/internal/usermodel"
 )
 
 func HandleUserGet(w http.ResponseWriter, r *http.Request) {

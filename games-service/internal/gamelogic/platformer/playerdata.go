@@ -1,6 +1,6 @@
 package platformer
 
-import "github.com/neinBit/ocg-games-service/internal/gamelogic"
+import "github.com/1001bit/ocg-games-service/internal/gamelogic"
 
 type PlayerData struct {
 	player *Player

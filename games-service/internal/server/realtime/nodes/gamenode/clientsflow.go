@@ -3,8 +3,8 @@ package gamenode
 import (
 	"log"
 
-	"github.com/neinBit/ocg-games-service/internal/server/message"
-	"github.com/neinBit/ocg-games-service/internal/server/realtime/nodes/gameclient"
+	"github.com/1001bit/ocg-games-service/internal/server/message"
+	"github.com/1001bit/ocg-games-service/internal/server/realtime/nodes/gameclient"
 )
 
 func (gameNode *GameNode) clientsFlow() {

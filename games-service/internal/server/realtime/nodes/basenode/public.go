@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/neinBit/ocg-games-service/internal/gamemodel"
-	"github.com/neinBit/ocg-games-service/internal/server/realtime/nodes/gamenode"
-	"github.com/neinBit/ocg-games-service/internal/server/realtime/nodes/roomnode"
+	"github.com/1001bit/ocg-games-service/internal/gamemodel"
+	"github.com/1001bit/ocg-games-service/internal/server/realtime/nodes/gamenode"
+	"github.com/1001bit/ocg-games-service/internal/server/realtime/nodes/roomnode"
 )
 
 // create new room and connect it to BaseNode

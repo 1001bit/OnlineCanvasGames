@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/neinBit/ocg-user-service/internal/database"
-	"github.com/neinBit/ocg-user-service/pkg/crypt"
+	"github.com/1001bit/ocg-user-service/internal/database"
+	"github.com/1001bit/ocg-user-service/pkg/crypt"
 )
 
 const maxQueryTime = 5 * time.Second

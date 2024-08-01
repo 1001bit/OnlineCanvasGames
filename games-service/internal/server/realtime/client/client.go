@@ -1,6 +1,6 @@
 package rtclient
 
-import "github.com/neinBit/ocg-games-service/internal/server/message"
+import "github.com/1001bit/ocg-games-service/internal/server/message"
 
 type User struct {
 	Name string

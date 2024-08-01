@@ -5,9 +5,9 @@ import (
 	"log"
 	"time"
 
+	"github.com/1001bit/ocg-games-service/internal/server/message"
+	rtclient "github.com/1001bit/ocg-games-service/internal/server/realtime/client"
 	"github.com/gorilla/websocket"
-	"github.com/neinBit/ocg-games-service/internal/server/message"
-	rtclient "github.com/neinBit/ocg-games-service/internal/server/realtime/client"
 )
 
 // flow that is responsible for reading messages from conn

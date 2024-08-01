@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"regexp"
 
-	"github.com/neinBit/ocg-user-service/internal/server/message"
-	"github.com/neinBit/ocg-user-service/internal/usermodel"
+	"github.com/1001bit/ocg-user-service/internal/server/message"
+	"github.com/1001bit/ocg-user-service/internal/usermodel"
 )
 
 var ErrBadInput = errors.New("bad auth input")
@@ -60,6 +60,7 @@ func HandleUserPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Writing user, so username has right casing
 	ServeMessage(w, message.JSON{
 		Type: "user",
 		Body: user,

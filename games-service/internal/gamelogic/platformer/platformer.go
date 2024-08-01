@@ -3,10 +3,10 @@ package platformer
 import (
 	"encoding/json"
 
-	"github.com/neinBit/ocg-games-service/internal/gamelogic"
-	rtclient "github.com/neinBit/ocg-games-service/internal/server/realtime/client"
-	"github.com/neinBit/ocg-games-service/pkg/concurrent"
-	"github.com/neinBit/ocg-games-service/pkg/gameloop"
+	"github.com/1001bit/ocg-games-service/internal/gamelogic"
+	rtclient "github.com/1001bit/ocg-games-service/internal/server/realtime/client"
+	"github.com/1001bit/ocg-games-service/pkg/concurrent"
+	"github.com/1001bit/ocg-games-service/pkg/gameloop"
 )
 
 type PlatformerGL struct {

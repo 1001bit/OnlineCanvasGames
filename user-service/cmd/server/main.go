@@ -5,9 +5,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/neinBit/ocg-user-service/internal/database"
-	"github.com/neinBit/ocg-user-service/internal/server/router"
-	"github.com/neinBit/ocg-user-service/pkg/env"
+	"github.com/1001bit/ocg-user-service/internal/database"
+	"github.com/1001bit/ocg-user-service/internal/server/router"
+	"github.com/1001bit/ocg-user-service/pkg/env"
 )
 
 func main() {

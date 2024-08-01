@@ -1,6 +1,6 @@
 package gameclient
 
-import "github.com/neinBit/ocg-games-service/internal/server/message"
+import "github.com/1001bit/ocg-games-service/internal/server/message"
 
 func (client *GameClient) WriteMessage(msg *message.JSON) {
 	select {

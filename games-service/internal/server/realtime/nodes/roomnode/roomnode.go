@@ -4,10 +4,10 @@ import (
 	"log"
 	"time"
 
-	"github.com/neinBit/ocg-games-service/internal/gamelogic"
-	"github.com/neinBit/ocg-games-service/internal/server/realtime/children"
-	"github.com/neinBit/ocg-games-service/internal/server/realtime/nodes/roomclient"
-	"github.com/neinBit/ocg-games-service/internal/server/realtime/runflow"
+	"github.com/1001bit/ocg-games-service/internal/gamelogic"
+	"github.com/1001bit/ocg-games-service/internal/server/realtime/children"
+	"github.com/1001bit/ocg-games-service/internal/server/realtime/nodes/roomclient"
+	"github.com/1001bit/ocg-games-service/internal/server/realtime/runflow"
 )
 
 const roomStopWait = 5 * time.Second

@@ -1,6 +1,6 @@
 package children
 
-import "github.com/neinBit/ocg-games-service/pkg/concurrent"
+import "github.com/1001bit/ocg-games-service/pkg/concurrent"
 
 type SetChildren[T comparable] struct {
 	Channels[T]

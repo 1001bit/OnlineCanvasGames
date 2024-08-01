@@ -1,6 +1,6 @@
 package platformer
 
-import "github.com/neinBit/ocg-games-service/internal/mathobjects"
+import "github.com/1001bit/ocg-games-service/internal/mathobjects"
 
 func (p *Player) DetectHorizontalCollision(block *Block, dtMs float64) mathobjects.Direction {
 	if p.velocity.X == 0 {

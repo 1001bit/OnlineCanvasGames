@@ -1,8 +1,8 @@
 package roomclient
 
 import (
-	"github.com/neinBit/ocg-games-service/internal/server/message"
-	rtclient "github.com/neinBit/ocg-games-service/internal/server/realtime/client"
+	"github.com/1001bit/ocg-games-service/internal/server/message"
+	rtclient "github.com/1001bit/ocg-games-service/internal/server/realtime/client"
 )
 
 func (client *RoomClient) WriteMessage(msg *message.JSON) {

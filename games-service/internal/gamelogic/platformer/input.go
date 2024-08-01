@@ -3,7 +3,7 @@ package platformer
 import (
 	"math"
 
-	"github.com/neinBit/ocg-games-service/internal/gamelogic"
+	"github.com/1001bit/ocg-games-service/internal/gamelogic"
 )
 
 // InputMap with coeffs instead of ticks

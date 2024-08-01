@@ -4,10 +4,10 @@ import (
 	"log"
 	"time"
 
+	"github.com/1001bit/ocg-games-service/internal/server/message"
+	rtclient "github.com/1001bit/ocg-games-service/internal/server/realtime/client"
+	"github.com/1001bit/ocg-games-service/internal/server/realtime/runflow"
 	"github.com/gorilla/websocket"
-	"github.com/neinBit/ocg-games-service/internal/server/message"
-	rtclient "github.com/neinBit/ocg-games-service/internal/server/realtime/client"
-	"github.com/neinBit/ocg-games-service/internal/server/realtime/runflow"
 )
 
 const (

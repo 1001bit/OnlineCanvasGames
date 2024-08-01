@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/neinBit/ocg-games-service/internal/server/realtime/nodes/roomclient"
+	"github.com/1001bit/ocg-games-service/internal/server/realtime/nodes/roomclient"
 )
 
 type GameNodeRequester interface {

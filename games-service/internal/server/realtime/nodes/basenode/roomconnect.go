@@ -1,9 +1,9 @@
 package basenode
 
 import (
+	rtclient "github.com/1001bit/ocg-games-service/internal/server/realtime/client"
+	"github.com/1001bit/ocg-games-service/internal/server/realtime/nodes/roomclient"
 	"github.com/gorilla/websocket"
-	rtclient "github.com/neinBit/ocg-games-service/internal/server/realtime/client"
-	"github.com/neinBit/ocg-games-service/internal/server/realtime/nodes/roomclient"
 )
 
 // Handle WS endpoint
