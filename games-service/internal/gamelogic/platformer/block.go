@@ -8,6 +8,6 @@ type Block struct {
 
 func NewBlock(x, y, w, h float64) *Block {
 	return &Block{
-		Rect: mathobjects.MakeRect(x, y, w, h),
+		Rect: mathobjects.CreateRect(x, y, w, h),
 	}
 }

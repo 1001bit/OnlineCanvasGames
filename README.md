@@ -30,9 +30,12 @@
 
 ## Build and start
 
-1. To build the entire application, run `./scripts/build.sh`
-2. To compile typescript into javascript files, run `./scripts/compilets.sh`
-3. To run the application, run `./scripts/up.sh`
+- Build and start: `make`
+- Build: `make build`
+- Start: `make up`
+- Stop: `make down`
+- Compile typescript files: `make compile-ts`
+- Clean up docker resources: `make clean`
 
 ## Microservices
 

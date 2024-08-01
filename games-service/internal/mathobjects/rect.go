@@ -7,7 +7,7 @@ type Rect struct {
 	Size     Vector2[float64] `json:"size"`
 }
 
-func MakeRect(x, y, w, h float64) Rect {
+func CreateRect(x, y, w, h float64) Rect {
 	return Rect{
 		Position: Vector2[float64]{x, y},
 		Size:     Vector2[float64]{w, h},
@@ -47,10 +47,10 @@ func (rect *Rect) Extend(extX, extY float64) {
 	}
 }
 
-func (rect Rect) GetPosition() Vector2[float64] {
+func (rect *Rect) GetPosition() Vector2[float64] {
 	return rect.Position
 }
 
-func (rect Rect) GetSize() Vector2[float64] {
+func (rect *Rect) GetSize() Vector2[float64] {
 	return rect.Size
 }

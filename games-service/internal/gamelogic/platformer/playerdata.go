@@ -6,23 +6,23 @@ type PlayerData struct {
 	player *Player
 	rectID rectID
 
-	input *PlayerInput
+	input PlayerInput
 }
 
-func NewPlayerData(player *Player, rectID rectID) *PlayerData {
+func NewPlayerData(player *Player, rectID rectID, serverTPS, clientTPS float64) *PlayerData {
 	return &PlayerData{
 		player: player,
 		rectID: rectID,
 
-		input: nil,
+		input: CreatePlayerInput(serverTPS, clientTPS),
 	}
 }
 
-func (pd *PlayerData) HandleInput(inputMap gamelogic.InputMap, serverTPS, clientTPS float64) {
-	pd.input = NewPlayerInput(inputMap, serverTPS, clientTPS)
+func (pd *PlayerData) HandleInput(inputMap gamelogic.InputMap) {
+	pd.input.SetInputMap(inputMap)
 }
 
 func (pd *PlayerData) ControlPlayer(speed, jump float64) {
-	pd.player.Control(speed, jump, pd.input)
-	pd.input = nil
+	pd.player.Control(speed, jump, &pd.input)
+	pd.input.ClearInputMap()
 }

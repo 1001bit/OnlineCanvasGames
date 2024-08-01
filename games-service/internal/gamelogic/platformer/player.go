@@ -14,7 +14,7 @@ type Player struct {
 }
 
 func NewPlayer(rectID rectID) *Player {
-	innerRect := mathobjects.MakeRect(100*float64(rectID), 100, 100, 100)
+	innerRect := mathobjects.CreateRect(100*float64(rectID), 100, 100, 100)
 
 	return &Player{
 		Rect: innerRect,
@@ -27,7 +27,7 @@ func NewPlayer(rectID rectID) *Player {
 		collisionVertical:   mathobjects.None,
 		collisionHorizontal: mathobjects.None,
 
-		futurePath: mathobjects.MakeRect(0, 0, 0, 0),
+		futurePath: mathobjects.CreateRect(0, 0, 0, 0),
 	}
 }
 

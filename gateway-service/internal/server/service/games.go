@@ -39,7 +39,7 @@ func (s *GamesService) RoomProxyHandler() http.HandlerFunc {
 
 		r.Header.Set("X-Username", username)
 
-		s.service.proxy().ServeHTTP(w, r)
+		s.ProxyHandler().ServeHTTP(w, r)
 	}
 }
 

@@ -11,7 +11,7 @@ func (l *Level) CreatePlayer(username string, playersLimit int) (rectID, *Player
 	player := NewPlayer(rectID)
 
 	l.players[rectID] = player
-	l.playersData.Set(username, NewPlayerData(player, rectID))
+	l.playersData.Set(username, NewPlayerData(player, rectID, l.serverTPS, l.clientTPS))
 
 	return rectID, player
 }

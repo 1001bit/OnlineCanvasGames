@@ -87,6 +87,9 @@
     - [X] Games
     - [X] API gateway
 
+- [ ] use gRPC for gateway->other-service communications
+- [ ] move template files from gateway into storage, then fetch them
+
 - [ ] Admin page
     - [ ] Front end
     - [ ] SSE
