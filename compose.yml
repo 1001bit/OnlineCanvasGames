@@ -2,7 +2,7 @@ services:
   gateway:
     container_name: gateway
 
-    build: ./gateway-service
+    build: ./services/gateway
     environment:
       - PORT=${GATEWAY_PORT}
 
@@ -24,7 +24,7 @@ services:
   games:
     container_name: games
 
-    build: ./games-service
+    build: ./services/games
     environment:
       - DB_NAME=${GAMES_DB_NAME}
       - DB_USER=${DB_USER}
@@ -61,7 +61,7 @@ services:
   user:
     container_name: user
 
-    build: ./user-service
+    build: ./services/user
     environment:
       - DB_NAME=${USERS_DB_NAME}
       - DB_USER=${DB_USER}
@@ -98,7 +98,7 @@ services:
   storage:
     container_name: storage
     
-    build: ./storage-service
+    build: ./services/storage
     env_file:
       - .env
     restart: always
