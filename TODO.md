@@ -87,7 +87,11 @@
     - [X] Games
     - [X] API gateway
 
-- [ ] use gRPC for gateway->other-service communications
+- [ ] somehow share pkg with other services
+- [ ] use gRPC for gateway->user communications
+    - [ ] .proto file
+    - [ ] server
+    - [ ] client
 - [ ] move template files from gateway into storage, then fetch them
 
 - [ ] Admin page
