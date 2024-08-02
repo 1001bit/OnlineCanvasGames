@@ -4,12 +4,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/env"
+	"github.com/1001bit/overenv"
 	"github.com/golang-jwt/jwt/v5"
 )
 
 var (
-	refreshTokenSecret   = []byte(env.GetEnvVal("TOKEN_SECRET"))
+	refreshTokenSecret   = []byte(overenv.Get("TOKEN_SECRET"))
 	refreshTokenDuration = time.Hour * 24 * 7
 )
 

@@ -4,12 +4,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/env"
+	"github.com/1001bit/overenv"
 	"github.com/golang-jwt/jwt/v5"
 )
 
 var (
-	accessTokenSecret   = []byte(env.GetEnvVal("TOKEN_SECRET"))
+	accessTokenSecret   = []byte(overenv.Get("TOKEN_SECRET"))
 	accessTokenDuration = time.Minute * 15
 )
 

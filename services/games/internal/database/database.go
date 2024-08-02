@@ -4,15 +4,25 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/1001bit/overenv"
 	_ "github.com/lib/pq"
 )
 
 var DB *sql.DB
 
-func Start() error {
-	config := NewReadyConfig()
+type Config struct {
+	User string `env:"DB_USER"`
+	Name string `env:"DB_NAME"`
+	Pass string `env:"DB_PASS"`
+	Host string `env:"DB_HOST"`
+	Port string `env:"DB_PORT"`
+}
 
-	connStr := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", config.host, config.user, config.pass, config.name, config.port)
+func Start() error {
+	config := Config{}
+	overenv.LoadStruct(&config)
+
+	connStr := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", config.Host, config.User, config.Pass, config.Name, config.Port)
 
 	var err error
 	DB, err = sql.Open("postgres", connStr)

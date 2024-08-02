@@ -7,7 +7,7 @@ import (
 
 	"github.com/1001bit/onlinecanvasgames/services/games/internal/database"
 	"github.com/1001bit/onlinecanvasgames/services/games/internal/server/router"
-	"github.com/1001bit/onlinecanvasgames/services/games/pkg/env"
+	"github.com/1001bit/overenv"
 )
 
 func main() {
@@ -25,7 +25,7 @@ func main() {
 	}
 
 	// start http server
-	addr := fmt.Sprintf(":%s", env.GetEnvVal("PORT"))
+	addr := fmt.Sprintf(":%s", overenv.Get("PORT"))
 	log.Println("Listening on", addr)
 	log.Fatal(http.ListenAndServe(addr, router))
 }

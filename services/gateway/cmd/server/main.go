@@ -9,22 +9,22 @@ import (
 	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/service/gamesservice"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/service/storageservice"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/service/userservice"
-	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/env"
+	"github.com/1001bit/overenv"
 )
 
 func main() {
 	// services
-	storageService, err := storageservice.New(env.GetEnvVal("STORAGE_HOST"), env.GetEnvVal("STORAGE_PORT"))
+	storageService, err := storageservice.New(overenv.Get("STORAGE_HOST"), overenv.Get("STORAGE_PORT"))
 	if err != nil {
 		log.Fatal("err getting service url:", err)
 	}
 
-	userService, err := userservice.New(env.GetEnvVal("USER_HOST"), env.GetEnvVal("USER_PORT"))
+	userService, err := userservice.New(overenv.Get("USER_HOST"), overenv.Get("USER_PORT"))
 	if err != nil {
 		log.Fatal("err getting service url:", err)
 	}
 
-	gamesService, err := gamesservice.New(env.GetEnvVal("GAMES_HOST"), env.GetEnvVal("GAMES_PORT"))
+	gamesService, err := gamesservice.New(overenv.Get("GAMES_HOST"), overenv.Get("GAMES_PORT"))
 	if err != nil {
 		log.Fatal("err getting service url:", err)
 	}
@@ -36,7 +36,7 @@ func main() {
 	}
 
 	// start http server
-	addr := fmt.Sprintf(":%s", env.GetEnvVal("PORT"))
+	addr := fmt.Sprintf(":%s", overenv.Get("PORT"))
 	log.Println("Listening on", addr)
 	log.Fatal(http.ListenAndServe(addr, router))
 }

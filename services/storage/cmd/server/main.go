@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/1001bit/onlinecanvasgames/services/storage/internal/router"
-	"github.com/1001bit/onlinecanvasgames/services/storage/pkg/env"
+	"github.com/1001bit/overenv"
 )
 
 func main() {
@@ -16,7 +16,7 @@ func main() {
 		log.Fatal("err creating router:", err)
 	}
 
-	addr := fmt.Sprintf(":%s", env.GetEnvVal("STORAGE_PORT"))
+	addr := fmt.Sprintf(":%s", overenv.Get("STORAGE_PORT"))
 
 	log.Println("Listening on", addr)
 	log.Fatal(http.ListenAndServe(addr, router))

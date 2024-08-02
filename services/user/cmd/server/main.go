@@ -7,8 +7,8 @@ import (
 
 	"github.com/1001bit/onlinecanvasgames/services/user/internal/database"
 	"github.com/1001bit/onlinecanvasgames/services/user/internal/server"
-	"github.com/1001bit/onlinecanvasgames/services/user/pkg/env"
 	"github.com/1001bit/onlinecanvasgames/services/user/pkg/userpb"
+	"github.com/1001bit/overenv"
 	"google.golang.org/grpc"
 )
 
@@ -21,7 +21,7 @@ func main() {
 	defer database.DB.Close()
 
 	// start listener
-	addr := fmt.Sprintf(":%s", env.GetEnvVal("PORT"))
+	addr := fmt.Sprintf(":%s", overenv.Get("PORT"))
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
 		log.Fatal("failed to listen:", err)
