@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/service"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/service/gamesservice"
 )
 
 type GameRoomData struct {
@@ -12,7 +12,7 @@ type GameRoomData struct {
 	GameTitle string
 }
 
-func HandleGameRoom(w http.ResponseWriter, r *http.Request, gamesService *service.GamesService) {
+func HandleGameRoom(w http.ResponseWriter, r *http.Request, gamesService *gamesservice.GamesService) {
 	data := GameRoomData{
 		GameTitle: r.PathValue("title"),
 	}

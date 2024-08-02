@@ -11,8 +11,3 @@ func HandleServerError(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusInternalServerError)
 	serveTemplate(w, r, "serverError.html", nil)
 }
-
-func HandleServerOverload(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusInternalServerError)
-	serveTemplate(w, r, "serverOverload.html", nil)
-}

@@ -21,6 +21,7 @@
 - **Frontend**: [`TypeScript`](https://www.typescriptlang.org/).
 - **TypeScript Recursive Compilation**: [`tscompiler`](https://github.com/1001bit/tscompiler)
 - **Containerization**: [`Docker`](https://www.docker.com/).
+- **Inter-Microservice Communication**: [`gRPC`](https://grpc.io/) 
 
 ## Getting Started
 

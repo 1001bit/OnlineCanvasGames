@@ -4,15 +4,15 @@ import (
 	"net/http"
 
 	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/auth/claimscontext"
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/service"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/service/gamesservice"
 )
 
 type HomeData struct {
 	Username string
-	Games    []*service.Game
+	Games    []*gamesservice.Game
 }
 
-func HandleHome(w http.ResponseWriter, r *http.Request, service *service.GamesService) {
+func HandleHome(w http.ResponseWriter, r *http.Request, service *gamesservice.GamesService) {
 	data := HomeData{}
 
 	data.Username, _ = claimscontext.GetUsername(r.Context())

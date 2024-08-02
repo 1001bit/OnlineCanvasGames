@@ -1,12 +1,13 @@
 package page
 
 import (
-	"context"
 	"net/http"
 	"time"
 
 	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/auth/claimscontext"
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/service"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/service/userservice"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type ProfileData struct {
@@ -15,30 +16,31 @@ type ProfileData struct {
 	Date      string
 }
 
-func HandleProfile(w http.ResponseWriter, r *http.Request, userService *service.UserService) {
+func HandleProfile(w http.ResponseWriter, r *http.Request, userService *userservice.UserService) {
 	data := ProfileData{}
 	data.UserName, _ = claimscontext.GetUsername(r.Context())
 
 	name := r.PathValue("name")
 
 	user, err := userService.GetUserByName(r.Context(), name)
-	switch err {
-	case nil:
-		// continue
-	case context.DeadlineExceeded:
-		HandleServerOverload(w, r)
-		return
-	default:
-		if data.UserName == name {
-			HandleLogout(w, r)
+	if err != nil {
+		e, ok := status.FromError(err)
+		if !ok {
+			HandleServerError(w, r)
 			return
 		}
 
-		HandleNotFound(w, r)
+		switch e.Code() {
+		case codes.NotFound:
+			HandleNotFound(w, r)
+		default:
+			HandleServerError(w, r)
+		}
+
 		return
 	}
 
-	data.OwnerName = user.Name
+	data.OwnerName = user.Username
 	data.Date, err = formatPostgresDate(user.Date)
 	if err != nil {
 		HandleServerError(w, r)

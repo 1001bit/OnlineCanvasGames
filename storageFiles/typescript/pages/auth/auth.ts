@@ -7,10 +7,9 @@ function postInput(type: InputType){
     const inputData = {
         username: $("#username").val(),
         password: $("#password").val(),
-        type: type
     }
 
-    fetch ("/api/user", {
+    fetch (`/api/user/${type}`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",

@@ -51,14 +51,14 @@ func GetByNameAndPassword(ctx context.Context, username, password string) (*User
 		// no error
 	case sql.ErrNoRows:
 		// incorrect username
-		return nil, ErrNoSuchUser
+		return nil, ErrNoUser
 	default:
 		return nil, err
 	}
 
 	// incorrect password
 	if !crypt.CheckHash(password, hash) {
-		return nil, ErrNoSuchUser
+		return nil, ErrNoUser
 	}
 
 	return user, nil

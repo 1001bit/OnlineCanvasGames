@@ -3,11 +3,13 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
+	"net"
 
 	"github.com/1001bit/onlinecanvasgames/services/user/internal/database"
-	"github.com/1001bit/onlinecanvasgames/services/user/internal/server/router"
+	"github.com/1001bit/onlinecanvasgames/services/user/internal/server"
 	"github.com/1001bit/onlinecanvasgames/services/user/pkg/env"
+	"github.com/1001bit/onlinecanvasgames/services/user/pkg/userpb"
+	"google.golang.org/grpc"
 )
 
 func main() {
@@ -18,14 +20,18 @@ func main() {
 	}
 	defer database.DB.Close()
 
-	// router
-	router, err := router.NewRouter()
+	// start listener
+	addr := fmt.Sprintf(":%s", env.GetEnvVal("PORT"))
+	listener, err := net.Listen("tcp", addr)
 	if err != nil {
-		log.Fatal("err creating router:", err)
+		log.Fatal("failed to listen:", err)
 	}
 
-	// start http server
-	addr := fmt.Sprintf(":%s", env.GetEnvVal("PORT"))
-	log.Println("Listening on", addr)
-	log.Fatal(http.ListenAndServe(addr, router))
+	// create server
+	s := grpc.NewServer()
+	userpb.RegisterUserServiceServer(s, server.NewUserServer())
+
+	// serve listener
+	log.Println("listening and", listener.Addr())
+	log.Fatal(s.Serve(listener))
 }

@@ -12,26 +12,25 @@ import (
 	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/message"
 )
 
-type Service struct {
+type Rest struct {
 	url *url.URL
 }
 
-func NewService(host, port string) (*Service, error) {
-	service := &Service{}
-	var err error
-
-	service.url, err = url.Parse(fmt.Sprintf("http://%s:%s", host, port))
-	return service, err
+func NewRestService(host, port string) (*Rest, error) {
+	url, err := url.Parse(fmt.Sprintf("http://%s:%s", host, port))
+	return &Rest{
+		url: url,
+	}, err
 }
 
-func (s *Service) proxy() http.HandlerFunc {
+func (s *Rest) Proxy() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		proxy := httputil.NewSingleHostReverseProxy(s.url)
 		proxy.ServeHTTP(w, r)
 	}
 }
 
-func (s *Service) request(ctx context.Context, method string, path string, requestBody io.Reader) (*message.JSON, error) {
+func (s *Rest) Request(ctx context.Context, method string, path string, requestBody io.Reader) (*message.JSON, error) {
 	req, err := http.NewRequest(method, s.url.JoinPath(path).String(), requestBody)
 	if err != nil {
 		return nil, err

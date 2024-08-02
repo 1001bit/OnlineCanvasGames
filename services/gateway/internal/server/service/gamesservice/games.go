@@ -1,10 +1,11 @@
-package service
+package gamesservice
 
 import (
 	"context"
 	"net/http"
 
 	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/auth/claimscontext"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/service"
 )
 
 type Game struct {
@@ -12,11 +13,11 @@ type Game struct {
 }
 
 type GamesService struct {
-	service *Service
+	service *service.Rest
 }
 
-func NewGamesService(host, port string) (*GamesService, error) {
-	service, err := NewService(host, port)
+func New(host, port string) (*GamesService, error) {
+	service, err := service.NewRestService(host, port)
 	if err != nil {
 		return nil, err
 	}
@@ -26,7 +27,7 @@ func NewGamesService(host, port string) (*GamesService, error) {
 }
 
 func (s *GamesService) ProxyHandler() http.HandlerFunc {
-	return s.service.proxy()
+	return s.service.Proxy()
 }
 
 func (s *GamesService) RoomProxyHandler() http.HandlerFunc {
@@ -45,7 +46,7 @@ func (s *GamesService) RoomProxyHandler() http.HandlerFunc {
 
 func (s *GamesService) GetGames(ctx context.Context) ([]*Game, error) {
 	// forward post request from original body
-	msg, err := s.service.request(ctx, "GET", "/api/game", nil)
+	msg, err := s.service.Request(ctx, "GET", "/api/game", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -60,14 +61,14 @@ func (s *GamesService) GetGames(ctx context.Context) ([]*Game, error) {
 		for i := range body {
 			game := body[i].(map[string]any)
 			if game == nil {
-				return nil, ErrBadRequest
+				return nil, service.ErrBadRequest
 			}
 			games[i] = mapToGame(game)
 		}
 
 		return games, nil
 	default:
-		return nil, ErrBadRequest
+		return nil, service.ErrBadRequest
 	}
 }
 

@@ -6,13 +6,15 @@ import (
 	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/handler/api"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/handler/page"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/middleware"
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/service"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/service/gamesservice"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/service/storageservice"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/service/userservice"
 
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
 )
 
-func NewRouter(storageService *service.StorageService, userService *service.UserService, gamesService *service.GamesService) (http.Handler, error) {
+func NewRouter(storageService *storageservice.StorageService, userService *userservice.UserService, gamesService *gamesservice.GamesService) (http.Handler, error) {
 	// Router
 	router := chi.NewRouter()
 	router.Use(chimw.Logger)
@@ -39,9 +41,13 @@ func NewRouter(storageService *service.StorageService, userService *service.User
 	router.Route("/api", func(jsonRouter chi.Router) {
 		jsonRouter.Use(middleware.TypeJSON)
 
-		// Users
-		jsonRouter.Post("/user", func(w http.ResponseWriter, r *http.Request) {
-			api.HandleUserPost(w, r, userService)
+		// Login
+		jsonRouter.Post("/user/login", func(w http.ResponseWriter, r *http.Request) {
+			api.HandleUserLogin(w, r, userService)
+		})
+		// Register
+		jsonRouter.Post("/user/register", func(w http.ResponseWriter, r *http.Request) {
+			api.HandleUserRegister(w, r, userService)
 		})
 
 		// Rooms
