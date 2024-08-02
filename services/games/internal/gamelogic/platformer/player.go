@@ -1,6 +1,6 @@
 package platformer
 
-import "github.com/1001bit/onlinecanvasgames/services/games/internal/mathobjects"
+import "github.com/1001bit/onlinecanvasgames/services/games/pkg/mathobjects"
 
 type Player struct {
 	mathobjects.Rect

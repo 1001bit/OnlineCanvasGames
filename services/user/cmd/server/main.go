@@ -7,6 +7,7 @@ import (
 
 	"github.com/1001bit/onlinecanvasgames/services/user/internal/database"
 	"github.com/1001bit/onlinecanvasgames/services/user/internal/server"
+	"github.com/1001bit/onlinecanvasgames/services/user/internal/usermodel"
 	"github.com/1001bit/onlinecanvasgames/services/user/pkg/userpb"
 	"github.com/1001bit/overenv"
 	"google.golang.org/grpc"
@@ -14,11 +15,11 @@ import (
 
 func main() {
 	// start database
-	err := database.Start()
+	db, err := database.NewFromEnv()
 	if err != nil {
 		log.Fatal("err starting database:", err)
 	}
-	defer database.DB.Close()
+	defer db.Close()
 
 	// start listener
 	addr := fmt.Sprintf(":%s", overenv.Get("PORT"))
@@ -29,7 +30,8 @@ func main() {
 
 	// create server
 	s := grpc.NewServer()
-	userpb.RegisterUserServiceServer(s, server.NewUserServer())
+	userStore := usermodel.NewUserStore(db)
+	userpb.RegisterUserServiceServer(s, server.NewUserServer(userStore))
 
 	// serve listener
 	log.Println("listening and", listener.Addr())

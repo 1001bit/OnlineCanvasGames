@@ -8,10 +8,6 @@ import (
 	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/service"
 )
 
-type Game struct {
-	Title string `json:"title"`
-}
-
 type GamesService struct {
 	service *service.Rest
 }
@@ -44,7 +40,7 @@ func (s *GamesService) RoomProxyHandler() http.HandlerFunc {
 	}
 }
 
-func (s *GamesService) GetGames(ctx context.Context) ([]*Game, error) {
+func (s *GamesService) GetGames(ctx context.Context) ([]string, error) {
 	// forward post request from original body
 	msg, err := s.service.Request(ctx, "GET", "/api/game", nil)
 	if err != nil {
@@ -56,30 +52,18 @@ func (s *GamesService) GetGames(ctx context.Context) ([]*Game, error) {
 		// user type, ok
 		body := msg.Body.([]any)
 
-		games := make([]*Game, len(body))
+		games := make([]string, len(body))
 
 		for i := range body {
 			game := body[i].(map[string]any)
 			if game == nil {
 				return nil, service.ErrBadRequest
 			}
-			games[i] = mapToGame(game)
+			games[i], _ = game["title"].(string)
 		}
 
 		return games, nil
 	default:
 		return nil, service.ErrBadRequest
 	}
-}
-
-func mapToGame(m map[string]any) *Game {
-	game := &Game{}
-	var ok bool
-
-	game.Title, ok = m["title"].(string)
-	if !ok {
-		return nil
-	}
-
-	return game
 }

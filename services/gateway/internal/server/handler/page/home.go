@@ -9,7 +9,7 @@ import (
 
 type HomeData struct {
 	Username string
-	Games    []*gamesservice.Game
+	Titles   []string
 }
 
 func HandleHome(w http.ResponseWriter, r *http.Request, service *gamesservice.GamesService) {
@@ -17,7 +17,7 @@ func HandleHome(w http.ResponseWriter, r *http.Request, service *gamesservice.Ga
 
 	data.Username, _ = claimscontext.GetUsername(r.Context())
 
-	data.Games, _ = service.GetGames(r.Context())
+	data.Titles, _ = service.GetGames(r.Context())
 
 	serveTemplate(w, r, "home.html", data)
 }

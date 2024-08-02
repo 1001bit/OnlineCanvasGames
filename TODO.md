@@ -87,10 +87,8 @@
     - [X] Games
     - [X] API gateway
 
-- [ ] use gRPC for gateway->service communications
+- [X] use gRPC for gateway->service communications
     - [X] user
-    - [ ] games
-- [ ] somehow share pkg with other services
 - [ ] move template files from gateway into storage, then fetch them
 
 - [ ] Admin page

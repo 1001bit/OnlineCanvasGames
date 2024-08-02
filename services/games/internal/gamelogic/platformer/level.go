@@ -2,9 +2,9 @@ package platformer
 
 import (
 	"github.com/1001bit/onlinecanvasgames/services/games/internal/gamelogic"
-	"github.com/1001bit/onlinecanvasgames/services/games/internal/mathobjects"
 	"github.com/1001bit/onlinecanvasgames/services/games/pkg/concurrent"
 	"github.com/1001bit/onlinecanvasgames/services/games/pkg/fixedticker"
+	"github.com/1001bit/onlinecanvasgames/services/games/pkg/mathobjects"
 )
 
 type rectID int

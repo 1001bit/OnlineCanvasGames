@@ -12,14 +12,18 @@ import (
 
 type UserServer struct {
 	userpb.UnimplementedUserServiceServer
+
+	userStore *usermodel.UserStore
 }
 
-func NewUserServer() *UserServer {
-	return &UserServer{}
+func NewUserServer(userStore *usermodel.UserStore) *UserServer {
+	return &UserServer{
+		userStore: userStore,
+	}
 }
 
 func (s *UserServer) GetUser(ctx context.Context, req *userpb.GetUserRequest) (*userpb.UserResponse, error) {
-	user, err := usermodel.GetByName(ctx, req.Username)
+	user, err := s.userStore.GetByName(ctx, req.Username)
 
 	switch err {
 	case nil:
@@ -36,14 +40,14 @@ func (s *UserServer) GetUser(ctx context.Context, req *userpb.GetUserRequest) (*
 }
 
 func (s *UserServer) LoginUser(ctx context.Context, req *userpb.UserInputRequest) (*userpb.UserResponse, error) {
-	user, err := usermodel.GetByNameAndPassword(ctx, req.Username, req.Password)
+	user, err := s.userStore.GetByNameAndPassword(ctx, req.Username, req.Password)
 
 	switch err {
 	case nil:
 		// continue
 	case context.DeadlineExceeded:
 		return nil, status.Error(codes.DeadlineExceeded, "deadline exceeded")
-	case usermodel.ErrNoUser:
+	case usermodel.ErrLogin:
 		return nil, status.Error(codes.Unauthenticated, "invalid username or password")
 	default:
 		return nil, status.Error(codes.Internal, "something went wrong")
@@ -53,14 +57,14 @@ func (s *UserServer) LoginUser(ctx context.Context, req *userpb.UserInputRequest
 }
 
 func (s *UserServer) RegisterUser(ctx context.Context, req *userpb.UserInputRequest) (*userpb.UserResponse, error) {
-	user, err := usermodel.Insert(ctx, req.Username, req.Password)
+	user, err := s.userStore.Insert(ctx, req.Username, req.Password)
 
 	switch err {
 	case nil:
 		// continue
 	case context.DeadlineExceeded:
 		return nil, status.Error(codes.DeadlineExceeded, "deadline exceeded")
-	case usermodel.ErrUserExists:
+	case usermodel.ErrRegister:
 		return nil, status.Error(codes.AlreadyExists, "user already exists")
 	default:
 		return nil, status.Error(codes.Internal, "something went wrong")

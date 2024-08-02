@@ -3,31 +3,29 @@ package usermodel
 import (
 	"context"
 	"database/sql"
-	"time"
 
-	"github.com/1001bit/onlinecanvasgames/services/user/internal/database"
 	"github.com/1001bit/onlinecanvasgames/services/user/pkg/crypt"
 )
-
-const maxQueryTime = 5 * time.Second
 
 type User struct {
 	Name string `json:"name"`
 	Date string `json:"date"`
 }
 
-func NewUser() *User {
-	return &User{}
+type UserStore struct {
+	db *sql.DB
 }
 
-func GetByName(ctx context.Context, username string) (*User, error) {
-	ctx, cancel := context.WithTimeout(ctx, maxQueryTime)
-	defer cancel()
+func NewUserStore(db *sql.DB) *UserStore {
+	return &UserStore{
+		db: db,
+	}
+}
 
-	user := NewUser()
-	user.Name = username
+func (us *UserStore) GetByName(ctx context.Context, username string) (*User, error) {
+	user := &User{}
 
-	err := database.DB.QueryRowContext(ctx, "SELECT date FROM users WHERE name = $1", username).Scan(&user.Date)
+	err := us.db.QueryRowContext(ctx, "SELECT name, date FROM users WHERE LOWER(name) = LOWER($1)", username).Scan(&user.Name, &user.Date)
 	if err != nil {
 		return nil, err
 	}
@@ -35,15 +33,12 @@ func GetByName(ctx context.Context, username string) (*User, error) {
 	return user, nil
 }
 
-func GetByNameAndPassword(ctx context.Context, username, password string) (*User, error) {
-	ctx, cancel := context.WithTimeout(ctx, maxQueryTime)
-	defer cancel()
-
-	user := NewUser()
+func (us *UserStore) GetByNameAndPassword(ctx context.Context, username, password string) (*User, error) {
+	user := &User{}
 	var hash string
 
 	// get user row regardless of character case
-	row := database.DB.QueryRowContext(ctx, "SELECT name, date, hash FROM users WHERE LOWER(name) = LOWER($1)", username)
+	row := us.db.QueryRowContext(ctx, "SELECT name, date, hash FROM users WHERE LOWER(name) = LOWER($1)", username)
 	err := row.Scan(&user.Name, &user.Date, &hash)
 
 	switch err {
@@ -51,45 +46,41 @@ func GetByNameAndPassword(ctx context.Context, username, password string) (*User
 		// no error
 	case sql.ErrNoRows:
 		// incorrect username
-		return nil, ErrNoUser
+		return nil, ErrLogin
 	default:
 		return nil, err
 	}
 
 	// incorrect password
 	if !crypt.CheckHash(password, hash) {
-		return nil, ErrNoUser
+		return nil, ErrLogin
 	}
 
 	return user, nil
 }
 
-func Insert(ctx context.Context, username, password string) (*User, error) {
-	ctx, cancel := context.WithTimeout(ctx, maxQueryTime)
-	defer cancel()
-
+func (us *UserStore) Insert(ctx context.Context, username, password string) (*User, error) {
 	// check existance
 	var exists bool
 
-	err := database.DB.QueryRowContext(ctx, "SELECT EXISTS(SELECT 1 FROM users WHERE LOWER(name) = LOWER($1))", username).Scan(&exists)
+	err := us.db.QueryRowContext(ctx, "SELECT EXISTS(SELECT 1 FROM users WHERE LOWER(name) = LOWER($1))", username).Scan(&exists)
 	if err != nil {
 		return nil, err
 	}
 
 	// user already exists, can't insert a new one
 	if exists {
-		return nil, ErrUserExists
+		return nil, ErrRegister
 	}
 
-	// create new user
-	newUser := &User{Name: username}
 	// generate hash for user
 	hash, err := crypt.GenerateHash(password)
 	if err != nil {
 		return nil, err
 	}
 	// insert into a database
-	database.DB.QueryRowContext(ctx, "INSERT INTO users (name, hash) VALUES ($1, $2)", username, hash)
+	us.db.QueryRowContext(ctx, "INSERT INTO users (name, hash) VALUES ($1, $2)", username, hash)
 
+	newUser := &User{Name: username}
 	return newUser, nil
 }

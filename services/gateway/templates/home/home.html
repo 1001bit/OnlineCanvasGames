@@ -16,16 +16,16 @@
     {{ else }}
         <h1>Welcome back, {{ .Data.Username }}!</h1>
     {{ end }}
-    <h2>Available online games ({{ len .Data.Games }}):</h2>
+    <h2>Available online games ({{ len .Data.Titles }}):</h2>
     <div class="card-group">
-        {{ range .Data.Games }}
+        {{ range .Data.Titles }}
 
-        <a href="/game/{{ .Title }}">
+        <a href="/game/{{ . }}">
             <div class="card">
                 <div class="img-holder">
-                    <img src="/image/gameicon/{{ .Title }}">
+                    <img src="/image/gameicon/{{ . }}">
                 </div>
-                <button class="style-button small physical">{{ .Title }}</button>
+                <button class="style-button small physical">{{ . }}</button>
             </div>
         </a>
 

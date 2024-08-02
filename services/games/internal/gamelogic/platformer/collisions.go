@@ -1,6 +1,6 @@
 package platformer
 
-import "github.com/1001bit/onlinecanvasgames/services/games/internal/mathobjects"
+import "github.com/1001bit/onlinecanvasgames/services/games/pkg/mathobjects"
 
 func (p *Player) DetectHorizontalCollision(block *Block, dtMs float64) mathobjects.Direction {
 	if p.velocity.X == 0 {
