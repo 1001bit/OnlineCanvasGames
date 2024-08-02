@@ -33,10 +33,10 @@ func NewBaseNode() *BaseNode {
 }
 
 // get all the games from database and put then into BaseNode
-func (baseNode *BaseNode) InitGames() error {
+func (baseNode *BaseNode) InitGames(gameStore *gamemodel.GameStore) error {
 	var err error
 
-	baseNode.gamesJSON, err = gamemodel.GetAll(context.Background())
+	baseNode.gamesJSON, err = gameStore.GetAllGames(context.Background())
 	if err != nil {
 		return err
 	}

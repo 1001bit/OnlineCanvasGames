@@ -6,20 +6,24 @@ import (
 	"net/http"
 
 	"github.com/1001bit/onlinecanvasgames/services/games/internal/database"
+	"github.com/1001bit/onlinecanvasgames/services/games/internal/gamemodel"
 	"github.com/1001bit/onlinecanvasgames/services/games/internal/server/router"
 	"github.com/1001bit/overenv"
 )
 
 func main() {
 	// start database
-	err := database.Start()
+	db, err := database.NewFromEnv()
 	if err != nil {
 		log.Fatal("err starting database:", err)
 	}
-	defer database.DB.Close()
+	defer db.Close()
+
+	// gamestore
+	gameStore := gamemodel.NewGameStore(db)
 
 	// router
-	router, err := router.NewRouter()
+	router, err := router.NewRouter(gameStore)
 	if err != nil {
 		log.Fatal("err creating router:", err)
 	}

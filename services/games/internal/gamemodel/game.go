@@ -2,32 +2,31 @@ package gamemodel
 
 import (
 	"context"
-	"time"
-
-	"github.com/1001bit/onlinecanvasgames/services/games/internal/database"
+	"database/sql"
 )
-
-const maxQueryTime = 5 * time.Second
 
 type Game struct {
 	Title string `json:"title"`
 }
 
-func NewGame() *Game {
-	return &Game{}
+type GameStore struct {
+	db *sql.DB
 }
 
-func GetAll(ctx context.Context) ([]Game, error) {
-	ctx, cancel := context.WithTimeout(ctx, maxQueryTime)
-	defer cancel()
+func NewGameStore(db *sql.DB) *GameStore {
+	return &GameStore{
+		db: db,
+	}
+}
 
-	rows, err := database.DB.QueryContext(ctx, "SELECT title FROM games")
+func (gs *GameStore) GetAllGames(ctx context.Context) ([]Game, error) {
+	rows, err := gs.db.QueryContext(ctx, "SELECT title FROM games")
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var games []Game
+	games := make([]Game, 0)
 
 	for rows.Next() {
 		var game Game

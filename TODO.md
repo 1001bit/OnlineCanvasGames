@@ -61,8 +61,7 @@
                 - [X] Rect Delete/Create
                 - [X] Level update
                 - [X] Level correction state
-            - [X] Smooth following camera
-            - [ ] Fixed Timestep (non crucial)
+            - [ ] Fixed Timestep
 
         - [X] Client
             - [X] Level Draw
@@ -79,6 +78,7 @@
                     - [X] Control
                     - [X] Collisions
                 - [X] Kinematic Players position correction
+            - [X] Smooth following camera
             - [ ] Animated sprites
 
 - [X] Microservices:
@@ -89,6 +89,7 @@
 
 - [X] use gRPC for gateway->service communications
     - [X] user
+- [ ] Use structs with handlers as methods
 - [ ] move template files from gateway into storage, then fetch them
 
 - [ ] Admin page

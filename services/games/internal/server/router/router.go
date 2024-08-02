@@ -3,6 +3,7 @@ package router
 import (
 	"net/http"
 
+	"github.com/1001bit/onlinecanvasgames/services/games/internal/gamemodel"
 	"github.com/1001bit/onlinecanvasgames/services/games/internal/server/handler/api"
 	"github.com/1001bit/onlinecanvasgames/services/games/internal/server/handler/rt"
 	"github.com/1001bit/onlinecanvasgames/services/games/internal/server/realtime/nodes/basenode"
@@ -10,12 +11,12 @@ import (
 	chimw "github.com/go-chi/chi/v5/middleware"
 )
 
-func NewRouter() (http.Handler, error) {
+func NewRouter(gameStore *gamemodel.GameStore) (http.Handler, error) {
 	// Realtime
 	baseNode := basenode.NewBaseNode()
 	go baseNode.Run()
 
-	err := baseNode.InitGames()
+	err := baseNode.InitGames(gameStore)
 	if err != nil {
 		return nil, err
 	}
