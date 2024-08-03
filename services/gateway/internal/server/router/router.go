@@ -88,7 +88,7 @@ func NewRouter(storageService *storageservice.StorageService, userService *users
 		})
 
 		// Other
-		htmlRouter.Get("/*", page.HandleNotFound)
+		htmlRouter.NotFound(page.HandleNotFound)
 	})
 
 	return router, nil
