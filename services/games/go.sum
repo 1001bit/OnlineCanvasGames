@@ -1,5 +1,7 @@
 github.com/1001bit/overenv v0.0.0-20240802081600-7f2f8246bdb9 h1:1QKw+FI9cxZJDm9LBp5Dl9haN8iKp1/D9q3Owlagdbs=
 github.com/1001bit/overenv v0.0.0-20240802081600-7f2f8246bdb9/go.mod h1:hr+h64K/f9fNhewSXEFkbqX5R+YueS/EMY16Y10NABM=
+github.com/1001bit/overenv v0.0.0-20240805182428-badcee0578e9 h1:yvuGJtgIoFX4KVkOY+xn1O/jB0b7yiKgApZ3XcHFf6U=
+github.com/1001bit/overenv v0.0.0-20240805182428-badcee0578e9/go.mod h1:r/rRrhdhzidBGr9q5lyYK+X+2iCuvYos+xOwIA1m1Mw=
 github.com/go-chi/chi/v5 v5.1.0 h1:acVI1TYaD+hhedDJ3r54HyA6sExp3HfXq7QWEEY/xMw=
 github.com/go-chi/chi/v5 v5.1.0/go.mod h1:DslCQbL2OYiznFReuXYUmQ2hGd1aDpCnlMNITLSKoi8=
 github.com/gorilla/websocket v1.5.3 h1:saDtZ6Pbx/0u+bgYQ3q96pZgCzfhKXGPqt7kZ72aNNg=
