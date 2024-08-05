@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/message"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/message"
 )
 
 func ServeMessage(w http.ResponseWriter, msg message.JSON, status int) {

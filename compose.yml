@@ -50,7 +50,7 @@ services:
     restart: always
     volumes:
       - gamesdbdata:/var/lib/postgresql/data
-      - ./databaseInit/games-init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./services/games/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
       interval: 1m30s
@@ -87,7 +87,7 @@ services:
     restart: always
     volumes:
       - usersdbdata:/var/lib/postgresql/data
-      - ./databaseInit/users-init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./services/user/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
       interval: 1m30s

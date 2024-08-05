@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/auth/claimscontext"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/service/userservice"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/auth/claimscontext"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

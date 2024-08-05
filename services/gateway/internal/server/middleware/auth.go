@@ -3,9 +3,9 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/auth/claimscontext"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/handler/api"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/handler/page"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/auth/claimscontext"
 )
 
 func AuthHTML(next http.Handler) http.Handler {

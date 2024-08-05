@@ -3,8 +3,8 @@ package page
 import (
 	"net/http"
 
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/auth/claimscontext"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/service/gamesservice"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/auth/claimscontext"
 )
 
 type HomeData struct {

@@ -4,7 +4,7 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/auth/claimscontext"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/auth/claimscontext"
 )
 
 type NavigationData struct {

@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/auth/claimscontext"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/service"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/auth/claimscontext"
 )
 
 type GamesService struct {

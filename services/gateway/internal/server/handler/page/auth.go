@@ -3,7 +3,7 @@ package page
 import (
 	"net/http"
 
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/auth/claimscontext"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/auth/claimscontext"
 )
 
 func HandleAuth(w http.ResponseWriter, r *http.Request) {

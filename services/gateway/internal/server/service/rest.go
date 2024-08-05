@@ -9,7 +9,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/message"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/message"
 )
 
 type Rest struct {
