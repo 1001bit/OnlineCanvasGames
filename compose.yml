@@ -1,7 +1,5 @@
 services:
   gateway:
-    container_name: gateway
-
     build: ./services/gateway
     environment:
       - PORT=${GATEWAY_PORT}
@@ -22,8 +20,6 @@ services:
     command: ./main
 
   games:
-    container_name: games
-
     build: ./services/games
     environment:
       - DB_NAME=${GAMES_DB_NAME}
@@ -40,8 +36,6 @@ services:
     command: ./main
 
   gamesdb:
-    container_name: gamesdb
-
     environment:
       - POSTGRES_DB=${GAMES_DB_NAME}
       - POSTGRES_USER=${DB_USER}
@@ -59,8 +53,6 @@ services:
       start_period: 30s
 
   user:
-    container_name: user
-
     build: ./services/user
     environment:
       - DB_NAME=${USERS_DB_NAME}
@@ -77,8 +69,6 @@ services:
     command: ./main
   
   usersdb:
-    container_name: usersdb
-
     environment:
       - POSTGRES_DB=${USERS_DB_NAME}
       - POSTGRES_USER=${DB_USER}
@@ -96,8 +86,6 @@ services:
       start_period: 30s
 
   storage:
-    container_name: storage
-    
     build: ./services/storage
     env_file:
       - .env
@@ -107,8 +95,6 @@ services:
     command: ./main
   
   adminer:
-    container_name: adminer
-
     image: adminer
     restart: always
     ports:

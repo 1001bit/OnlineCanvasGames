@@ -27,7 +27,7 @@
 
 1. To get started with **Online Canvas Games**, ensure you have Docker installed on your machine.
 2. Clone the repository and navigate to the project directory.
-3. Create your own `.env` in the root directory based on the `.env.example` (may keep the values)
+3. Make sure environmental variables are set (see .env)
 
 ## Build and start
 
