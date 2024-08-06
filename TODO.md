@@ -89,8 +89,6 @@
 
 - [X] use gRPC for gateway->service communications
     - [X] user
-- [ ] Use structs with handlers as methods
-- [ ] move template files from gateway into storage, then fetch them
 
 - [ ] Admin page
     - [ ] Front end
