@@ -9,7 +9,7 @@ RUN go mod download
 COPY . .
 
 # compiling go -> ./main
-RUN go build -o main cmd/server/main.go
+RUN go build -o main main.go
 
 # Final stage
 FROM debian:bookworm-slim
