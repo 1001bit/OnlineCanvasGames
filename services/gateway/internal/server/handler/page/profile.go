@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/service/userservice"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/auth/claimscontext"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/client/userservice"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -16,7 +16,7 @@ type ProfileData struct {
 	Date      string
 }
 
-func HandleProfile(w http.ResponseWriter, r *http.Request, userService *userservice.UserService) {
+func HandleProfile(w http.ResponseWriter, r *http.Request, userService *userservice.Client) {
 	data := ProfileData{}
 	data.UserName, _ = claimscontext.GetUsername(r.Context())
 

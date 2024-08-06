@@ -4,29 +4,29 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/service"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/auth/claimscontext"
+	service "github.com/1001bit/onlinecanvasgames/services/gateway/pkg/client"
 )
 
-type GamesService struct {
-	service *service.Rest
+type Client struct {
+	service *service.RestClient
 }
 
-func New(host, port string) (*GamesService, error) {
-	service, err := service.NewRestService(host, port)
+func NewClient(host, port string) (*Client, error) {
+	service, err := service.NewRestClient(host, port)
 	if err != nil {
 		return nil, err
 	}
-	return &GamesService{
+	return &Client{
 		service: service,
 	}, nil
 }
 
-func (s *GamesService) ProxyHandler() http.HandlerFunc {
+func (s *Client) ProxyHandler() http.HandlerFunc {
 	return s.service.Proxy()
 }
 
-func (s *GamesService) RoomProxyHandler() http.HandlerFunc {
+func (s *Client) RoomProxyHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		username, ok := claimscontext.GetUsername(r.Context())
 		if !ok {
@@ -40,7 +40,7 @@ func (s *GamesService) RoomProxyHandler() http.HandlerFunc {
 	}
 }
 
-func (s *GamesService) GetGames(ctx context.Context) ([]string, error) {
+func (s *Client) GetGames(ctx context.Context) ([]string, error) {
 	// forward post request from original body
 	msg, err := s.service.Request(ctx, "GET", "/api/game", nil)
 	if err != nil {

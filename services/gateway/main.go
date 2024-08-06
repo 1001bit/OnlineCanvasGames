@@ -6,25 +6,25 @@ import (
 	"net/http"
 
 	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/router"
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/service/gamesservice"
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/service/storageservice"
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/service/userservice"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/client/gamesservice"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/client/storageservice"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/client/userservice"
 	"github.com/1001bit/overenv"
 )
 
 func main() {
 	// services
-	storageService, err := storageservice.New(overenv.Get("STORAGE_HOST"), overenv.Get("STORAGE_PORT"))
+	storageService, err := storageservice.NewClient(overenv.Get("STORAGE_HOST"), overenv.Get("STORAGE_PORT"))
 	if err != nil {
 		log.Fatal("err getting service url:", err)
 	}
 
-	userService, err := userservice.New(overenv.Get("USER_HOST"), overenv.Get("USER_PORT"))
+	userService, err := userservice.NewClient(overenv.Get("USER_HOST"), overenv.Get("USER_PORT"))
 	if err != nil {
 		log.Fatal("err getting service url:", err)
 	}
 
-	gamesService, err := gamesservice.New(overenv.Get("GAMES_HOST"), overenv.Get("GAMES_PORT"))
+	gamesService, err := gamesservice.NewClient(overenv.Get("GAMES_HOST"), overenv.Get("GAMES_PORT"))
 	if err != nil {
 		log.Fatal("err getting service url:", err)
 	}

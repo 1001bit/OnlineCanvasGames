@@ -4,9 +4,6 @@
 DOCKER_COMPOSE = docker compose
 TSCOMPILER = ./tscompiler
 
-# Default target
-all: build up
-
 # Build the Docker containers
 build:
 	@echo "Building Docker containers..."
@@ -32,4 +29,4 @@ clean:
 	@echo "Cleaning up Docker resources..."
 	$(DOCKER_COMPOSE) down --rmi all --volumes --remove-orphans
 
-.PHONY: all build up down compile-ts clean
+.PHONY: build up down compile-ts clean

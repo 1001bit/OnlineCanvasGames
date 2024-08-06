@@ -6,15 +6,15 @@ import (
 	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/handler/api"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/handler/page"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/middleware"
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/service/gamesservice"
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/service/storageservice"
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/service/userservice"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/client/gamesservice"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/client/storageservice"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/client/userservice"
 
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
 )
 
-func NewRouter(storageService *storageservice.StorageService, userService *userservice.UserService, gamesService *gamesservice.GamesService) (http.Handler, error) {
+func NewRouter(storageService *storageservice.Client, userService *userservice.Client, gamesService *gamesservice.Client) (http.Handler, error) {
 	// Router
 	router := chi.NewRouter()
 	router.Use(chimw.Logger)
@@ -39,8 +39,6 @@ func NewRouter(storageService *storageservice.StorageService, userService *users
 
 	// JSON
 	router.Route("/api", func(jsonRouter chi.Router) {
-		jsonRouter.Use(middleware.TypeJSON)
-
 		// Login
 		jsonRouter.Post("/user/login", func(w http.ResponseWriter, r *http.Request) {
 			api.HandleUserLogin(w, r, userService)
@@ -60,8 +58,6 @@ func NewRouter(storageService *storageservice.StorageService, userService *users
 
 	// HTML Pages
 	router.Route("/", func(htmlRouter chi.Router) {
-		htmlRouter.Use(middleware.TypeHTML)
-
 		// Home
 		htmlRouter.Get("/", func(w http.ResponseWriter, r *http.Request) {
 			page.HandleHome(w, r, gamesService)
@@ -79,12 +75,8 @@ func NewRouter(storageService *storageservice.StorageService, userService *users
 		htmlRouter.Group(func(htmlRouterSecure chi.Router) {
 			htmlRouterSecure.Use(middleware.AuthHTML)
 
-			htmlRouterSecure.Get("/game/{title}", func(w http.ResponseWriter, r *http.Request) {
-				page.HandleGameHub(w, r, gamesService)
-			})
-			htmlRouterSecure.Get("/game/{title}/room/{roomid}", func(w http.ResponseWriter, r *http.Request) {
-				page.HandleGameRoom(w, r, gamesService)
-			})
+			htmlRouterSecure.Get("/game/{title}", page.HandleGameHub)
+			htmlRouterSecure.Get("/game/{title}/room/{roomid}", page.HandleGameRoom)
 		})
 
 		// Other

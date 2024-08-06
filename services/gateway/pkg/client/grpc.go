@@ -7,14 +7,14 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-type GRPC struct {
+type GRPCClient struct {
 	Conn *grpc.ClientConn
 }
 
-func NewGRPCService(host, port string) (*GRPC, error) {
+func NewGRPCClient(host, port string) (*GRPCClient, error) {
 	addr := fmt.Sprintf("%s:%s", host, port)
 	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	return &GRPC{
+	return &GRPCClient{
 		Conn: conn,
 	}, err
 }

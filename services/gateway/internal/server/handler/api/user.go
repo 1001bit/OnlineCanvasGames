@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"regexp"
 
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/service/userservice"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/auth/token"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/client/userservice"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -16,7 +16,7 @@ type Input struct {
 	Password string `json:"password"`
 }
 
-func HandleUserLogin(w http.ResponseWriter, r *http.Request, userService *userservice.UserService) {
+func HandleUserLogin(w http.ResponseWriter, r *http.Request, userService *userservice.Client) {
 	input := Input{}
 	json.NewDecoder(r.Body).Decode(&input)
 
@@ -47,7 +47,7 @@ func HandleUserLogin(w http.ResponseWriter, r *http.Request, userService *userse
 	ServeTextMessage(w, "Success!", http.StatusOK)
 }
 
-func HandleUserRegister(w http.ResponseWriter, r *http.Request, userService *userservice.UserService) {
+func HandleUserRegister(w http.ResponseWriter, r *http.Request, userService *userservice.Client) {
 	input := Input{}
 	err := json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {

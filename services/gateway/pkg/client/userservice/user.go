@@ -3,22 +3,22 @@ package userservice
 import (
 	"context"
 
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/service"
+	service "github.com/1001bit/onlinecanvasgames/services/gateway/pkg/client"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/userpb"
 )
 
-type UserService struct {
-	service *service.GRPC
+type Client struct {
+	service *service.GRPCClient
 	client  userpb.UserServiceClient
 }
 
-func New(host, port string) (*UserService, error) {
-	grpcService, err := service.NewGRPCService(host, port)
+func NewClient(host, port string) (*Client, error) {
+	grpcService, err := service.NewGRPCClient(host, port)
 	if err != nil {
 		return nil, err
 	}
 
-	service := &UserService{
+	service := &Client{
 		service: grpcService,
 		client:  userpb.NewUserServiceClient(grpcService.Conn),
 	}
@@ -27,12 +27,12 @@ func New(host, port string) (*UserService, error) {
 }
 
 // get user from service by username
-func (s *UserService) GetUserByName(ctx context.Context, name string) (*userpb.UserResponse, error) {
+func (s *Client) GetUserByName(ctx context.Context, name string) (*userpb.UserResponse, error) {
 	return s.client.GetUser(ctx, &userpb.GetUserRequest{Username: name})
 }
 
 // login user
-func (s *UserService) LoginUser(ctx context.Context, name string, password string) (*userpb.UserResponse, error) {
+func (s *Client) LoginUser(ctx context.Context, name string, password string) (*userpb.UserResponse, error) {
 	input := &userpb.UserInputRequest{
 		Username: name,
 		Password: password,
@@ -41,7 +41,7 @@ func (s *UserService) LoginUser(ctx context.Context, name string, password strin
 }
 
 // register user
-func (s *UserService) RegisterUser(ctx context.Context, name string, password string) (*userpb.UserResponse, error) {
+func (s *Client) RegisterUser(ctx context.Context, name string, password string) (*userpb.UserResponse, error) {
 	input := &userpb.UserInputRequest{
 		Username: name,
 		Password: password,
