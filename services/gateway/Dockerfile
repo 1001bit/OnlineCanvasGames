@@ -17,4 +17,3 @@ FROM debian:bookworm-slim
 WORKDIR /app
 
 COPY --from=builder /app/main ./main
-COPY --from=builder /app/templates ./templates
