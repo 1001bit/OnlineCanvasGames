@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/router"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/router"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/client/gamesservice"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/client/storageservice"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/client/userservice"

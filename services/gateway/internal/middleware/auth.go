@@ -3,8 +3,8 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/handler/api"
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/handler/page"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/handler/api"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/handler/page"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/auth/claimscontext"
 )
 

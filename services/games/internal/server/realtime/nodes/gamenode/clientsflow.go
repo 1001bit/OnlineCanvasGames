@@ -3,8 +3,8 @@ package gamenode
 import (
 	"log"
 
-	"github.com/1001bit/onlinecanvasgames/services/games/internal/server/message"
 	"github.com/1001bit/onlinecanvasgames/services/games/internal/server/realtime/nodes/gameclient"
+	"github.com/1001bit/onlinecanvasgames/services/games/pkg/message"
 )
 
 func (gameNode *GameNode) clientsFlow() {

@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/1001bit/onlinecanvasgames/services/games/internal/server/message"
 	"github.com/1001bit/onlinecanvasgames/services/games/internal/server/realtime/nodes/basenode"
 	"github.com/1001bit/onlinecanvasgames/services/games/internal/server/realtime/nodes/roomclient"
+	"github.com/1001bit/onlinecanvasgames/services/games/pkg/message"
 	"github.com/gorilla/websocket"
 )
 

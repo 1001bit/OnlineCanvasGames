@@ -3,9 +3,9 @@ package router
 import (
 	"net/http"
 
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/handler/api"
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/handler/page"
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/server/middleware"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/handler/api"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/handler/page"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/middleware"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/client/gamesservice"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/client/storageservice"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/client/userservice"

@@ -2,7 +2,7 @@ package gamenode
 
 import (
 	"github.com/1001bit/onlinecanvasgames/services/games/internal/gamemodel"
-	"github.com/1001bit/onlinecanvasgames/services/games/internal/server/message"
+	"github.com/1001bit/onlinecanvasgames/services/games/pkg/message"
 )
 
 // ask gameNode to update gameNode.roomsJSON

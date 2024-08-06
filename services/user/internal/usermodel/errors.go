@@ -1,6 +1,8 @@
 package usermodel
 
-import "errors"
+import (
+	"errors"
+)
 
 var (
 	ErrLogin    = errors.New("incorrect username or password")

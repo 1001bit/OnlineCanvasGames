@@ -1,8 +1,8 @@
 package platformer
 
 import (
-	"github.com/1001bit/onlinecanvasgames/services/games/internal/server/message"
 	"github.com/1001bit/onlinecanvasgames/services/games/pkg/mathobjects"
+	"github.com/1001bit/onlinecanvasgames/services/games/pkg/message"
 )
 
 // Level

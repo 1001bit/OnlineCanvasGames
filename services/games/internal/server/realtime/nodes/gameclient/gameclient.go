@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/1001bit/onlinecanvasgames/services/games/internal/server/message"
 	"github.com/1001bit/onlinecanvasgames/services/games/internal/server/realtime/runflow"
+	"github.com/1001bit/onlinecanvasgames/services/games/pkg/message"
 )
 
 // Layer of RT which is responsible for handling connections: GameClient > User, GameNode > GameClient

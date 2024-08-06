@@ -1,6 +1,6 @@
 package gameclient
 
-import "github.com/1001bit/onlinecanvasgames/services/games/internal/server/message"
+import "github.com/1001bit/onlinecanvasgames/services/games/pkg/message"
 
 func (client *GameClient) WriteMessage(msg *message.JSON) {
 	select {

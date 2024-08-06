@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/1001bit/onlinecanvasgames/services/games/internal/server/message"
+	"github.com/1001bit/onlinecanvasgames/services/games/pkg/message"
 	"github.com/gorilla/websocket"
 )
 

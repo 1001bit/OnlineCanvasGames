@@ -3,8 +3,8 @@ package roomnode
 import (
 	"time"
 
-	"github.com/1001bit/onlinecanvasgames/services/games/internal/server/message"
 	rtclient "github.com/1001bit/onlinecanvasgames/services/games/internal/server/realtime/client"
+	"github.com/1001bit/onlinecanvasgames/services/games/pkg/message"
 )
 
 func (roomNode *RoomNode) SetRandomID() {

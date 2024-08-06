@@ -1,6 +1,6 @@
 package rtclient
 
-import "github.com/1001bit/onlinecanvasgames/services/games/internal/server/message"
+import "github.com/1001bit/onlinecanvasgames/services/games/pkg/message"
 
 type User struct {
 	Name string
