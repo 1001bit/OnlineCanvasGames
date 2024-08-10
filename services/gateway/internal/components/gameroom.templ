@@ -1,0 +1,23 @@
+package components
+
+templ GameRoom(roomID, gameTitle string) {
+	<html lang="en">
+		<head>
+			@baseHead(gameTitle)
+			<link rel="stylesheet" href="/css/room/room.css"/>
+		</head>
+		<body>
+			@nav()
+			<main data-room-id={ roomID } data-game-title={ gameTitle }>
+				<canvas id="canvas"></canvas>
+				<div id="gui">
+					<h2 id="message"></h2>
+					<div class="separator"></div>
+					<button class="style-button small" id="show-nav">↓</button>
+				</div>
+			</main>
+			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+			<script src={ "/js/gameroom/" + gameTitle + ".js" }></script>
+		</body>
+	</html>
+}

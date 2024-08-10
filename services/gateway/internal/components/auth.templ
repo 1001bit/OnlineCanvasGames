@@ -1,0 +1,25 @@
+package components
+
+templ Auth() {
+	<html lang="en">
+		<head>
+			@baseHead("Welcome!")
+			<link rel="stylesheet" href="/css/auth/auth.css"/>
+		</head>
+		<body>
+			@nav()
+			<main>
+				<h1>Welcome to Online Canvas Games!</h1>
+				<div id="auth-form">
+					<input type="text" autocomplete="off" placeholder="Username" id="username" maxlength="31"/>
+					<input type="password" placeholder="Password" id="password" maxlength="72"/>
+					<button class="style-button physical" id="login">Log In</button>
+					<button class="style-button physical" id="register">Register</button>
+				</div>
+				<p id="info">Create a new account or log in to an existing one</p>
+			</main>
+			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+			<script src="/js/auth.js"></script>
+		</body>
+	</html>
+}

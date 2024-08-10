@@ -1,90 +1,96 @@
 class Clicker {
-    private clicks: number;
+	private clicks: number;
 
-    private canvas: GameCanvas;
-    private websocket: GameWebSocket;
-    private ticker: Ticker;
+	private canvas: GameCanvas;
+	private websocket: GameWebSocket;
+	private ticker: Ticker;
 
-    private drawables: Map<string, Drawable>;
+	private drawables: Map<string, Drawable>;
 
-    constructor(){
-        const layers = 2
-        
-        this.clicks = 0
+	constructor() {
+		const layers = 2;
 
-        this.canvas = new GameCanvas("canvas", layers)
-        this.canvas.setBackgroundColor(RGB(60, 70, 70))
+		this.clicks = 0;
 
-        this.websocket = new GameWebSocket()
-        const gameTitle = $("main").data("game-title")
-        const roomID = $("main").data("room-id")
-        this.initWebsocket(gameTitle, roomID)
+		this.canvas = new GameCanvas("canvas", layers);
+		this.canvas.setBackgroundColor(RGB(60, 70, 70));
 
-        this.drawables = new Map()
-        this.initDrawables()
+		this.websocket = new GameWebSocket();
+		const gameTitle = $("main").data("game-title");
+		const roomID = $("main").data("room-id");
+		this.initWebsocket(gameTitle, roomID);
 
-        this.ticker = new Ticker()
-        this.ticker.start(dt => this.tick(dt))
-    }
+		this.drawables = new Map();
+		this.initDrawables();
 
-    private tick(_dt: number){
-        this.canvas.draw()
-    }
+		this.ticker = new Ticker();
+		this.ticker.start((dt) => this.tick(dt));
+	}
 
-    private initWebsocket(gameTitle: string, roomID: number){
-        this.websocket.handleMessage = (type, body) => {
-            switch (type) {
-                case "clicks":
-                    this.click(Number(body))
-                    break;
-            
-                default:
-                    break;
-            }
-        }
+	private tick(_dt: number) {
+		this.canvas.draw();
+	}
 
-        this.websocket.handleClose = (body) => {
-            this.stopWithText(body)
-        }
+	private initWebsocket(gameTitle: string, roomID: number) {
+		this.websocket.handleMessage = (type, body) => {
+			switch (type) {
+				case "clicks":
+					this.click(Number(body));
+					break;
 
-        this.websocket.openConnection(gameTitle, roomID)
-    }
+				default:
+					break;
+			}
+		};
 
-    private stopWithText(text: string){
-        this.canvas.stop()
-        roomGui.showMessage(text)
-        roomGui.setNavBarVisibility(true)
-    }
+		this.websocket.handleClose = (body) => {
+			this.stopWithText(body);
+		};
 
-    private initDrawables(){
-        const button = new RectangleShape()
-        this.drawables.set("button", button)
-        button.setColor(RGB(150, 150, 40))
-        button.setSize(300, 200)
-        button.setPosition((window.innerWidth - button.getSize().x)/2, (window.innerHeight - button.getSize().y)/2)
-        this.canvas.insertDrawable(button, 0, 0)
+		this.websocket.openConnection(gameTitle, roomID);
+	}
 
-        const text = new DrawableText("0 clicks", 48)
-        this.drawables.set("text", text)
-        text.setPosition(button.getPosition().x + 10, button.getPosition().y + 10)
-        this.canvas.insertDrawable(text, 1, 1)
+	private stopWithText(text: string) {
+		this.canvas.stop();
+		roomGui.showMessage(text);
+		roomGui.setNavBarVisibility(true);
+	}
 
-        // button click
-        this.canvas.onMouseClick = (_e) => {
-            let mPos = this.canvas.getMousePos()
+	private initDrawables() {
+		const button = new RectangleShape();
+		this.drawables.set("button", button);
+		button.setColor(RGB(150, 150, 40));
+		button.setSize(300, 200);
+		button.setPosition(
+			(window.innerWidth - button.getSize().x) / 2,
+			(window.innerHeight - button.getSize().y) / 2
+		);
+		this.canvas.insertDrawable(button, 0, 0);
 
-            if (button.getRect().containsPoint(mPos.x, mPos.y)){
-                this.click(this.clicks+1)
-                this.websocket.sendMessage("click", "")
-            }
-        }
-    }
+		const text = new DrawableText("0 clicks", 48);
+		this.drawables.set("text", text);
+		text.setPosition(
+			button.getPosition().x + 10,
+			button.getPosition().y + 10
+		);
+		this.canvas.insertDrawable(text, 1, 1);
 
-    private click(clicks: number){
-        this.clicks = clicks
-        const text = <DrawableText> this.drawables.get("text")
-        text.setString(`${this.clicks} clicks`)
-    }
+		// button click
+		this.canvas.onMouseClick = (_e) => {
+			let mPos = this.canvas.getMousePos();
+
+			if (button.getRect().containsPoint(mPos.x, mPos.y)) {
+				this.click(this.clicks + 1);
+				this.websocket.sendMessage("click", "");
+			}
+		};
+	}
+
+	private click(clicks: number) {
+		this.clicks = clicks;
+		const text = <DrawableText>this.drawables.get("text");
+		text.setString(`${this.clicks} clicks`);
+	}
 }
 
-new Clicker()
+new Clicker();

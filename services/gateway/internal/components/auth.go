@@ -1,4 +1,4 @@
-package page
+package components
 
 import (
 	"net/http"
@@ -7,12 +7,10 @@ import (
 )
 
 func HandleAuth(w http.ResponseWriter, r *http.Request) {
-	_, ok := claimscontext.GetUsername(r.Context())
-
-	if ok {
+	if _, ok := claimscontext.GetUsername(r.Context()); ok {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 
-	serveTemplate(w, r, "auth.html", nil)
+	Auth().Render(r.Context(), w)
 }

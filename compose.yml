@@ -1,107 +1,113 @@
 services:
-  gateway:
-    build: ./services/gateway
-    environment:
-      - PORT=${GATEWAY_PORT}
+    gateway:
+        build: ./services/gateway
+        environment:
+            - PORT=${GATEWAY_PORT}
 
-      - USER_PORT=${USER_PORT}
-      - USER_HOST=${USER_HOST}
+            - USER_PORT=${USER_PORT}
+            - USER_HOST=${USER_HOST}
 
-      - STORAGE_PORT=${STORAGE_PORT}
-      - STORAGE_HOST=${STORAGE_HOST}
+            - STORAGE_PORT=${STORAGE_PORT}
+            - STORAGE_HOST=${STORAGE_HOST}
 
-      - GAMES_PORT=${GAMES_PORT}
-      - GAMES_HOST=${GAMES_HOST}
+            - GAMES_PORT=${GAMES_PORT}
+            - GAMES_HOST=${GAMES_HOST}
 
-      - TOKEN_SECRET=${TOKEN_SECRET}
-    restart: always
-    volumes:
-      - ./templates/:/app/templates:ro
-    ports:
-      - "${GATEWAY_PORT}:${GATEWAY_PORT}"
-    command: ./main
+            - TOKEN_SECRET=${TOKEN_SECRET}
+        restart: always
+        ports:
+            - "${GATEWAY_PORT}:${GATEWAY_PORT}"
+        command: ./main
 
-  games:
-    build: ./services/games
-    environment:
-      - DB_NAME=${GAMES_DB_NAME}
-      - DB_USER=${DB_USER}
-      - DB_PASS=${DB_PASS}
-      - DB_PORT=${DB_PORT}
-      - DB_HOST=${GAMES_DB_HOST}
+    games:
+        build: ./services/games
+        environment:
+            - DB_NAME=${GAMES_DB_NAME}
+            - DB_USER=${DB_USER}
+            - DB_PASS=${DB_PASS}
+            - DB_PORT=${DB_PORT}
+            - DB_HOST=${GAMES_DB_HOST}
 
-      - PORT=${GAMES_PORT}
-    restart: always
-    depends_on:
-      gamesdb:
-        condition: service_healthy
-    command: ./main
+            - PORT=${GAMES_PORT}
+        restart: always
+        depends_on:
+            gamesdb:
+                condition: service_healthy
+        command: ./main
 
-  gamesdb:
-    environment:
-      - POSTGRES_DB=${GAMES_DB_NAME}
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASS}
-    image: postgres
-    restart: always
-    volumes:
-      - gamesdbdata:/var/lib/postgresql/data
-      - ./services/games/init.sql:/docker-entrypoint-initdb.d/init.sql
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
-      interval: 1m30s
-      timeout: 30s
-      retries: 5
-      start_period: 30s
+    gamesdb:
+        environment:
+            - POSTGRES_DB=${GAMES_DB_NAME}
+            - POSTGRES_USER=${DB_USER}
+            - POSTGRES_PASSWORD=${DB_PASS}
+        image: postgres
+        restart: always
+        volumes:
+            - gamesdbdata:/var/lib/postgresql/data
+            - ./services/games/init.sql:/docker-entrypoint-initdb.d/init.sql
+        healthcheck:
+            test:
+                [
+                    "CMD-SHELL",
+                    "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}",
+                ]
+            interval: 1m30s
+            timeout: 30s
+            retries: 5
+            start_period: 30s
 
-  user:
-    build: ./services/user
-    environment:
-      - DB_NAME=${USERS_DB_NAME}
-      - DB_USER=${DB_USER}
-      - DB_PASS=${DB_PASS}
-      - DB_PORT=${DB_PORT}
-      - DB_HOST=${USERS_DB_HOST}
+    user:
+        build: ./services/user
+        environment:
+            - DB_NAME=${USERS_DB_NAME}
+            - DB_USER=${DB_USER}
+            - DB_PASS=${DB_PASS}
+            - DB_PORT=${DB_PORT}
+            - DB_HOST=${USERS_DB_HOST}
 
-      - PORT=${USER_PORT}
-    restart: always
-    depends_on:
-      usersdb:
-        condition: service_healthy
-    command: ./main
-  
-  usersdb:
-    environment:
-      - POSTGRES_DB=${USERS_DB_NAME}
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASS}
-    image: postgres
-    restart: always
-    volumes:
-      - usersdbdata:/var/lib/postgresql/data
-      - ./services/user/init.sql:/docker-entrypoint-initdb.d/init.sql
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
-      interval: 1m30s
-      timeout: 30s
-      retries: 5
-      start_period: 30s
+            - PORT=${USER_PORT}
+        restart: always
+        depends_on:
+            usersdb:
+                condition: service_healthy
+        command: ./main
 
-  storage:
-    build: ./services/storage
-    env_file:
-      - .env
-    restart: always
-    volumes:
-      - ./storageFiles/static/:/app/static:ro
-    command: ./main
-  
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-      - ${ADMINER_PORT}:8080
+    usersdb:
+        environment:
+            - POSTGRES_DB=${USERS_DB_NAME}
+            - POSTGRES_USER=${DB_USER}
+            - POSTGRES_PASSWORD=${DB_PASS}
+        image: postgres
+        restart: always
+        volumes:
+            - usersdbdata:/var/lib/postgresql/data
+            - ./services/user/init.sql:/docker-entrypoint-initdb.d/init.sql
+        healthcheck:
+            test:
+                [
+                    "CMD-SHELL",
+                    "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}",
+                ]
+            interval: 1m30s
+            timeout: 30s
+            retries: 5
+            start_period: 30s
+
+    storage:
+        build: ./services/storage
+        env_file:
+            - .env
+        restart: always
+        volumes:
+            - ./storageFiles/static/:/app/static:ro
+        command: ./main
+
+    adminer:
+        image: adminer
+        restart: always
+        ports:
+            - ${ADMINER_PORT}:8080
 
 volumes:
-  gamesdbdata: null
-  usersdbdata: null
+    gamesdbdata: null
+    usersdbdata: null

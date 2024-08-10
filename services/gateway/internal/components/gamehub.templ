@@ -1,0 +1,38 @@
+package components
+
+templ GameHub(title string) {
+	<html lang="en">
+		<head>
+			@baseHead(title)
+			<link rel="stylesheet" href="/css/gamehub/game.css"/>
+		</head>
+		<body>
+			@nav()
+			<main data-game-title={ title }>
+				<div id="game" class="panel">
+					<div class="img-holder">
+						<img src={ "/image/gamethumbnail/" + title }/>
+					</div>
+					<h1>{ title }</h1>
+					<button class="style-button physical big-font" id="random">Join a random room</button>
+				</div>
+				<div id="under-game" class="panel">
+					<button class="style-button physical big-font" id="create">Create and join a room</button>
+					<div id="rooms"></div>
+				</div>
+			</main>
+			@GameHubRoom("bobie", "game", "0", "0", "0")
+			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+			<script src="/js/gamehub.js"></script>
+		</body>
+	</html>
+}
+
+templ GameHubRoom(owner, title, roomID, clients, clientsLimit string) {
+	<div class="sample room">
+		<h3 class="owner">{ owner }'s room</h3>
+		<a class="join" href={ templ.URL("/game" + title + "/room" + roomID) }>
+			<button class="clients style-button physical small">{ clients }/{ clientsLimit } clients</button>
+		</a>
+	</div>
+}

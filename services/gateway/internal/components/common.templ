@@ -1,0 +1,22 @@
+package components
+
+import "github.com/1001bit/onlinecanvasgames/services/gateway/pkg/auth/claimscontext"
+
+templ nav() {
+	<div id="navigation">
+		<a href="/"><button class="style-button small">Home</button></a>
+		<div class="separator"></div>
+		if username, ok := claimscontext.GetUsername(ctx) ; ok {
+			<a href={ templ.SafeURL("/profile/" + username) }><button class="style-button small">{ username }</button></a>
+		} else {
+			<a href="/auth"><button class="style-button small">Log In / Register</button></a>
+		}
+	</div>
+}
+
+templ baseHead(title string) {
+	<meta charset="UTF-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+	<link rel="stylesheet" href="/css/global/global.css"/>
+	<title>{ title }</title>
+}

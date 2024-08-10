@@ -3,19 +3,20 @@ package router
 import (
 	"net/http"
 
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/handler/api"
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/handler/page"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/api"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/components"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/middleware"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/client/gamesservice"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/client/storageservice"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/client/userservice"
+	"github.com/a-h/templ"
 
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
 )
 
 func NewRouter(storageService *storageservice.Client, userService *userservice.Client, gamesService *gamesservice.Client) (http.Handler, error) {
-	// Router
+	// Base
 	router := chi.NewRouter()
 	router.Use(chimw.Logger)
 	router.Use(chimw.RedirectSlashes)
@@ -39,16 +40,11 @@ func NewRouter(storageService *storageservice.Client, userService *userservice.C
 
 	// JSON
 	router.Route("/api", func(jsonRouter chi.Router) {
-		// Login
-		jsonRouter.Post("/user/login", func(w http.ResponseWriter, r *http.Request) {
-			api.HandleUserLogin(w, r, userService)
-		})
-		// Register
-		jsonRouter.Post("/user/register", func(w http.ResponseWriter, r *http.Request) {
-			api.HandleUserRegister(w, r, userService)
-		})
+		jsonRouter.Post("/user/login", api.UserLoginHandler(userService))
+		jsonRouter.Post("/user/register", api.UserRegisterHandler(userService))
+		router.Get("/logout", api.HandleLogout)
 
-		// Rooms
+		// Secure routes
 		jsonRouter.Group(func(jsonRouterSecure chi.Router) {
 			jsonRouterSecure.Use(middleware.AuthJSON)
 
@@ -58,29 +54,20 @@ func NewRouter(storageService *storageservice.Client, userService *userservice.C
 
 	// HTML Pages
 	router.Route("/", func(htmlRouter chi.Router) {
-		// Home
-		htmlRouter.Get("/", func(w http.ResponseWriter, r *http.Request) {
-			page.HandleHome(w, r, gamesService)
-		})
-		// Auth
-		htmlRouter.Get("/auth", page.HandleAuth)
-		// Profile
-		htmlRouter.Get("/profile/{name}", func(w http.ResponseWriter, r *http.Request) {
-			page.HandleProfile(w, r, userService)
-		})
-		// Logout
-		htmlRouter.Get("/logout", page.HandleLogout)
+		htmlRouter.Get("/", templ.Handler(components.Home(gamesService)).ServeHTTP)
+		htmlRouter.Get("/auth", components.HandleAuth)
+		htmlRouter.Get("/profile/{name}", components.ProfileHandler(userService))
 
-		// Games
+		// Secure routes
 		htmlRouter.Group(func(htmlRouterSecure chi.Router) {
 			htmlRouterSecure.Use(middleware.AuthHTML)
 
-			htmlRouterSecure.Get("/game/{title}", page.HandleGameHub)
-			htmlRouterSecure.Get("/game/{title}/room/{roomid}", page.HandleGameRoom)
+			htmlRouterSecure.Get("/game/{title}", components.HandleGameHub)
+			htmlRouterSecure.Get("/game/{title}/room/{roomid}", components.HandleGameRoom)
 		})
 
-		// Other
-		htmlRouter.NotFound(page.HandleNotFound)
+		// Non handled ones (404)
+		htmlRouter.NotFound(templ.Handler(components.ErrorNotFound()).ServeHTTP)
 	})
 
 	return router, nil

@@ -3,8 +3,8 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/handler/api"
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/handler/page"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/api"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/components"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/auth/claimscontext"
 )
 
@@ -13,7 +13,7 @@ func AuthHTML(next http.Handler) http.Handler {
 		_, ok := claimscontext.GetUsername(r.Context())
 
 		if !ok {
-			page.HandleAuth(w, r)
+			components.HandleAuth(w, r)
 			return
 		}
 		next.ServeHTTP(w, r)

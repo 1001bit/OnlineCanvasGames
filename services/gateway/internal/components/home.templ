@@ -1,0 +1,41 @@
+package components
+
+import (
+	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/auth/claimscontext"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/client/gamesservice"
+	"strconv"
+)
+
+templ Home(client *gamesservice.Client) {
+	<html lang="en">
+		<head>
+			@baseHead("Home")
+			<link rel="stylesheet" href="/css/home/home.css"/>
+		</head>
+		<body>
+			@nav()
+			<main>
+				if username, ok := claimscontext.GetUsername(ctx) ; ok {
+					<h1>Welcome back, { username }!</h1>
+				} else {
+					<h1>Hello, Guest!</h1>
+				}
+				if titles, err := client.GetGames(ctx) ; err == nil {
+					<h2>Available online games ({ strconv.Itoa(len(titles)) }):</h2>
+					<div class="card-group">
+						for _, title := range titles {
+							<a href={ templ.URL("/game/" + title) }>
+								<div class="card">
+									<div class="img-holder">
+										<img src={ "/image/gameicon/" + title }/>
+									</div>
+									<button class="style-button small physical">{ title }</button>
+								</div>
+							</a>
+						}
+					</div>
+				}
+			</main>
+		</body>
+	</html>
+}

@@ -88,7 +88,10 @@
     - [X] API gateway
 
 - [X] use gRPC for gateway->service communications
-    - [X] user
+    - [X] user service
+
+- [X] Switch from html/templates -> a-h/templ
+- [ ] Switch to htmx
 
 - [ ] Admin page
     - [ ] Front end

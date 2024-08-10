@@ -1,0 +1,23 @@
+package components
+
+templ ErrorNotFound() {
+	@err("404: Not found")
+}
+
+templ ErrorInternal() {
+	@err("Something went wrong!")
+}
+
+templ err(text string) {
+	<html lang="en">
+		<head>
+			@baseHead(text)
+		</head>
+		<body>
+			@nav()
+			<main>
+				<h1>{ text }</h1>
+			</main>
+		</body>
+	</html>
+}

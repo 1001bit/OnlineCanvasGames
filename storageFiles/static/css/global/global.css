@@ -1,13 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap");
 
 :root {
     /* primary colors */
-    --prim-color: #FFE066;
+    --prim-color: #ffe066;
     --prim-dark-color: #e4c95c;
     --text-color: #f3f3f3;
     /* secondary colors */
     --second-color: #2d3536;
-    --second-dark-color: #1B2021;
+    --second-dark-color: #1b2021;
     --button-shadow-color: #0c0a02;
 
     /* values */
@@ -15,14 +15,15 @@
 }
 
 body {
-    font-family: 'DM Sans', sans-serif;
+    font-family: "DM Sans", sans-serif;
     background: var(--second-color);
     padding: 0;
     color: var(--text-color);
     overflow-x: hidden;
 }
 
-html, body {
+html,
+body {
     height: 100%;
     margin: 0;
 }
@@ -59,7 +60,10 @@ main {
 
 /* ELEMS */
 
-h1, h2, h3, h4 {
+h1,
+h2,
+h3,
+h4 {
     margin-top: 0;
 }
 
@@ -100,7 +104,7 @@ p {
 /* big font */
 .style-button.big-font {
     font-size: 24px;
-} 
+}
 
 /* small */
 .style-button.small {
@@ -136,7 +140,7 @@ p {
 
 .img-holder {
     border-radius: 8px;
-    background: var(--thr-elem-color);
+    background: var(--second-dark-color);
     overflow: hidden;
     display: flex;
     justify-content: center;
@@ -149,6 +153,6 @@ p {
     object-fit: contain;
 }
 
-.img-holder img[src=""]{
+.img-holder img[src=""] {
     display: none;
 }

@@ -1,0 +1,23 @@
+package components
+
+templ Profile(selfUsername, username, date string) {
+	<html lang="en">
+		<head>
+			@baseHead(username)
+			<link rel="stylesheet" href="/css/profile/profile.css"/>
+		</head>
+		<body>
+			@nav()
+			<main>
+				<h1>{ username }'s profile</h1>
+				<h2>Member since { date }</h2>
+				// logout button
+				if selfUsername == username {
+					<a href="/api/logout">
+						<button class="style-button small physical">Logout</button>
+					</a>
+				}
+			</main>
+		</body>
+	</html>
+}

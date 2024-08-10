@@ -8,11 +8,11 @@ import (
 	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/message"
 )
 
-func ServeMessage(w http.ResponseWriter, msg message.JSON, status int) {
+func WriteJsonMessage(w http.ResponseWriter, msg message.JSON, status int) {
 	msgByte, err := json.Marshal(msg)
 	if err != nil {
 		log.Println("err on response:", err)
-		ServeTextMessage(w, "something went wrong", http.StatusInternalServerError)
+		WriteTextMessage(w, "something went wrong", http.StatusInternalServerError)
 		return
 	}
 
@@ -20,10 +20,10 @@ func ServeMessage(w http.ResponseWriter, msg message.JSON, status int) {
 	w.Write(msgByte)
 }
 
-func ServeTextMessage(w http.ResponseWriter, text string, status int) {
+func WriteTextMessage(w http.ResponseWriter, text string, status int) {
 	msg := message.JSON{
 		Type: "message",
 		Body: text,
 	}
-	ServeMessage(w, msg, status)
+	WriteJsonMessage(w, msg, status)
 }
