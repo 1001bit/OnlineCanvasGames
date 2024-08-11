@@ -10,6 +10,9 @@ TS_PAGES = storageFiles/typescript/pages
 
 TEMPL_PATH = ./services/gateway/
 
+# Do all
+all: compile-ts compile-templ build up
+
 # Build the Docker containers
 build:
 	@echo "Building Docker containers..."
@@ -40,4 +43,4 @@ clean:
 	@echo "Cleaning up Docker resources..."
 	$(DOCKER_COMPOSE) down --rmi all --volumes --remove-orphans
 
-.PHONY: build up down compile-ts compile-templ clean
+.PHONY: all build up down compile-ts compile-templ clean

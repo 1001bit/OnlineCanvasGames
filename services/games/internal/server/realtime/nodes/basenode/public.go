@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/1001bit/onlinecanvasgames/services/games/internal/gamemodel"
+	"github.com/1001bit/onlinecanvasgames/services/games/internal/gamestore"
 	"github.com/1001bit/onlinecanvasgames/services/games/internal/server/realtime/nodes/gamenode"
 	"github.com/1001bit/onlinecanvasgames/services/games/internal/server/realtime/nodes/roomnode"
 )
@@ -47,6 +47,6 @@ func (baseNode *BaseNode) GetGameByTitle(title string) (*gamenode.GameNode, bool
 	return baseNode.games.ChildrenMap.Get(title)
 }
 
-func (baseNode *BaseNode) GetGamesJSON() []gamemodel.Game {
+func (baseNode *BaseNode) GetGamesJSON() []gamestore.Game {
 	return baseNode.gamesJSON
 }

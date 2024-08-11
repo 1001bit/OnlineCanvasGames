@@ -22,39 +22,11 @@ services:
     games:
         build: ./services/games
         environment:
-            - DB_NAME=${GAMES_DB_NAME}
-            - DB_USER=${DB_USER}
-            - DB_PASS=${DB_PASS}
-            - DB_PORT=${DB_PORT}
-            - DB_HOST=${GAMES_DB_HOST}
-
             - PORT=${GAMES_PORT}
         restart: always
-        depends_on:
-            gamesdb:
-                condition: service_healthy
         command: ./main
-
-    gamesdb:
-        environment:
-            - POSTGRES_DB=${GAMES_DB_NAME}
-            - POSTGRES_USER=${DB_USER}
-            - POSTGRES_PASSWORD=${DB_PASS}
-        image: postgres
-        restart: always
         volumes:
-            - gamesdbdata:/var/lib/postgresql/data
-            - ./services/games/init.sql:/docker-entrypoint-initdb.d/init.sql
-        healthcheck:
-            test:
-                [
-                    "CMD-SHELL",
-                    "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}",
-                ]
-            interval: 1m30s
-            timeout: 30s
-            retries: 5
-            start_period: 30s
+            - ./games/games.json:/app/games.json:ro
 
     user:
         build: ./services/user
@@ -109,5 +81,4 @@ services:
             - ${ADMINER_PORT}:8080
 
 volumes:
-    gamesdbdata: null
     usersdbdata: null

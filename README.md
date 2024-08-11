@@ -34,10 +34,10 @@
 
 ## Build and start
 
-- Build and start: `make`
-- Build: `make build`
-- Start: `make up`
-- Stop: `make down`
+- Build everything and start: `make all`
+- Build services: `make build`
+- Start compose: `make up`
+- Stop compose: `make down`
 - Compile typescript files: `make compile-ts`
 - Compile .templ files: `make compile-templ`
 - Clean up docker resources: `make clean`
@@ -52,7 +52,7 @@
 - **games**: 
   - Implements game logic
   - Handles WebSocket connections for real-time gameplay
-  - Manages game data and state
+  - Manages game data and rooms state
 
 - **user**: 
   - Manages user authentication

@@ -3,7 +3,7 @@ package gamenode
 import (
 	"log"
 
-	"github.com/1001bit/onlinecanvasgames/services/games/internal/gamemodel"
+	"github.com/1001bit/onlinecanvasgames/services/games/internal/gamestore"
 	"github.com/1001bit/onlinecanvasgames/services/games/internal/server/realtime/children"
 	"github.com/1001bit/onlinecanvasgames/services/games/internal/server/realtime/nodes/gameclient"
 	"github.com/1001bit/onlinecanvasgames/services/games/internal/server/realtime/nodes/roomnode"
@@ -28,10 +28,10 @@ type GameNode struct {
 	roomsJSON           []RoomJSON
 	roomsJSONUpdateChan chan struct{}
 
-	game gamemodel.Game
+	game gamestore.Game
 }
 
-func NewGameNode(game gamemodel.Game) *GameNode {
+func NewGameNode(game gamestore.Game) *GameNode {
 	return &GameNode{
 		Flow: runflow.MakeRunFlow(),
 

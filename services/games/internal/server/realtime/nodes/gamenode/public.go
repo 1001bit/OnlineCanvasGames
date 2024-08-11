@@ -1,7 +1,7 @@
 package gamenode
 
 import (
-	"github.com/1001bit/onlinecanvasgames/services/games/internal/gamemodel"
+	"github.com/1001bit/onlinecanvasgames/services/games/internal/gamestore"
 	"github.com/1001bit/onlinecanvasgames/services/games/pkg/message"
 )
 
@@ -26,6 +26,6 @@ func (gameNode *GameNode) GlobalWriteMessage(msg *message.JSON) {
 	}
 }
 
-func (gameNode *GameNode) GetGame() gamemodel.Game {
+func (gameNode *GameNode) GetGame() gamestore.Game {
 	return gameNode.game
 }

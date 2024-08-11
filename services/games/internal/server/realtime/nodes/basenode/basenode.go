@@ -1,10 +1,9 @@
 package basenode
 
 import (
-	"context"
 	"log"
 
-	"github.com/1001bit/onlinecanvasgames/services/games/internal/gamemodel"
+	"github.com/1001bit/onlinecanvasgames/services/games/internal/gamestore"
 	"github.com/1001bit/onlinecanvasgames/services/games/internal/server/realtime/children"
 	"github.com/1001bit/onlinecanvasgames/services/games/internal/server/realtime/nodes/gamenode"
 	"github.com/1001bit/onlinecanvasgames/services/games/internal/server/realtime/nodes/roomclient"
@@ -18,7 +17,7 @@ type BaseNode struct {
 	games        children.MapChildren[string, *gamenode.GameNode]
 	roomsClients children.MapChildren[string, *roomclient.RoomClient]
 
-	gamesJSON []gamemodel.Game
+	gamesJSON []gamestore.Game
 }
 
 func NewBaseNode() *BaseNode {
@@ -28,15 +27,15 @@ func NewBaseNode() *BaseNode {
 		games:        children.MakeMapChildren[string, *gamenode.GameNode](),
 		roomsClients: children.MakeMapChildren[string, *roomclient.RoomClient](),
 
-		gamesJSON: make([]gamemodel.Game, 0),
+		gamesJSON: make([]gamestore.Game, 0),
 	}
 }
 
 // get all the games from database and put then into BaseNode
-func (baseNode *BaseNode) InitGames(gameStore *gamemodel.GameStore) error {
+func (baseNode *BaseNode) InitGames() error {
 	var err error
 
-	baseNode.gamesJSON, err = gameStore.GetAllGames(context.Background())
+	baseNode.gamesJSON, err = gamestore.GetAllGames("games.json")
 	if err != nil {
 		return err
 	}

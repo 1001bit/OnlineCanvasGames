@@ -15,7 +15,7 @@
     - [X] RectID
 
 - [X] Home page
-    - [X] Use BaseNode's gamesJSON instead of database table for games list
+    - [X] Use BaseNode's gamesJSON for games list
 
 - [X] Game Page
     - [X] Rooms list
