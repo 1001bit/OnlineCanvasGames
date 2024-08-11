@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/components"
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/jsonapi"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/middleware"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/xmlapi"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/client/gamesservice"
@@ -39,36 +38,37 @@ func NewRouter(storageService *storageservice.Client, userService *userservice.C
 		realtimeRouter.Get("/ws/game/{title}/room/{roomid}", gamesService.RoomProxyHandler())
 	})
 
-	// JSON
-	router.Route("/api", func(jsonRouter chi.Router) {
-		jsonRouter.Post("/user/login", jsonapi.UserLoginHandler(userService))
-		jsonRouter.Post("/user/register", jsonapi.UserRegisterHandler(userService))
-		jsonRouter.Get("/logout", jsonapi.HandleLogout)
+	// API
+	router.Route("/api", func(apiRouter chi.Router) {
+		apiRouter.Post("/login", xmlapi.LoginHandler(userService))
+		apiRouter.Post("/register", xmlapi.RegisterHandler(userService))
+		apiRouter.Get("/logout", xmlapi.HandleLogout)
 
-		// Secure routes
-		jsonRouter.Group(func(jsonRouterSecure chi.Router) {
-			jsonRouterSecure.Use(middleware.AuthJSON)
+		// Secure
+		apiRouter.Group(func(apiRouterSecure chi.Router) {
+			apiRouterSecure.Use(middleware.AuthJSON)
 
-			jsonRouterSecure.Post("/game/{title}/room", gamesService.ProxyHandler())
+			apiRouterSecure.Post("/game/{title}/room", gamesService.ProxyHandler())
 		})
 	})
 
-	// XML
-	router.Route("/", func(htmlRouter chi.Router) {
-		htmlRouter.Get("/", templ.Handler(components.Home(gamesService)).ServeHTTP)
-		htmlRouter.Get("/auth", xmlapi.HandleAuth)
-		htmlRouter.Get("/profile/{name}", xmlapi.ProfileHandler(userService))
+	// Pages
+	router.Get("/", templ.Handler(components.Home(gamesService)).ServeHTTP)
+	router.Get("/auth", xmlapi.HandleAuthPage)
+	router.Get("/profile/{name}", xmlapi.ProfileHandler(userService))
 
-		// Secure routes
-		htmlRouter.Group(func(htmlRouterSecure chi.Router) {
-			htmlRouterSecure.Use(middleware.AuthHTML)
+	// Secure
+	router.Group(func(routerSecure chi.Router) {
+		routerSecure.Use(middleware.AuthHTML)
 
-			htmlRouterSecure.Get("/game/{title}", xmlapi.HandleGameHub)
-			htmlRouterSecure.Get("/game/{title}/room/{roomid}", xmlapi.HandleGameRoom)
-		})
+		routerSecure.Get("/game/{title}", xmlapi.HandleGameHub)
+		routerSecure.Get("/game/{title}/room/{roomid}", xmlapi.HandleGameRoom)
+	})
 
-		// Non handled ones (404)
-		htmlRouter.NotFound(templ.Handler(components.ErrorNotFound()).ServeHTTP)
+	// Non handled ones (404)
+	router.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		components.ErrorNotFound().Render(r.Context(), w)
 	})
 
 	return router, nil

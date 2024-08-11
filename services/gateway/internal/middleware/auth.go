@@ -13,7 +13,7 @@ func AuthHTML(next http.Handler) http.Handler {
 		_, ok := claimscontext.GetUsername(r.Context())
 
 		if !ok {
-			xmlapi.HandleAuth(w, r)
+			xmlapi.HandleAuthPage(w, r)
 			return
 		}
 		next.ServeHTTP(w, r)

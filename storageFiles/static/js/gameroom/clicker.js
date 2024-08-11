@@ -442,7 +442,7 @@ class Clicker {
         this.drawables = new Map();
         this.initDrawables();
         this.ticker = new Ticker();
-        this.ticker.start(dt => this.tick(dt));
+        this.ticker.start((dt) => this.tick(dt));
     }
     tick(_dt) {
         this.canvas.draw();

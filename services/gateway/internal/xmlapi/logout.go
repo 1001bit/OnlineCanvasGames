@@ -1,4 +1,4 @@
-package jsonapi
+package xmlapi
 
 import (
 	"net/http"

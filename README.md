@@ -30,7 +30,7 @@
 2. Clone the repository and navigate to the project directory.
 3. Make sure environmental variables are set (see .env)
 4. If want to edit typescript files, make sure `tsc` tool is installed
-5. If want like to edit .templ files, make sure `templ` utility is installed (`go install github.com/a-h/templ/cmd/templ@latest`)
+5. If want to edit .templ files, make sure `templ` utility is installed (`go install github.com/a-h/templ/cmd/templ@latest`)
 
 ## Build and start
 

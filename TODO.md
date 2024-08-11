@@ -91,7 +91,8 @@
     - [X] user service
 
 - [X] Switch from html/templates -> a-h/templ
-- [ ] Switch to htmx
+- [X] Switch to htmx
+    - [X] Login and register page
 
 - [ ] Admin page
     - [ ] Front end

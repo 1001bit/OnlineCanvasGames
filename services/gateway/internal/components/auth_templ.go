@@ -34,7 +34,7 @@ func Auth() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<link rel=\"stylesheet\" href=\"/css/auth/auth.css\"></head><body>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<link rel=\"stylesheet\" href=\"/css/auth/auth.css\"><script src=\"https://unpkg.com/htmx.org@2.0.1\" integrity=\"sha384-QWGpdj554B4ETpJJC9z+ZHJcA/i59TyjxEPXiiUgN2WmTyV5OEZWCD6gQhgkdpB/\" crossorigin=\"anonymous\"></script></head><body>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -42,15 +42,15 @@ func Auth() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main><h1>Welcome to Online Canvas Games!</h1><div id=\"auth-form\"><input type=\"text\" autocomplete=\"off\" placeholder=\"Username\" id=\"username\" maxlength=\"31\"> <input type=\"password\" placeholder=\"Password\" id=\"password\" maxlength=\"72\"> <button class=\"style-button physical\" id=\"login\">Log In</button> <button class=\"style-button physical\" id=\"register\">Register</button></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main><h1>Welcome to Online Canvas Games!</h1><form id=\"auth-form\" hx-target=\"#info\" hx-swap=\"outerHTML\"><input type=\"text\" placeholder=\"Username\" id=\"username\" name=\"username\" maxlength=\"31\" autocomplete=\"off\"> <input type=\"password\" placeholder=\"Password\" id=\"password\" name=\"password\" maxlength=\"72\"> <button class=\"style-button physical\" hx-post=\"/api/login\">Log In</button> <button class=\"style-button physical\" hx-post=\"/api/register\">Register</button></form>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = authInfo("Create a new account or log in to an existing one").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = AuthInfo("Create a new account or log in to an existing one").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</main><script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js\"></script><script src=\"/js/auth.js\"></script></body></html>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</main></body><script>\n\t\t\t// Allow swapping when code is bad\n\t\t\tdocument.body.addEventListener('htmx:beforeOnLoad', function (evt) {\n\t\t\t\tif (evt.detail.xhr.status >= 400) {\n\t\t\t\t\tevt.detail.shouldSwap = true;\n\t\t\t\t\tevt.detail.isError = false;\n\t\t\t\t}\n\t\t\t});\n\t\t</script><script src=\"/js/auth.js\"></script></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -58,7 +58,7 @@ func Auth() templ.Component {
 	})
 }
 
-func authInfo(text string) templ.Component {
+func AuthInfo(text string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
@@ -83,7 +83,7 @@ func authInfo(text string) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(text)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `services/gateway/internal/components/auth.templ`, Line: 28, Col: 20}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `services/gateway/internal/components/auth.templ`, Line: 37, Col: 20}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
