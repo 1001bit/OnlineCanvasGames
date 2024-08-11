@@ -1,9 +1,10 @@
-package components
+package xmlapi
 
 import (
 	"net/http"
 	"time"
 
+	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/components"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/auth/claimscontext"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/client/userservice"
 	"google.golang.org/grpc/codes"
@@ -25,15 +26,15 @@ func ProfileHandler(userService *userservice.Client) http.HandlerFunc {
 		if err != nil {
 			e, ok := status.FromError(err)
 			if !ok {
-				ErrorInternal().Render(r.Context(), w)
+				components.ErrorInternal().Render(r.Context(), w)
 				return
 			}
 
 			switch e.Code() {
 			case codes.NotFound:
-				ErrorNotFound().Render(r.Context(), w)
+				components.ErrorNotFound().Render(r.Context(), w)
 			default:
-				ErrorInternal().Render(r.Context(), w)
+				components.ErrorInternal().Render(r.Context(), w)
 			}
 
 			return
@@ -42,7 +43,7 @@ func ProfileHandler(userService *userservice.Client) http.HandlerFunc {
 		username = user.Username
 		date, _ := formatPostgresDate(user.Date)
 
-		Profile(selfUsername, username, date).Render(r.Context(), w)
+		components.Profile(selfUsername, username, date).Render(r.Context(), w)
 	}
 }
 

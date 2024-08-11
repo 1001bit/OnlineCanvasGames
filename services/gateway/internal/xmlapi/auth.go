@@ -1,8 +1,9 @@
-package components
+package xmlapi
 
 import (
 	"net/http"
 
+	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/components"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/auth/claimscontext"
 )
 
@@ -12,5 +13,5 @@ func HandleAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	Auth().Render(r.Context(), w)
+	components.Auth().Render(r.Context(), w)
 }

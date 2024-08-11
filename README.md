@@ -22,12 +22,15 @@
 - **TypeScript Recursive Compilation**: [`tscompiler`](https://github.com/1001bit/tscompiler)
 - **Containerization**: [`Docker`](https://www.docker.com/).
 - **Inter-Microservice Communication**: [`gRPC`](https://grpc.io/) 
+- **Templating**: [`a-h/templ`](https://github.com/a-h/templ/)
 
 ## Getting Started
 
 1. To get started with **Online Canvas Games**, ensure you have Docker installed on your machine.
 2. Clone the repository and navigate to the project directory.
 3. Make sure environmental variables are set (see .env)
+4. If want to edit typescript files, make sure `tsc` tool is installed
+5. If want like to edit .templ files, make sure `templ` utility is installed (`go install github.com/a-h/templ/cmd/templ@latest`)
 
 ## Build and start
 
@@ -36,6 +39,7 @@
 - Start: `make up`
 - Stop: `make down`
 - Compile typescript files: `make compile-ts`
+- Compile .templ files: `make compile-templ`
 - Clean up docker resources: `make clean`
 
 ## Microservices

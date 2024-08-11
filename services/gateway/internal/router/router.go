@@ -3,9 +3,10 @@ package router
 import (
 	"net/http"
 
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/api"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/components"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/jsonapi"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/middleware"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/xmlapi"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/client/gamesservice"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/client/storageservice"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/client/userservice"
@@ -40,9 +41,9 @@ func NewRouter(storageService *storageservice.Client, userService *userservice.C
 
 	// JSON
 	router.Route("/api", func(jsonRouter chi.Router) {
-		jsonRouter.Post("/user/login", api.UserLoginHandler(userService))
-		jsonRouter.Post("/user/register", api.UserRegisterHandler(userService))
-		router.Get("/logout", api.HandleLogout)
+		jsonRouter.Post("/user/login", jsonapi.UserLoginHandler(userService))
+		jsonRouter.Post("/user/register", jsonapi.UserRegisterHandler(userService))
+		jsonRouter.Get("/logout", jsonapi.HandleLogout)
 
 		// Secure routes
 		jsonRouter.Group(func(jsonRouterSecure chi.Router) {
@@ -52,18 +53,18 @@ func NewRouter(storageService *storageservice.Client, userService *userservice.C
 		})
 	})
 
-	// HTML Pages
+	// XML
 	router.Route("/", func(htmlRouter chi.Router) {
 		htmlRouter.Get("/", templ.Handler(components.Home(gamesService)).ServeHTTP)
-		htmlRouter.Get("/auth", components.HandleAuth)
-		htmlRouter.Get("/profile/{name}", components.ProfileHandler(userService))
+		htmlRouter.Get("/auth", xmlapi.HandleAuth)
+		htmlRouter.Get("/profile/{name}", xmlapi.ProfileHandler(userService))
 
 		// Secure routes
 		htmlRouter.Group(func(htmlRouterSecure chi.Router) {
 			htmlRouterSecure.Use(middleware.AuthHTML)
 
-			htmlRouterSecure.Get("/game/{title}", components.HandleGameHub)
-			htmlRouterSecure.Get("/game/{title}/room/{roomid}", components.HandleGameRoom)
+			htmlRouterSecure.Get("/game/{title}", xmlapi.HandleGameHub)
+			htmlRouterSecure.Get("/game/{title}/room/{roomid}", xmlapi.HandleGameRoom)
 		})
 
 		// Non handled ones (404)

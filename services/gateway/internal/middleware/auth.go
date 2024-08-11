@@ -3,8 +3,8 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/api"
-	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/components"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/jsonapi"
+	"github.com/1001bit/onlinecanvasgames/services/gateway/internal/xmlapi"
 	"github.com/1001bit/onlinecanvasgames/services/gateway/pkg/auth/claimscontext"
 )
 
@@ -13,7 +13,7 @@ func AuthHTML(next http.Handler) http.Handler {
 		_, ok := claimscontext.GetUsername(r.Context())
 
 		if !ok {
-			components.HandleAuth(w, r)
+			xmlapi.HandleAuth(w, r)
 			return
 		}
 		next.ServeHTTP(w, r)
@@ -25,7 +25,7 @@ func AuthJSON(next http.Handler) http.Handler {
 		_, ok := claimscontext.GetUsername(r.Context())
 
 		if !ok {
-			api.HandleUnauthorized(w)
+			jsonapi.HandleUnauthorized(w)
 			return
 		}
 		next.ServeHTTP(w, r)

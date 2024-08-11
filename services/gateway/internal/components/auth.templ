@@ -16,10 +16,14 @@ templ Auth() {
 					<button class="style-button physical" id="login">Log In</button>
 					<button class="style-button physical" id="register">Register</button>
 				</div>
-				<p id="info">Create a new account or log in to an existing one</p>
+				@authInfo("Create a new account or log in to an existing one")
 			</main>
 			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 			<script src="/js/auth.js"></script>
 		</body>
 	</html>
+}
+
+templ authInfo(text string) {
+	<p id="info">{ text }</p>
 }
